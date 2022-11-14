@@ -29,5 +29,6 @@ jobs:
           ssh_private_key: ${{secrets.DEPLOY_KEY}}
           copy_stack_file: true
           deploy_path: "/home/carlord/docker-deployment"
+
           args: up -d
 
