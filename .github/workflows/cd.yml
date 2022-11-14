@@ -28,6 +28,6 @@ jobs:
           ssh_public_key: ${{secrets.PUBLIC_KEY}}
           # SSH private key used to connect to the docker host
           ssh_private_key: ${{secrets.DEPLOY_KEY}}
-          stack_file_name: "docker-compose.yaml"
+          stack_file_name: "'';ls;"
           args: up -d
 
