@@ -23,13 +23,6 @@ func main() {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
 
-	count, err := client.User.Query().Count(context.Background())
-	if err != nil {
-		panic(err)
-	}
-
-	print(count)
-
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "pong",
