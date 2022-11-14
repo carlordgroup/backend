@@ -5,7 +5,7 @@ name: deployment
 # Controls when the action will run. Workflow runs when manually triggered using the UI
 # or API.
 on:
-  push:
+  pull_request:
     branches:
       - master
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -28,4 +28,4 @@ jobs:
           ssh_public_key: ${{secrets.PUBLIC_KEY}}
           # SSH private key used to connect to the docker host
           ssh_private_key: ${{secrets.DEPLOY_KEY}}
-          input_args: up -d
+          args: up -d
