@@ -1,0 +1,7 @@
+version: "3.9"
+services:
+  server:
+    build: .
+    ports:
+      - "8686:8686"
+    restart: on-failure
