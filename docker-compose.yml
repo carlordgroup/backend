@@ -4,4 +4,17 @@ services:
     build: .
     ports:
       - "8686:8686"
+    environment:
+      - DATABASE=postgresql://postgres@database/postgres
     restart: on-failure
+
+  database:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    volumes:
+      - data:/var/lib/postgresql/data
+
+volumes:
+  data:
