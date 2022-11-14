@@ -27,6 +27,7 @@ jobs:
           ssh_public_key: ${{secrets.PUBLIC_KEY}}
           # SSH private key used to connect to the docker host
           ssh_private_key: ${{secrets.DEPLOY_KEY}}
+          copy_stack_file: true
           deploy_path: "/home/carlord/docker-deployment"
           args: up -d
 
