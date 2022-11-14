@@ -20,7 +20,7 @@ jobs:
       - name: Docker-Compose Remote Deployment
         # You may pin to the exact commit or the version.
         # uses: TapTap21/docker-remote-deployment-action@25d2611b060f7a53f19d4e5bad42a2fb2c4a7a80
-        uses: TapTap21/docker-remote-deployment-action@v1.1
+        uses: TapTap21/docker-remote-deployment-action@v1.0
         with:
           # Remote Docker host ie (user@host)
           remote_docker_host: ${{secrets.SERVER}}
