@@ -8,6 +8,8 @@ ADD go.* ./
 RUN go mod download
 # add other codes
 ADD . /app
+RUN go install github.com/swaggo/swag/cmd/swag@latest
+RUN swag init
 # build
 RUN go build -o /app/main -buildvcs=false
 RUN chmod +x /app/main
