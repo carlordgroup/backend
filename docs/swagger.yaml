@@ -1,0 +1,183 @@
+definitions:
+  auth.LoginCredential:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  auth.token:
+    properties:
+      token:
+        type: string
+    type: object
+  ent.Account:
+    properties:
+      edges:
+        $ref: '#/definitions/ent.AccountEdges'
+        description: |-
+          Edges holds the relations/edges for other nodes in the graph.
+          The values are being populated by the AccountQuery when eager-loading is set.
+      email:
+        description: Email holds the value of the "email" field.
+        type: string
+      id:
+        description: ID of the ent.
+        type: integer
+      is_admin:
+        description: IsAdmin holds the value of the "is_admin" field.
+        type: boolean
+    type: object
+  ent.AccountEdges:
+    properties:
+      user:
+        description: User holds the value of the user edge.
+        items:
+          $ref: '#/definitions/ent.User'
+        type: array
+    type: object
+  ent.Card:
+    properties:
+      cardholder_name:
+        description: CardholderName holds the value of the "cardholder_name" field.
+        type: string
+      edges:
+        $ref: '#/definitions/ent.CardEdges'
+        description: |-
+          Edges holds the relations/edges for other nodes in the graph.
+          The values are being populated by the CardQuery when eager-loading is set.
+      id:
+        description: ID of the ent.
+        type: integer
+      number:
+        description: Number holds the value of the "number" field.
+        type: string
+      valid_until:
+        description: ValidUntil holds the value of the "valid_until" field.
+        type: string
+    type: object
+  ent.CardEdges:
+    properties:
+      owner:
+        $ref: '#/definitions/ent.User'
+        description: Owner holds the value of the owner edge.
+    type: object
+  ent.Flaw:
+    properties:
+      id:
+        description: ID of the ent.
+        type: integer
+    type: object
+  ent.User:
+    properties:
+      address:
+        description: Address holds the value of the "address" field.
+        type: string
+      birthday:
+        description: Birthday holds the value of the "birthday" field.
+        type: string
+      driver_license_country:
+        description: DriverLicenseCountry holds the value of the "driver_license_country"
+          field.
+        type: string
+      driver_license_id:
+        description: DriverLicenseID holds the value of the "driver_license_id" field.
+        type: string
+      edges:
+        $ref: '#/definitions/ent.UserEdges'
+        description: |-
+          Edges holds the relations/edges for other nodes in the graph.
+          The values are being populated by the UserQuery when eager-loading is set.
+      first_name:
+        description: FirstName holds the value of the "first_name" field.
+        type: string
+      id:
+        description: ID of the ent.
+        type: integer
+      last_name:
+        description: LastName holds the value of the "last_name" field.
+        type: string
+      postal_code:
+        description: PostalCode holds the value of the "postal_code" field.
+        type: string
+      tel:
+        description: Tel holds the value of the "tel" field.
+        type: string
+    type: object
+  ent.UserEdges:
+    properties:
+      account:
+        description: Account holds the value of the account edge.
+        items:
+          $ref: '#/definitions/ent.Account'
+        type: array
+      cards:
+        description: Card holds the value of the card edge.
+        items:
+          $ref: '#/definitions/ent.Card'
+        type: array
+      flaws:
+        description: NoteFlaws holds the value of the note_flaws edge.
+        items:
+          $ref: '#/definitions/ent.Flaw'
+        type: array
+    type: object
+info:
+  contact: {}
+paths:
+  /account/:
+    get:
+      consumes:
+      - application/json
+      description: will respond user account info when user login
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.Account'
+      summary: get login user info
+  /account/login:
+    get:
+      consumes:
+      - application/json
+      description: login an account
+      parameters:
+      - description: email password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginCredential'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.token'
+      summary: login
+  /account/register:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: email password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginCredential'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.Account'
+      summary: register a user
+swagger: "2.0"

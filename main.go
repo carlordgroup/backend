@@ -1,18 +1,19 @@
 package main
 
 import (
+	"carlord/auth"
+	"carlord/docs"
 	"carlord/ent"
 	"context"
 	"github.com/gin-gonic/gin"
-	"log"
-	"net/http"
-	"os"
-
 	_ "github.com/lib/pq"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"log"
+	"os"
 )
 
 func main() {
-	r := gin.Default()
 	db, _ := os.LookupEnv("DATABASE")
 	client, err := ent.Open("postgres", db)
 	if err != nil {
@@ -23,10 +24,10 @@ func main() {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
 
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
+	r := gin.Default()
+	g := r.Group("account/")
+	auth.New(client, g)
+	docs.SwaggerInfo.BasePath = "/"
+	r.GET("/api/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	r.Run("0.0.0.0:8686")
 }
