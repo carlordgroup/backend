@@ -25,7 +25,7 @@ func New(client *ent.Client, group gin.IRoutes) *jwt.GinJWTMiddleware {
 	return auth
 }
 
-type token struct{ Token string }
+type tokenSample struct{ Token string }
 
 // login godoc
 // @Summary login
@@ -33,7 +33,7 @@ type token struct{ Token string }
 // @Param request body LoginCredential true "email password"
 // @Accept json
 // @Produce json
-// @Success 200 {object} token
+// @Success 200 {object} tokenSample
 // @Router /account/login [get]
 func login(auth *jwt.GinJWTMiddleware) gin.HandlerFunc {
 	return auth.LoginHandler
