@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"carlord/ent/account"
 	"carlord/ent/card"
 	"carlord/ent/flaw"
 	"carlord/ent/predicate"
@@ -27,32 +28,6 @@ type UserUpdate struct {
 // Where appends a list predicates to the UserUpdate builder.
 func (uu *UserUpdate) Where(ps ...predicate.User) *UserUpdate {
 	uu.mutation.Where(ps...)
-	return uu
-}
-
-// SetPassword sets the "password" field.
-func (uu *UserUpdate) SetPassword(s string) *UserUpdate {
-	uu.mutation.SetPassword(s)
-	return uu
-}
-
-// SetEmail sets the "email" field.
-func (uu *UserUpdate) SetEmail(s string) *UserUpdate {
-	uu.mutation.SetEmail(s)
-	return uu
-}
-
-// SetIsAdmin sets the "is_admin" field.
-func (uu *UserUpdate) SetIsAdmin(b bool) *UserUpdate {
-	uu.mutation.SetIsAdmin(b)
-	return uu
-}
-
-// SetNillableIsAdmin sets the "is_admin" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableIsAdmin(b *bool) *UserUpdate {
-	if b != nil {
-		uu.SetIsAdmin(*b)
-	}
 	return uu
 }
 
@@ -119,19 +94,34 @@ func (uu *UserUpdate) AddCard(c ...*Card) *UserUpdate {
 	return uu.AddCardIDs(ids...)
 }
 
-// AddNoteFlowIDs adds the "note_flows" edge to the Flaw entity by IDs.
-func (uu *UserUpdate) AddNoteFlowIDs(ids ...int) *UserUpdate {
-	uu.mutation.AddNoteFlowIDs(ids...)
+// AddNoteFlawIDs adds the "note_flaws" edge to the Flaw entity by IDs.
+func (uu *UserUpdate) AddNoteFlawIDs(ids ...int) *UserUpdate {
+	uu.mutation.AddNoteFlawIDs(ids...)
 	return uu
 }
 
-// AddNoteFlows adds the "note_flows" edges to the Flaw entity.
-func (uu *UserUpdate) AddNoteFlows(f ...*Flaw) *UserUpdate {
+// AddNoteFlaws adds the "note_flaws" edges to the Flaw entity.
+func (uu *UserUpdate) AddNoteFlaws(f ...*Flaw) *UserUpdate {
 	ids := make([]int, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
-	return uu.AddNoteFlowIDs(ids...)
+	return uu.AddNoteFlawIDs(ids...)
+}
+
+// AddAccountIDs adds the "account" edge to the Account entity by IDs.
+func (uu *UserUpdate) AddAccountIDs(ids ...int) *UserUpdate {
+	uu.mutation.AddAccountIDs(ids...)
+	return uu
+}
+
+// AddAccount adds the "account" edges to the Account entity.
+func (uu *UserUpdate) AddAccount(a ...*Account) *UserUpdate {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return uu.AddAccountIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -160,25 +150,46 @@ func (uu *UserUpdate) RemoveCard(c ...*Card) *UserUpdate {
 	return uu.RemoveCardIDs(ids...)
 }
 
-// ClearNoteFlows clears all "note_flows" edges to the Flaw entity.
-func (uu *UserUpdate) ClearNoteFlows() *UserUpdate {
-	uu.mutation.ClearNoteFlows()
+// ClearNoteFlaws clears all "note_flaws" edges to the Flaw entity.
+func (uu *UserUpdate) ClearNoteFlaws() *UserUpdate {
+	uu.mutation.ClearNoteFlaws()
 	return uu
 }
 
-// RemoveNoteFlowIDs removes the "note_flows" edge to Flaw entities by IDs.
-func (uu *UserUpdate) RemoveNoteFlowIDs(ids ...int) *UserUpdate {
-	uu.mutation.RemoveNoteFlowIDs(ids...)
+// RemoveNoteFlawIDs removes the "note_flaws" edge to Flaw entities by IDs.
+func (uu *UserUpdate) RemoveNoteFlawIDs(ids ...int) *UserUpdate {
+	uu.mutation.RemoveNoteFlawIDs(ids...)
 	return uu
 }
 
-// RemoveNoteFlows removes "note_flows" edges to Flaw entities.
-func (uu *UserUpdate) RemoveNoteFlows(f ...*Flaw) *UserUpdate {
+// RemoveNoteFlaws removes "note_flaws" edges to Flaw entities.
+func (uu *UserUpdate) RemoveNoteFlaws(f ...*Flaw) *UserUpdate {
 	ids := make([]int, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
-	return uu.RemoveNoteFlowIDs(ids...)
+	return uu.RemoveNoteFlawIDs(ids...)
+}
+
+// ClearAccount clears all "account" edges to the Account entity.
+func (uu *UserUpdate) ClearAccount() *UserUpdate {
+	uu.mutation.ClearAccount()
+	return uu
+}
+
+// RemoveAccountIDs removes the "account" edge to Account entities by IDs.
+func (uu *UserUpdate) RemoveAccountIDs(ids ...int) *UserUpdate {
+	uu.mutation.RemoveAccountIDs(ids...)
+	return uu
+}
+
+// RemoveAccount removes "account" edges to Account entities.
+func (uu *UserUpdate) RemoveAccount(a ...*Account) *UserUpdate {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return uu.RemoveAccountIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -252,15 +263,6 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := uu.mutation.Password(); ok {
-		_spec.SetField(user.FieldPassword, field.TypeString, value)
-	}
-	if value, ok := uu.mutation.Email(); ok {
-		_spec.SetField(user.FieldEmail, field.TypeString, value)
-	}
-	if value, ok := uu.mutation.IsAdmin(); ok {
-		_spec.SetField(user.FieldIsAdmin, field.TypeBool, value)
 	}
 	if value, ok := uu.mutation.FirstName(); ok {
 		_spec.SetField(user.FieldFirstName, field.TypeString, value)
@@ -340,12 +342,12 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if uu.mutation.NoteFlowsCleared() {
+	if uu.mutation.NoteFlawsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.NoteFlowsTable,
-			Columns: []string{user.NoteFlowsColumn},
+			Table:   user.NoteFlawsTable,
+			Columns: []string{user.NoteFlawsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -356,12 +358,12 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uu.mutation.RemovedNoteFlowsIDs(); len(nodes) > 0 && !uu.mutation.NoteFlowsCleared() {
+	if nodes := uu.mutation.RemovedNoteFlawsIDs(); len(nodes) > 0 && !uu.mutation.NoteFlawsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.NoteFlowsTable,
-			Columns: []string{user.NoteFlowsColumn},
+			Table:   user.NoteFlawsTable,
+			Columns: []string{user.NoteFlawsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -375,17 +377,71 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uu.mutation.NoteFlowsIDs(); len(nodes) > 0 {
+	if nodes := uu.mutation.NoteFlawsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.NoteFlowsTable,
-			Columns: []string{user.NoteFlowsColumn},
+			Table:   user.NoteFlawsTable,
+			Columns: []string{user.NoteFlawsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: flaw.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uu.mutation.AccountCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.AccountTable,
+			Columns: user.AccountPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: account.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedAccountIDs(); len(nodes) > 0 && !uu.mutation.AccountCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.AccountTable,
+			Columns: user.AccountPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: account.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.AccountIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.AccountTable,
+			Columns: user.AccountPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: account.FieldID,
 				},
 			},
 		}
@@ -411,32 +467,6 @@ type UserUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *UserMutation
-}
-
-// SetPassword sets the "password" field.
-func (uuo *UserUpdateOne) SetPassword(s string) *UserUpdateOne {
-	uuo.mutation.SetPassword(s)
-	return uuo
-}
-
-// SetEmail sets the "email" field.
-func (uuo *UserUpdateOne) SetEmail(s string) *UserUpdateOne {
-	uuo.mutation.SetEmail(s)
-	return uuo
-}
-
-// SetIsAdmin sets the "is_admin" field.
-func (uuo *UserUpdateOne) SetIsAdmin(b bool) *UserUpdateOne {
-	uuo.mutation.SetIsAdmin(b)
-	return uuo
-}
-
-// SetNillableIsAdmin sets the "is_admin" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableIsAdmin(b *bool) *UserUpdateOne {
-	if b != nil {
-		uuo.SetIsAdmin(*b)
-	}
-	return uuo
 }
 
 // SetFirstName sets the "first_name" field.
@@ -502,19 +532,34 @@ func (uuo *UserUpdateOne) AddCard(c ...*Card) *UserUpdateOne {
 	return uuo.AddCardIDs(ids...)
 }
 
-// AddNoteFlowIDs adds the "note_flows" edge to the Flaw entity by IDs.
-func (uuo *UserUpdateOne) AddNoteFlowIDs(ids ...int) *UserUpdateOne {
-	uuo.mutation.AddNoteFlowIDs(ids...)
+// AddNoteFlawIDs adds the "note_flaws" edge to the Flaw entity by IDs.
+func (uuo *UserUpdateOne) AddNoteFlawIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.AddNoteFlawIDs(ids...)
 	return uuo
 }
 
-// AddNoteFlows adds the "note_flows" edges to the Flaw entity.
-func (uuo *UserUpdateOne) AddNoteFlows(f ...*Flaw) *UserUpdateOne {
+// AddNoteFlaws adds the "note_flaws" edges to the Flaw entity.
+func (uuo *UserUpdateOne) AddNoteFlaws(f ...*Flaw) *UserUpdateOne {
 	ids := make([]int, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
-	return uuo.AddNoteFlowIDs(ids...)
+	return uuo.AddNoteFlawIDs(ids...)
+}
+
+// AddAccountIDs adds the "account" edge to the Account entity by IDs.
+func (uuo *UserUpdateOne) AddAccountIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.AddAccountIDs(ids...)
+	return uuo
+}
+
+// AddAccount adds the "account" edges to the Account entity.
+func (uuo *UserUpdateOne) AddAccount(a ...*Account) *UserUpdateOne {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return uuo.AddAccountIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -543,25 +588,46 @@ func (uuo *UserUpdateOne) RemoveCard(c ...*Card) *UserUpdateOne {
 	return uuo.RemoveCardIDs(ids...)
 }
 
-// ClearNoteFlows clears all "note_flows" edges to the Flaw entity.
-func (uuo *UserUpdateOne) ClearNoteFlows() *UserUpdateOne {
-	uuo.mutation.ClearNoteFlows()
+// ClearNoteFlaws clears all "note_flaws" edges to the Flaw entity.
+func (uuo *UserUpdateOne) ClearNoteFlaws() *UserUpdateOne {
+	uuo.mutation.ClearNoteFlaws()
 	return uuo
 }
 
-// RemoveNoteFlowIDs removes the "note_flows" edge to Flaw entities by IDs.
-func (uuo *UserUpdateOne) RemoveNoteFlowIDs(ids ...int) *UserUpdateOne {
-	uuo.mutation.RemoveNoteFlowIDs(ids...)
+// RemoveNoteFlawIDs removes the "note_flaws" edge to Flaw entities by IDs.
+func (uuo *UserUpdateOne) RemoveNoteFlawIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.RemoveNoteFlawIDs(ids...)
 	return uuo
 }
 
-// RemoveNoteFlows removes "note_flows" edges to Flaw entities.
-func (uuo *UserUpdateOne) RemoveNoteFlows(f ...*Flaw) *UserUpdateOne {
+// RemoveNoteFlaws removes "note_flaws" edges to Flaw entities.
+func (uuo *UserUpdateOne) RemoveNoteFlaws(f ...*Flaw) *UserUpdateOne {
 	ids := make([]int, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
-	return uuo.RemoveNoteFlowIDs(ids...)
+	return uuo.RemoveNoteFlawIDs(ids...)
+}
+
+// ClearAccount clears all "account" edges to the Account entity.
+func (uuo *UserUpdateOne) ClearAccount() *UserUpdateOne {
+	uuo.mutation.ClearAccount()
+	return uuo
+}
+
+// RemoveAccountIDs removes the "account" edge to Account entities by IDs.
+func (uuo *UserUpdateOne) RemoveAccountIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.RemoveAccountIDs(ids...)
+	return uuo
+}
+
+// RemoveAccount removes "account" edges to Account entities.
+func (uuo *UserUpdateOne) RemoveAccount(a ...*Account) *UserUpdateOne {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return uuo.RemoveAccountIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -666,15 +732,6 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			}
 		}
 	}
-	if value, ok := uuo.mutation.Password(); ok {
-		_spec.SetField(user.FieldPassword, field.TypeString, value)
-	}
-	if value, ok := uuo.mutation.Email(); ok {
-		_spec.SetField(user.FieldEmail, field.TypeString, value)
-	}
-	if value, ok := uuo.mutation.IsAdmin(); ok {
-		_spec.SetField(user.FieldIsAdmin, field.TypeBool, value)
-	}
 	if value, ok := uuo.mutation.FirstName(); ok {
 		_spec.SetField(user.FieldFirstName, field.TypeString, value)
 	}
@@ -753,12 +810,12 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if uuo.mutation.NoteFlowsCleared() {
+	if uuo.mutation.NoteFlawsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.NoteFlowsTable,
-			Columns: []string{user.NoteFlowsColumn},
+			Table:   user.NoteFlawsTable,
+			Columns: []string{user.NoteFlawsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -769,12 +826,12 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uuo.mutation.RemovedNoteFlowsIDs(); len(nodes) > 0 && !uuo.mutation.NoteFlowsCleared() {
+	if nodes := uuo.mutation.RemovedNoteFlawsIDs(); len(nodes) > 0 && !uuo.mutation.NoteFlawsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.NoteFlowsTable,
-			Columns: []string{user.NoteFlowsColumn},
+			Table:   user.NoteFlawsTable,
+			Columns: []string{user.NoteFlawsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -788,17 +845,71 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uuo.mutation.NoteFlowsIDs(); len(nodes) > 0 {
+	if nodes := uuo.mutation.NoteFlawsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.NoteFlowsTable,
-			Columns: []string{user.NoteFlowsColumn},
+			Table:   user.NoteFlawsTable,
+			Columns: []string{user.NoteFlawsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: flaw.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.AccountCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.AccountTable,
+			Columns: user.AccountPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: account.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedAccountIDs(); len(nodes) > 0 && !uuo.mutation.AccountCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.AccountTable,
+			Columns: user.AccountPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: account.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.AccountIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.AccountTable,
+			Columns: user.AccountPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: account.FieldID,
 				},
 			},
 		}

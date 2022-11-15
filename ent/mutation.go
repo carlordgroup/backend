@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"carlord/ent/account"
 	"carlord/ent/card"
 	"carlord/ent/predicate"
 	"carlord/ent/user"
@@ -24,6 +25,7 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
+	TypeAccount  = "Account"
 	TypeBilling  = "Billing"
 	TypeBooking  = "Booking"
 	TypeCar      = "Car"
@@ -32,6 +34,518 @@ const (
 	TypeLocation = "Location"
 	TypeUser     = "User"
 )
+
+// AccountMutation represents an operation that mutates the Account nodes in the graph.
+type AccountMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	password      *string
+	email         *string
+	is_admin      *bool
+	clearedFields map[string]struct{}
+	user          map[int]struct{}
+	removeduser   map[int]struct{}
+	cleareduser   bool
+	done          bool
+	oldValue      func(context.Context) (*Account, error)
+	predicates    []predicate.Account
+}
+
+var _ ent.Mutation = (*AccountMutation)(nil)
+
+// accountOption allows management of the mutation configuration using functional options.
+type accountOption func(*AccountMutation)
+
+// newAccountMutation creates new mutation for the Account entity.
+func newAccountMutation(c config, op Op, opts ...accountOption) *AccountMutation {
+	m := &AccountMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeAccount,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withAccountID sets the ID field of the mutation.
+func withAccountID(id int) accountOption {
+	return func(m *AccountMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Account
+		)
+		m.oldValue = func(ctx context.Context) (*Account, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Account.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withAccount sets the old Account of the mutation.
+func withAccount(node *Account) accountOption {
+	return func(m *AccountMutation) {
+		m.oldValue = func(context.Context) (*Account, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m AccountMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m AccountMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *AccountMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *AccountMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Account.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetPassword sets the "password" field.
+func (m *AccountMutation) SetPassword(s string) {
+	m.password = &s
+}
+
+// Password returns the value of the "password" field in the mutation.
+func (m *AccountMutation) Password() (r string, exists bool) {
+	v := m.password
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPassword returns the old "password" field's value of the Account entity.
+// If the Account object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AccountMutation) OldPassword(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPassword is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPassword requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPassword: %w", err)
+	}
+	return oldValue.Password, nil
+}
+
+// ResetPassword resets all changes to the "password" field.
+func (m *AccountMutation) ResetPassword() {
+	m.password = nil
+}
+
+// SetEmail sets the "email" field.
+func (m *AccountMutation) SetEmail(s string) {
+	m.email = &s
+}
+
+// Email returns the value of the "email" field in the mutation.
+func (m *AccountMutation) Email() (r string, exists bool) {
+	v := m.email
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEmail returns the old "email" field's value of the Account entity.
+// If the Account object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AccountMutation) OldEmail(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEmail is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEmail requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEmail: %w", err)
+	}
+	return oldValue.Email, nil
+}
+
+// ResetEmail resets all changes to the "email" field.
+func (m *AccountMutation) ResetEmail() {
+	m.email = nil
+}
+
+// SetIsAdmin sets the "is_admin" field.
+func (m *AccountMutation) SetIsAdmin(b bool) {
+	m.is_admin = &b
+}
+
+// IsAdmin returns the value of the "is_admin" field in the mutation.
+func (m *AccountMutation) IsAdmin() (r bool, exists bool) {
+	v := m.is_admin
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsAdmin returns the old "is_admin" field's value of the Account entity.
+// If the Account object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AccountMutation) OldIsAdmin(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsAdmin is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsAdmin requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsAdmin: %w", err)
+	}
+	return oldValue.IsAdmin, nil
+}
+
+// ResetIsAdmin resets all changes to the "is_admin" field.
+func (m *AccountMutation) ResetIsAdmin() {
+	m.is_admin = nil
+}
+
+// AddUserIDs adds the "user" edge to the User entity by ids.
+func (m *AccountMutation) AddUserIDs(ids ...int) {
+	if m.user == nil {
+		m.user = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.user[ids[i]] = struct{}{}
+	}
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *AccountMutation) ClearUser() {
+	m.cleareduser = true
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *AccountMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// RemoveUserIDs removes the "user" edge to the User entity by IDs.
+func (m *AccountMutation) RemoveUserIDs(ids ...int) {
+	if m.removeduser == nil {
+		m.removeduser = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.user, ids[i])
+		m.removeduser[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedUser returns the removed IDs of the "user" edge to the User entity.
+func (m *AccountMutation) RemovedUserIDs() (ids []int) {
+	for id := range m.removeduser {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+func (m *AccountMutation) UserIDs() (ids []int) {
+	for id := range m.user {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *AccountMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+	m.removeduser = nil
+}
+
+// Where appends a list predicates to the AccountMutation builder.
+func (m *AccountMutation) Where(ps ...predicate.Account) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// Op returns the operation name.
+func (m *AccountMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (Account).
+func (m *AccountMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *AccountMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.password != nil {
+		fields = append(fields, account.FieldPassword)
+	}
+	if m.email != nil {
+		fields = append(fields, account.FieldEmail)
+	}
+	if m.is_admin != nil {
+		fields = append(fields, account.FieldIsAdmin)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *AccountMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case account.FieldPassword:
+		return m.Password()
+	case account.FieldEmail:
+		return m.Email()
+	case account.FieldIsAdmin:
+		return m.IsAdmin()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *AccountMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case account.FieldPassword:
+		return m.OldPassword(ctx)
+	case account.FieldEmail:
+		return m.OldEmail(ctx)
+	case account.FieldIsAdmin:
+		return m.OldIsAdmin(ctx)
+	}
+	return nil, fmt.Errorf("unknown Account field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AccountMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case account.FieldPassword:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPassword(v)
+		return nil
+	case account.FieldEmail:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEmail(v)
+		return nil
+	case account.FieldIsAdmin:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsAdmin(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Account field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *AccountMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *AccountMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AccountMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Account numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *AccountMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *AccountMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *AccountMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Account nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *AccountMutation) ResetField(name string) error {
+	switch name {
+	case account.FieldPassword:
+		m.ResetPassword()
+		return nil
+	case account.FieldEmail:
+		m.ResetEmail()
+		return nil
+	case account.FieldIsAdmin:
+		m.ResetIsAdmin()
+		return nil
+	}
+	return fmt.Errorf("unknown Account field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *AccountMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.user != nil {
+		edges = append(edges, account.EdgeUser)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *AccountMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case account.EdgeUser:
+		ids := make([]ent.Value, 0, len(m.user))
+		for id := range m.user {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *AccountMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removeduser != nil {
+		edges = append(edges, account.EdgeUser)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *AccountMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case account.EdgeUser:
+		ids := make([]ent.Value, 0, len(m.removeduser))
+		for id := range m.removeduser {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *AccountMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.cleareduser {
+		edges = append(edges, account.EdgeUser)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *AccountMutation) EdgeCleared(name string) bool {
+	switch name {
+	case account.EdgeUser:
+		return m.cleareduser
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *AccountMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Account unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *AccountMutation) ResetEdge(name string) error {
+	switch name {
+	case account.EdgeUser:
+		m.ResetUser()
+		return nil
+	}
+	return fmt.Errorf("unknown Account edge %s", name)
+}
 
 // BillingMutation represents an operation that mutates the Billing nodes in the graph.
 type BillingMutation struct {
@@ -1770,9 +2284,6 @@ type UserMutation struct {
 	op                     Op
 	typ                    string
 	id                     *int
-	password               *string
-	email                  *string
-	is_admin               *bool
 	first_name             *string
 	last_name              *string
 	address                *string
@@ -1785,9 +2296,12 @@ type UserMutation struct {
 	card                   map[int]struct{}
 	removedcard            map[int]struct{}
 	clearedcard            bool
-	note_flows             map[int]struct{}
-	removednote_flows      map[int]struct{}
-	clearednote_flows      bool
+	note_flaws             map[int]struct{}
+	removednote_flaws      map[int]struct{}
+	clearednote_flaws      bool
+	account                map[int]struct{}
+	removedaccount         map[int]struct{}
+	clearedaccount         bool
 	done                   bool
 	oldValue               func(context.Context) (*User, error)
 	predicates             []predicate.User
@@ -1889,114 +2403,6 @@ func (m *UserMutation) IDs(ctx context.Context) ([]int, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
-}
-
-// SetPassword sets the "password" field.
-func (m *UserMutation) SetPassword(s string) {
-	m.password = &s
-}
-
-// Password returns the value of the "password" field in the mutation.
-func (m *UserMutation) Password() (r string, exists bool) {
-	v := m.password
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldPassword returns the old "password" field's value of the User entity.
-// If the User object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldPassword(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldPassword is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldPassword requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldPassword: %w", err)
-	}
-	return oldValue.Password, nil
-}
-
-// ResetPassword resets all changes to the "password" field.
-func (m *UserMutation) ResetPassword() {
-	m.password = nil
-}
-
-// SetEmail sets the "email" field.
-func (m *UserMutation) SetEmail(s string) {
-	m.email = &s
-}
-
-// Email returns the value of the "email" field in the mutation.
-func (m *UserMutation) Email() (r string, exists bool) {
-	v := m.email
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldEmail returns the old "email" field's value of the User entity.
-// If the User object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldEmail(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldEmail is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldEmail requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldEmail: %w", err)
-	}
-	return oldValue.Email, nil
-}
-
-// ResetEmail resets all changes to the "email" field.
-func (m *UserMutation) ResetEmail() {
-	m.email = nil
-}
-
-// SetIsAdmin sets the "is_admin" field.
-func (m *UserMutation) SetIsAdmin(b bool) {
-	m.is_admin = &b
-}
-
-// IsAdmin returns the value of the "is_admin" field in the mutation.
-func (m *UserMutation) IsAdmin() (r bool, exists bool) {
-	v := m.is_admin
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldIsAdmin returns the old "is_admin" field's value of the User entity.
-// If the User object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldIsAdmin(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIsAdmin is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIsAdmin requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIsAdmin: %w", err)
-	}
-	return oldValue.IsAdmin, nil
-}
-
-// ResetIsAdmin resets all changes to the "is_admin" field.
-func (m *UserMutation) ResetIsAdmin() {
-	m.is_admin = nil
 }
 
 // SetFirstName sets the "first_name" field.
@@ -2341,58 +2747,112 @@ func (m *UserMutation) ResetCard() {
 	m.removedcard = nil
 }
 
-// AddNoteFlowIDs adds the "note_flows" edge to the Flaw entity by ids.
-func (m *UserMutation) AddNoteFlowIDs(ids ...int) {
-	if m.note_flows == nil {
-		m.note_flows = make(map[int]struct{})
+// AddNoteFlawIDs adds the "note_flaws" edge to the Flaw entity by ids.
+func (m *UserMutation) AddNoteFlawIDs(ids ...int) {
+	if m.note_flaws == nil {
+		m.note_flaws = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.note_flows[ids[i]] = struct{}{}
+		m.note_flaws[ids[i]] = struct{}{}
 	}
 }
 
-// ClearNoteFlows clears the "note_flows" edge to the Flaw entity.
-func (m *UserMutation) ClearNoteFlows() {
-	m.clearednote_flows = true
+// ClearNoteFlaws clears the "note_flaws" edge to the Flaw entity.
+func (m *UserMutation) ClearNoteFlaws() {
+	m.clearednote_flaws = true
 }
 
-// NoteFlowsCleared reports if the "note_flows" edge to the Flaw entity was cleared.
-func (m *UserMutation) NoteFlowsCleared() bool {
-	return m.clearednote_flows
+// NoteFlawsCleared reports if the "note_flaws" edge to the Flaw entity was cleared.
+func (m *UserMutation) NoteFlawsCleared() bool {
+	return m.clearednote_flaws
 }
 
-// RemoveNoteFlowIDs removes the "note_flows" edge to the Flaw entity by IDs.
-func (m *UserMutation) RemoveNoteFlowIDs(ids ...int) {
-	if m.removednote_flows == nil {
-		m.removednote_flows = make(map[int]struct{})
+// RemoveNoteFlawIDs removes the "note_flaws" edge to the Flaw entity by IDs.
+func (m *UserMutation) RemoveNoteFlawIDs(ids ...int) {
+	if m.removednote_flaws == nil {
+		m.removednote_flaws = make(map[int]struct{})
 	}
 	for i := range ids {
-		delete(m.note_flows, ids[i])
-		m.removednote_flows[ids[i]] = struct{}{}
+		delete(m.note_flaws, ids[i])
+		m.removednote_flaws[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedNoteFlows returns the removed IDs of the "note_flows" edge to the Flaw entity.
-func (m *UserMutation) RemovedNoteFlowsIDs() (ids []int) {
-	for id := range m.removednote_flows {
+// RemovedNoteFlaws returns the removed IDs of the "note_flaws" edge to the Flaw entity.
+func (m *UserMutation) RemovedNoteFlawsIDs() (ids []int) {
+	for id := range m.removednote_flaws {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// NoteFlowsIDs returns the "note_flows" edge IDs in the mutation.
-func (m *UserMutation) NoteFlowsIDs() (ids []int) {
-	for id := range m.note_flows {
+// NoteFlawsIDs returns the "note_flaws" edge IDs in the mutation.
+func (m *UserMutation) NoteFlawsIDs() (ids []int) {
+	for id := range m.note_flaws {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetNoteFlows resets all changes to the "note_flows" edge.
-func (m *UserMutation) ResetNoteFlows() {
-	m.note_flows = nil
-	m.clearednote_flows = false
-	m.removednote_flows = nil
+// ResetNoteFlaws resets all changes to the "note_flaws" edge.
+func (m *UserMutation) ResetNoteFlaws() {
+	m.note_flaws = nil
+	m.clearednote_flaws = false
+	m.removednote_flaws = nil
+}
+
+// AddAccountIDs adds the "account" edge to the Account entity by ids.
+func (m *UserMutation) AddAccountIDs(ids ...int) {
+	if m.account == nil {
+		m.account = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.account[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAccount clears the "account" edge to the Account entity.
+func (m *UserMutation) ClearAccount() {
+	m.clearedaccount = true
+}
+
+// AccountCleared reports if the "account" edge to the Account entity was cleared.
+func (m *UserMutation) AccountCleared() bool {
+	return m.clearedaccount
+}
+
+// RemoveAccountIDs removes the "account" edge to the Account entity by IDs.
+func (m *UserMutation) RemoveAccountIDs(ids ...int) {
+	if m.removedaccount == nil {
+		m.removedaccount = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.account, ids[i])
+		m.removedaccount[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAccount returns the removed IDs of the "account" edge to the Account entity.
+func (m *UserMutation) RemovedAccountIDs() (ids []int) {
+	for id := range m.removedaccount {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AccountIDs returns the "account" edge IDs in the mutation.
+func (m *UserMutation) AccountIDs() (ids []int) {
+	for id := range m.account {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAccount resets all changes to the "account" edge.
+func (m *UserMutation) ResetAccount() {
+	m.account = nil
+	m.clearedaccount = false
+	m.removedaccount = nil
 }
 
 // Where appends a list predicates to the UserMutation builder.
@@ -2414,16 +2874,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 11)
-	if m.password != nil {
-		fields = append(fields, user.FieldPassword)
-	}
-	if m.email != nil {
-		fields = append(fields, user.FieldEmail)
-	}
-	if m.is_admin != nil {
-		fields = append(fields, user.FieldIsAdmin)
-	}
+	fields := make([]string, 0, 8)
 	if m.first_name != nil {
 		fields = append(fields, user.FieldFirstName)
 	}
@@ -2456,12 +2907,6 @@ func (m *UserMutation) Fields() []string {
 // schema.
 func (m *UserMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case user.FieldPassword:
-		return m.Password()
-	case user.FieldEmail:
-		return m.Email()
-	case user.FieldIsAdmin:
-		return m.IsAdmin()
 	case user.FieldFirstName:
 		return m.FirstName()
 	case user.FieldLastName:
@@ -2487,12 +2932,6 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case user.FieldPassword:
-		return m.OldPassword(ctx)
-	case user.FieldEmail:
-		return m.OldEmail(ctx)
-	case user.FieldIsAdmin:
-		return m.OldIsAdmin(ctx)
 	case user.FieldFirstName:
 		return m.OldFirstName(ctx)
 	case user.FieldLastName:
@@ -2518,27 +2957,6 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 // type.
 func (m *UserMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case user.FieldPassword:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetPassword(v)
-		return nil
-	case user.FieldEmail:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetEmail(v)
-		return nil
-	case user.FieldIsAdmin:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetIsAdmin(v)
-		return nil
 	case user.FieldFirstName:
 		v, ok := value.(string)
 		if !ok {
@@ -2644,15 +3062,6 @@ func (m *UserMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *UserMutation) ResetField(name string) error {
 	switch name {
-	case user.FieldPassword:
-		m.ResetPassword()
-		return nil
-	case user.FieldEmail:
-		m.ResetEmail()
-		return nil
-	case user.FieldIsAdmin:
-		m.ResetIsAdmin()
-		return nil
 	case user.FieldFirstName:
 		m.ResetFirstName()
 		return nil
@@ -2683,12 +3092,15 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.card != nil {
 		edges = append(edges, user.EdgeCard)
 	}
-	if m.note_flows != nil {
-		edges = append(edges, user.EdgeNoteFlows)
+	if m.note_flaws != nil {
+		edges = append(edges, user.EdgeNoteFlaws)
+	}
+	if m.account != nil {
+		edges = append(edges, user.EdgeAccount)
 	}
 	return edges
 }
@@ -2703,9 +3115,15 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case user.EdgeNoteFlows:
-		ids := make([]ent.Value, 0, len(m.note_flows))
-		for id := range m.note_flows {
+	case user.EdgeNoteFlaws:
+		ids := make([]ent.Value, 0, len(m.note_flaws))
+		for id := range m.note_flaws {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeAccount:
+		ids := make([]ent.Value, 0, len(m.account))
+		for id := range m.account {
 			ids = append(ids, id)
 		}
 		return ids
@@ -2715,12 +3133,15 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedcard != nil {
 		edges = append(edges, user.EdgeCard)
 	}
-	if m.removednote_flows != nil {
-		edges = append(edges, user.EdgeNoteFlows)
+	if m.removednote_flaws != nil {
+		edges = append(edges, user.EdgeNoteFlaws)
+	}
+	if m.removedaccount != nil {
+		edges = append(edges, user.EdgeAccount)
 	}
 	return edges
 }
@@ -2735,9 +3156,15 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case user.EdgeNoteFlows:
-		ids := make([]ent.Value, 0, len(m.removednote_flows))
-		for id := range m.removednote_flows {
+	case user.EdgeNoteFlaws:
+		ids := make([]ent.Value, 0, len(m.removednote_flaws))
+		for id := range m.removednote_flaws {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeAccount:
+		ids := make([]ent.Value, 0, len(m.removedaccount))
+		for id := range m.removedaccount {
 			ids = append(ids, id)
 		}
 		return ids
@@ -2747,12 +3174,15 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedcard {
 		edges = append(edges, user.EdgeCard)
 	}
-	if m.clearednote_flows {
-		edges = append(edges, user.EdgeNoteFlows)
+	if m.clearednote_flaws {
+		edges = append(edges, user.EdgeNoteFlaws)
+	}
+	if m.clearedaccount {
+		edges = append(edges, user.EdgeAccount)
 	}
 	return edges
 }
@@ -2763,8 +3193,10 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 	switch name {
 	case user.EdgeCard:
 		return m.clearedcard
-	case user.EdgeNoteFlows:
-		return m.clearednote_flows
+	case user.EdgeNoteFlaws:
+		return m.clearednote_flaws
+	case user.EdgeAccount:
+		return m.clearedaccount
 	}
 	return false
 }
@@ -2784,8 +3216,11 @@ func (m *UserMutation) ResetEdge(name string) error {
 	case user.EdgeCard:
 		m.ResetCard()
 		return nil
-	case user.EdgeNoteFlows:
-		m.ResetNoteFlows()
+	case user.EdgeNoteFlaws:
+		m.ResetNoteFlaws()
+		return nil
+	case user.EdgeAccount:
+		m.ResetAccount()
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)

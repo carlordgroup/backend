@@ -16,12 +16,6 @@ type User struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
-	// Password holds the value of the "password" field.
-	Password string `json:"password,omitempty"`
-	// Email holds the value of the "email" field.
-	Email string `json:"email,omitempty"`
-	// IsAdmin holds the value of the "is_admin" field.
-	IsAdmin bool `json:"is_admin,omitempty"`
 	// FirstName holds the value of the "first_name" field.
 	FirstName string `json:"first_name,omitempty"`
 	// LastName holds the value of the "last_name" field.
@@ -46,12 +40,14 @@ type User struct {
 // UserEdges holds the relations/edges for other nodes in the graph.
 type UserEdges struct {
 	// Card holds the value of the card edge.
-	Card []*Card `json:"card,omitempty"`
-	// NoteFlows holds the value of the note_flows edge.
-	NoteFlows []*Flaw `json:"note_flows,omitempty"`
+	Card []*Card `json:"cards"`
+	// NoteFlaws holds the value of the note_flaws edge.
+	NoteFlaws []*Flaw `json:"flaws"`
+	// Account holds the value of the account edge.
+	Account []*Account `json:"account,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // CardOrErr returns the Card value or an error if the edge
@@ -63,13 +59,22 @@ func (e UserEdges) CardOrErr() ([]*Card, error) {
 	return nil, &NotLoadedError{edge: "card"}
 }
 
-// NoteFlowsOrErr returns the NoteFlows value or an error if the edge
+// NoteFlawsOrErr returns the NoteFlaws value or an error if the edge
 // was not loaded in eager-loading.
-func (e UserEdges) NoteFlowsOrErr() ([]*Flaw, error) {
+func (e UserEdges) NoteFlawsOrErr() ([]*Flaw, error) {
 	if e.loadedTypes[1] {
-		return e.NoteFlows, nil
+		return e.NoteFlaws, nil
 	}
-	return nil, &NotLoadedError{edge: "note_flows"}
+	return nil, &NotLoadedError{edge: "note_flaws"}
+}
+
+// AccountOrErr returns the Account value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) AccountOrErr() ([]*Account, error) {
+	if e.loadedTypes[2] {
+		return e.Account, nil
+	}
+	return nil, &NotLoadedError{edge: "account"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -77,11 +82,9 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldIsAdmin:
-			values[i] = new(sql.NullBool)
 		case user.FieldID:
 			values[i] = new(sql.NullInt64)
-		case user.FieldPassword, user.FieldEmail, user.FieldFirstName, user.FieldLastName, user.FieldAddress, user.FieldPostalCode, user.FieldTel, user.FieldDriverLicenseID, user.FieldDriverLicenseCountry:
+		case user.FieldFirstName, user.FieldLastName, user.FieldAddress, user.FieldPostalCode, user.FieldTel, user.FieldDriverLicenseID, user.FieldDriverLicenseCountry:
 			values[i] = new(sql.NullString)
 		case user.FieldBirthday:
 			values[i] = new(sql.NullTime)
@@ -106,24 +109,6 @@ func (u *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			u.ID = int(value.Int64)
-		case user.FieldPassword:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field password", values[i])
-			} else if value.Valid {
-				u.Password = value.String
-			}
-		case user.FieldEmail:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field email", values[i])
-			} else if value.Valid {
-				u.Email = value.String
-			}
-		case user.FieldIsAdmin:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field is_admin", values[i])
-			} else if value.Valid {
-				u.IsAdmin = value.Bool
-			}
 		case user.FieldFirstName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field first_name", values[i])
@@ -182,9 +167,14 @@ func (u *User) QueryCard() *CardQuery {
 	return (&UserClient{config: u.config}).QueryCard(u)
 }
 
-// QueryNoteFlows queries the "note_flows" edge of the User entity.
-func (u *User) QueryNoteFlows() *FlawQuery {
-	return (&UserClient{config: u.config}).QueryNoteFlows(u)
+// QueryNoteFlaws queries the "note_flaws" edge of the User entity.
+func (u *User) QueryNoteFlaws() *FlawQuery {
+	return (&UserClient{config: u.config}).QueryNoteFlaws(u)
+}
+
+// QueryAccount queries the "account" edge of the User entity.
+func (u *User) QueryAccount() *AccountQuery {
+	return (&UserClient{config: u.config}).QueryAccount(u)
 }
 
 // Update returns a builder for updating this User.
@@ -210,15 +200,6 @@ func (u *User) String() string {
 	var builder strings.Builder
 	builder.WriteString("User(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", u.ID))
-	builder.WriteString("password=")
-	builder.WriteString(u.Password)
-	builder.WriteString(", ")
-	builder.WriteString("email=")
-	builder.WriteString(u.Email)
-	builder.WriteString(", ")
-	builder.WriteString("is_admin=")
-	builder.WriteString(fmt.Sprintf("%v", u.IsAdmin))
-	builder.WriteString(", ")
 	builder.WriteString("first_name=")
 	builder.WriteString(u.FirstName)
 	builder.WriteString(", ")

@@ -15,7 +15,7 @@ type Flaw struct {
 	config
 	// ID of the ent.
 	ID              int `json:"id,omitempty"`
-	user_note_flows *int
+	user_note_flaws *int
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -25,7 +25,7 @@ func (*Flaw) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case flaw.FieldID:
 			values[i] = new(sql.NullInt64)
-		case flaw.ForeignKeys[0]: // user_note_flows
+		case flaw.ForeignKeys[0]: // user_note_flaws
 			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Flaw", columns[i])
@@ -50,10 +50,10 @@ func (f *Flaw) assignValues(columns []string, values []any) error {
 			f.ID = int(value.Int64)
 		case flaw.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field user_note_flows", value)
+				return fmt.Errorf("unexpected type %T for edge-field user_note_flaws", value)
 			} else if value.Valid {
-				f.user_note_flows = new(int)
-				*f.user_note_flows = int(value.Int64)
+				f.user_note_flaws = new(int)
+				*f.user_note_flaws = int(value.Int64)
 			}
 		}
 	}

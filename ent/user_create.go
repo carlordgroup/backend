@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"carlord/ent/account"
 	"carlord/ent/card"
 	"carlord/ent/flaw"
 	"carlord/ent/user"
@@ -20,32 +21,6 @@ type UserCreate struct {
 	config
 	mutation *UserMutation
 	hooks    []Hook
-}
-
-// SetPassword sets the "password" field.
-func (uc *UserCreate) SetPassword(s string) *UserCreate {
-	uc.mutation.SetPassword(s)
-	return uc
-}
-
-// SetEmail sets the "email" field.
-func (uc *UserCreate) SetEmail(s string) *UserCreate {
-	uc.mutation.SetEmail(s)
-	return uc
-}
-
-// SetIsAdmin sets the "is_admin" field.
-func (uc *UserCreate) SetIsAdmin(b bool) *UserCreate {
-	uc.mutation.SetIsAdmin(b)
-	return uc
-}
-
-// SetNillableIsAdmin sets the "is_admin" field if the given value is not nil.
-func (uc *UserCreate) SetNillableIsAdmin(b *bool) *UserCreate {
-	if b != nil {
-		uc.SetIsAdmin(*b)
-	}
-	return uc
 }
 
 // SetFirstName sets the "first_name" field.
@@ -111,19 +86,34 @@ func (uc *UserCreate) AddCard(c ...*Card) *UserCreate {
 	return uc.AddCardIDs(ids...)
 }
 
-// AddNoteFlowIDs adds the "note_flows" edge to the Flaw entity by IDs.
-func (uc *UserCreate) AddNoteFlowIDs(ids ...int) *UserCreate {
-	uc.mutation.AddNoteFlowIDs(ids...)
+// AddNoteFlawIDs adds the "note_flaws" edge to the Flaw entity by IDs.
+func (uc *UserCreate) AddNoteFlawIDs(ids ...int) *UserCreate {
+	uc.mutation.AddNoteFlawIDs(ids...)
 	return uc
 }
 
-// AddNoteFlows adds the "note_flows" edges to the Flaw entity.
-func (uc *UserCreate) AddNoteFlows(f ...*Flaw) *UserCreate {
+// AddNoteFlaws adds the "note_flaws" edges to the Flaw entity.
+func (uc *UserCreate) AddNoteFlaws(f ...*Flaw) *UserCreate {
 	ids := make([]int, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
-	return uc.AddNoteFlowIDs(ids...)
+	return uc.AddNoteFlawIDs(ids...)
+}
+
+// AddAccountIDs adds the "account" edge to the Account entity by IDs.
+func (uc *UserCreate) AddAccountIDs(ids ...int) *UserCreate {
+	uc.mutation.AddAccountIDs(ids...)
+	return uc
+}
+
+// AddAccount adds the "account" edges to the Account entity.
+func (uc *UserCreate) AddAccount(a ...*Account) *UserCreate {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return uc.AddAccountIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -137,7 +127,6 @@ func (uc *UserCreate) Save(ctx context.Context) (*User, error) {
 		err  error
 		node *User
 	)
-	uc.defaults()
 	if len(uc.hooks) == 0 {
 		if err = uc.check(); err != nil {
 			return nil, err
@@ -201,25 +190,8 @@ func (uc *UserCreate) ExecX(ctx context.Context) {
 	}
 }
 
-// defaults sets the default values of the builder before save.
-func (uc *UserCreate) defaults() {
-	if _, ok := uc.mutation.IsAdmin(); !ok {
-		v := user.DefaultIsAdmin
-		uc.mutation.SetIsAdmin(v)
-	}
-}
-
 // check runs all checks and user-defined validators on the builder.
 func (uc *UserCreate) check() error {
-	if _, ok := uc.mutation.Password(); !ok {
-		return &ValidationError{Name: "password", err: errors.New(`ent: missing required field "User.password"`)}
-	}
-	if _, ok := uc.mutation.Email(); !ok {
-		return &ValidationError{Name: "email", err: errors.New(`ent: missing required field "User.email"`)}
-	}
-	if _, ok := uc.mutation.IsAdmin(); !ok {
-		return &ValidationError{Name: "is_admin", err: errors.New(`ent: missing required field "User.is_admin"`)}
-	}
 	if _, ok := uc.mutation.FirstName(); !ok {
 		return &ValidationError{Name: "first_name", err: errors.New(`ent: missing required field "User.first_name"`)}
 	}
@@ -243,6 +215,9 @@ func (uc *UserCreate) check() error {
 	}
 	if _, ok := uc.mutation.Birthday(); !ok {
 		return &ValidationError{Name: "birthday", err: errors.New(`ent: missing required field "User.birthday"`)}
+	}
+	if len(uc.mutation.AccountIDs()) == 0 {
+		return &ValidationError{Name: "account", err: errors.New(`ent: missing required edge "User.account"`)}
 	}
 	return nil
 }
@@ -271,18 +246,6 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
-	if value, ok := uc.mutation.Password(); ok {
-		_spec.SetField(user.FieldPassword, field.TypeString, value)
-		_node.Password = value
-	}
-	if value, ok := uc.mutation.Email(); ok {
-		_spec.SetField(user.FieldEmail, field.TypeString, value)
-		_node.Email = value
-	}
-	if value, ok := uc.mutation.IsAdmin(); ok {
-		_spec.SetField(user.FieldIsAdmin, field.TypeBool, value)
-		_node.IsAdmin = value
-	}
 	if value, ok := uc.mutation.FirstName(); ok {
 		_spec.SetField(user.FieldFirstName, field.TypeString, value)
 		_node.FirstName = value
@@ -334,17 +297,36 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := uc.mutation.NoteFlowsIDs(); len(nodes) > 0 {
+	if nodes := uc.mutation.NoteFlawsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.NoteFlowsTable,
-			Columns: []string{user.NoteFlowsColumn},
+			Table:   user.NoteFlawsTable,
+			Columns: []string{user.NoteFlawsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: flaw.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.AccountIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.AccountTable,
+			Columns: user.AccountPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: account.FieldID,
 				},
 			},
 		}
@@ -370,7 +352,6 @@ func (ucb *UserCreateBulk) Save(ctx context.Context) ([]*User, error) {
 	for i := range ucb.builders {
 		func(i int, root context.Context) {
 			builder := ucb.builders[i]
-			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*UserMutation)
 				if !ok {
