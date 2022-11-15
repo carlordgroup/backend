@@ -23,6 +23,6 @@ func (Account) Fields() []ent.Field {
 // Edges of the Account.
 func (Account) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("user", User.Type).StructTag(`json:"user"`),
+		edge.To("user", User.Type).StructTag(`json:"user"`).Unique(),
 	}
 }

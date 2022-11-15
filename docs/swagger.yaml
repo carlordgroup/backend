@@ -9,7 +9,7 @@ definitions:
     - email
     - password
     type: object
-  auth.token:
+  auth.tokenSample:
     properties:
       token:
         type: string
@@ -34,10 +34,8 @@ definitions:
   ent.AccountEdges:
     properties:
       user:
+        $ref: '#/definitions/ent.User'
         description: User holds the value of the user edge.
-        items:
-          $ref: '#/definitions/ent.User'
-        type: array
     type: object
   ent.Card:
     properties:
@@ -110,10 +108,8 @@ definitions:
   ent.UserEdges:
     properties:
       account:
+        $ref: '#/definitions/ent.Account'
         description: Account holds the value of the account edge.
-        items:
-          $ref: '#/definitions/ent.Account'
-        type: array
       cards:
         description: Card holds the value of the card edge.
         items:
@@ -141,6 +137,8 @@ paths:
           schema:
             $ref: '#/definitions/ent.Account'
       summary: get login user info
+      tags:
+      - auth
   /account/login:
     get:
       consumes:
@@ -159,8 +157,10 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/auth.token'
+            $ref: '#/definitions/auth.tokenSample'
       summary: login
+      tags:
+      - auth
   /account/register:
     post:
       consumes:
@@ -180,4 +180,40 @@ paths:
           schema:
             $ref: '#/definitions/ent.Account'
       summary: register a user
+      tags:
+      - auth
+  /user/:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.User'
+      summary: read a user info
+      tags:
+      - user
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: updated info
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ent.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.User'
+      summary: update a user info
+      tags:
+      - user
 swagger: "2.0"

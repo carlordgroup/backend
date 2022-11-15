@@ -11,23 +11,30 @@ import (
 
 type service struct {
 	client *ent.Client
+	auth   *jwt.GinJWTMiddleware
 }
 
-func New(client *ent.Client, group gin.IRoutes) *jwt.GinJWTMiddleware {
+func New(client *ent.Client) *service {
 	s := service{
 		client: client,
 	}
 	auth := s.initMiddleware()
-	group.POST("/login", login(auth))
-	group.POST("/refresh", auth.RefreshHandler)
+	s.auth = auth
+
+	return &s
+}
+
+func (s *service) RegisterRouter(group gin.IRoutes) {
+	group.POST("/login", login(s.auth))
+	group.POST("/refresh", s.auth.RefreshHandler)
 	group.POST("/register", s.register)
-	group.GET("/", auth.MiddlewareFunc(), s.self)
-	return auth
+	group.GET("/", s.MustLogin(), s.GetAccountUser(), s.self)
 }
 
 type tokenSample struct{ Token string }
 
 // login godoc
+// @Tags auth
 // @Summary login
 // @Description login an account
 // @Param request body LoginCredential true "email password"
@@ -40,6 +47,7 @@ func login(auth *jwt.GinJWTMiddleware) gin.HandlerFunc {
 }
 
 // Self godoc
+// @Tags auth
 // @Summary get login user info
 // @Description will respond user account info when user login
 // @Accept json
@@ -47,16 +55,11 @@ func login(auth *jwt.GinJWTMiddleware) gin.HandlerFunc {
 // @Success 200 {object} ent.Account
 // @Router /account/ [get]
 func (s *service) self(ctx *gin.Context) {
-	u, err := s.client.Account.Get(ctx, ctx.MustGet("id").(int))
-	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, err)
-		return
-	}
-	ctx.JSON(http.StatusOK, u)
-
+	ctx.JSON(http.StatusOK, ctx.MustGet("account").(*ent.Account))
 }
 
 // Register godoc
+// @Tags auth
 // @Param request body LoginCredential true "email password"
 // @Summary register a user
 // @Accept json
@@ -75,13 +78,33 @@ func (s *service) register(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
 		return
 	}
-	u, err := s.client.Account.Create().
+	tx, err := s.client.Tx(ctx)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
+		return
+	}
+	a, err := tx.Account.Create().
 		SetEmail(login.Email).
 		SetPassword(base64.StdEncoding.EncodeToString(hashedPassword)).
 		Save(ctx)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
+		tx.Rollback()
 		return
 	}
-	ctx.JSON(http.StatusCreated, u)
+
+	_, err = tx.User.Create().SetAccountID(a.ID).SetID(a.ID).Save(ctx)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
+		tx.Rollback()
+		return
+	}
+	err = tx.Commit()
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
+		tx.Rollback()
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, a)
 }

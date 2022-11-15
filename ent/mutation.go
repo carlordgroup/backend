@@ -45,8 +45,7 @@ type AccountMutation struct {
 	email         *string
 	is_admin      *bool
 	clearedFields map[string]struct{}
-	user          map[int]struct{}
-	removeduser   map[int]struct{}
+	user          *int
 	cleareduser   bool
 	done          bool
 	oldValue      func(context.Context) (*Account, error)
@@ -259,14 +258,9 @@ func (m *AccountMutation) ResetIsAdmin() {
 	m.is_admin = nil
 }
 
-// AddUserIDs adds the "user" edge to the User entity by ids.
-func (m *AccountMutation) AddUserIDs(ids ...int) {
-	if m.user == nil {
-		m.user = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.user[ids[i]] = struct{}{}
-	}
+// SetUserID sets the "user" edge to the User entity by id.
+func (m *AccountMutation) SetUserID(id int) {
+	m.user = &id
 }
 
 // ClearUser clears the "user" edge to the User entity.
@@ -279,29 +273,20 @@ func (m *AccountMutation) UserCleared() bool {
 	return m.cleareduser
 }
 
-// RemoveUserIDs removes the "user" edge to the User entity by IDs.
-func (m *AccountMutation) RemoveUserIDs(ids ...int) {
-	if m.removeduser == nil {
-		m.removeduser = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.user, ids[i])
-		m.removeduser[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedUser returns the removed IDs of the "user" edge to the User entity.
-func (m *AccountMutation) RemovedUserIDs() (ids []int) {
-	for id := range m.removeduser {
-		ids = append(ids, id)
+// UserID returns the "user" edge ID in the mutation.
+func (m *AccountMutation) UserID() (id int, exists bool) {
+	if m.user != nil {
+		return *m.user, true
 	}
 	return
 }
 
 // UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
 func (m *AccountMutation) UserIDs() (ids []int) {
-	for id := range m.user {
-		ids = append(ids, id)
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -310,7 +295,6 @@ func (m *AccountMutation) UserIDs() (ids []int) {
 func (m *AccountMutation) ResetUser() {
 	m.user = nil
 	m.cleareduser = false
-	m.removeduser = nil
 }
 
 // Where appends a list predicates to the AccountMutation builder.
@@ -477,11 +461,9 @@ func (m *AccountMutation) AddedEdges() []string {
 func (m *AccountMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case account.EdgeUser:
-		ids := make([]ent.Value, 0, len(m.user))
-		for id := range m.user {
-			ids = append(ids, id)
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	}
 	return nil
 }
@@ -489,23 +471,12 @@ func (m *AccountMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AccountMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.removeduser != nil {
-		edges = append(edges, account.EdgeUser)
-	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *AccountMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case account.EdgeUser:
-		ids := make([]ent.Value, 0, len(m.removeduser))
-		for id := range m.removeduser {
-			ids = append(ids, id)
-		}
-		return ids
-	}
 	return nil
 }
 
@@ -532,6 +503,9 @@ func (m *AccountMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *AccountMutation) ClearEdge(name string) error {
 	switch name {
+	case account.EdgeUser:
+		m.ClearUser()
+		return nil
 	}
 	return fmt.Errorf("unknown Account unique edge %s", name)
 }
@@ -2299,8 +2273,7 @@ type UserMutation struct {
 	note_flaws             map[int]struct{}
 	removednote_flaws      map[int]struct{}
 	clearednote_flaws      bool
-	account                map[int]struct{}
-	removedaccount         map[int]struct{}
+	account                *int
 	clearedaccount         bool
 	done                   bool
 	oldValue               func(context.Context) (*User, error)
@@ -2375,6 +2348,12 @@ func (m UserMutation) Tx() (*Tx, error) {
 	tx := &Tx{config: m.config}
 	tx.init()
 	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of User entities.
+func (m *UserMutation) SetID(id int) {
+	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
@@ -2801,14 +2780,9 @@ func (m *UserMutation) ResetNoteFlaws() {
 	m.removednote_flaws = nil
 }
 
-// AddAccountIDs adds the "account" edge to the Account entity by ids.
-func (m *UserMutation) AddAccountIDs(ids ...int) {
-	if m.account == nil {
-		m.account = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.account[ids[i]] = struct{}{}
-	}
+// SetAccountID sets the "account" edge to the Account entity by id.
+func (m *UserMutation) SetAccountID(id int) {
+	m.account = &id
 }
 
 // ClearAccount clears the "account" edge to the Account entity.
@@ -2821,29 +2795,20 @@ func (m *UserMutation) AccountCleared() bool {
 	return m.clearedaccount
 }
 
-// RemoveAccountIDs removes the "account" edge to the Account entity by IDs.
-func (m *UserMutation) RemoveAccountIDs(ids ...int) {
-	if m.removedaccount == nil {
-		m.removedaccount = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.account, ids[i])
-		m.removedaccount[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedAccount returns the removed IDs of the "account" edge to the Account entity.
-func (m *UserMutation) RemovedAccountIDs() (ids []int) {
-	for id := range m.removedaccount {
-		ids = append(ids, id)
+// AccountID returns the "account" edge ID in the mutation.
+func (m *UserMutation) AccountID() (id int, exists bool) {
+	if m.account != nil {
+		return *m.account, true
 	}
 	return
 }
 
 // AccountIDs returns the "account" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// AccountID instead. It exists only for internal usage by the builders.
 func (m *UserMutation) AccountIDs() (ids []int) {
-	for id := range m.account {
-		ids = append(ids, id)
+	if id := m.account; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -2852,7 +2817,6 @@ func (m *UserMutation) AccountIDs() (ids []int) {
 func (m *UserMutation) ResetAccount() {
 	m.account = nil
 	m.clearedaccount = false
-	m.removedaccount = nil
 }
 
 // Where appends a list predicates to the UserMutation builder.
@@ -3122,11 +3086,9 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 		}
 		return ids
 	case user.EdgeAccount:
-		ids := make([]ent.Value, 0, len(m.account))
-		for id := range m.account {
-			ids = append(ids, id)
+		if id := m.account; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	}
 	return nil
 }
@@ -3139,9 +3101,6 @@ func (m *UserMutation) RemovedEdges() []string {
 	}
 	if m.removednote_flaws != nil {
 		edges = append(edges, user.EdgeNoteFlaws)
-	}
-	if m.removedaccount != nil {
-		edges = append(edges, user.EdgeAccount)
 	}
 	return edges
 }
@@ -3159,12 +3118,6 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 	case user.EdgeNoteFlaws:
 		ids := make([]ent.Value, 0, len(m.removednote_flaws))
 		for id := range m.removednote_flaws {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeAccount:
-		ids := make([]ent.Value, 0, len(m.removedaccount))
-		for id := range m.removedaccount {
 			ids = append(ids, id)
 		}
 		return ids
@@ -3205,6 +3158,9 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *UserMutation) ClearEdge(name string) error {
 	switch name {
+	case user.EdgeAccount:
+		m.ClearAccount()
+		return nil
 	}
 	return fmt.Errorf("unknown User unique edge %s", name)
 }
