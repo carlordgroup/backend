@@ -2,6 +2,7 @@ package user
 
 import (
 	"carlord/ent"
+	"carlord/web"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -24,9 +25,9 @@ func New(client *ent.Client) *service {
 
 func (s *service) RegisterRouter(group gin.IRoutes, auth Authenticate) {
 	group.Use(auth.MustLogin())
-	group.POST("/", s.post)
+	group.POST("/", web.W(s.post))
 	group.Use(auth.GetAccountUser())
-	group.GET("/", s.get)
+	group.GET("/", web.W(s.get))
 }
 
 // UserInfoGet godoc
@@ -36,9 +37,9 @@ func (s *service) RegisterRouter(group gin.IRoutes, auth Authenticate) {
 // @Produce json
 // @Success 200 {object} ent.User
 // @Router /user/ [get]
-func (s *service) get(ctx *gin.Context) {
+func (s *service) get(ctx *gin.Context) (int, any) {
 	u := ctx.MustGet("account").(*ent.Account)
-	ctx.JSON(http.StatusOK, u.Edges.User)
+	return http.StatusOK, u.Edges.User
 }
 
 // UserInfoPost godoc
@@ -49,12 +50,11 @@ func (s *service) get(ctx *gin.Context) {
 // @Produce json
 // @Success 200 {object} ent.User
 // @Router /user/ [post]
-func (s *service) post(ctx *gin.Context) {
+func (s *service) post(ctx *gin.Context) (int, any) {
 	var u ent.User
 	err := ctx.ShouldBindJSON(&u)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
-		return
+		return http.StatusBadRequest, err
 	}
 	updatedUser, err := s.client.User.UpdateOneID(ctx.MustGet("id").(int)).
 		SetAddress(u.Address).
@@ -67,9 +67,8 @@ func (s *service) post(ctx *gin.Context) {
 		SetTel(u.Tel).
 		Save(ctx)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
-		return
+		return http.StatusBadRequest, err
 	}
 
-	ctx.JSON(http.StatusOK, updatedUser)
+	return http.StatusOK, updatedUser
 }

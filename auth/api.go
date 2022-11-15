@@ -2,6 +2,7 @@ package auth
 
 import (
 	"carlord/ent"
+	"carlord/web"
 	"encoding/base64"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
@@ -27,8 +28,8 @@ func New(client *ent.Client) *service {
 func (s *service) RegisterRouter(group gin.IRoutes) {
 	group.POST("/login", login(s.auth))
 	group.POST("/refresh", s.auth.RefreshHandler)
-	group.POST("/register", s.register)
-	group.GET("/", s.MustLogin(), s.GetAccountUser(), s.self)
+	group.POST("/register", web.W(s.register))
+	group.GET("/", s.MustLogin(), s.GetAccountUser(), web.W(s.self))
 }
 
 type tokenSample struct{ Token string }
@@ -54,8 +55,8 @@ func login(auth *jwt.GinJWTMiddleware) gin.HandlerFunc {
 // @Produce json
 // @Success 200 {object} ent.Account
 // @Router /account/ [get]
-func (s *service) self(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, ctx.MustGet("account").(*ent.Account))
+func (s *service) self(ctx *gin.Context) (int, any) {
+	return http.StatusOK, ctx.MustGet("account")
 }
 
 // Register godoc
@@ -66,45 +67,39 @@ func (s *service) self(ctx *gin.Context) {
 // @Produce json
 // @Success 200 {object} ent.Account
 // @Router /account/register [post]
-func (s *service) register(ctx *gin.Context) {
+func (s *service) register(ctx *gin.Context) (int, any) {
 	var login LoginCredential
 	err := ctx.ShouldBindJSON(&login)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
-		return
+		return http.StatusBadRequest, err
 	}
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(login.RawPassword), bcrypt.DefaultCost)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
-		return
+		return http.StatusBadRequest, err
 	}
 	tx, err := s.client.Tx(ctx)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
-		return
+		return http.StatusBadRequest, err
 	}
 	a, err := tx.Account.Create().
 		SetEmail(login.Email).
 		SetPassword(base64.StdEncoding.EncodeToString(hashedPassword)).
 		Save(ctx)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
 		tx.Rollback()
-		return
+		return http.StatusBadRequest, err
 	}
 
 	_, err = tx.User.Create().SetAccountID(a.ID).SetID(a.ID).Save(ctx)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
 		tx.Rollback()
-		return
+		return http.StatusBadRequest, err
 	}
 	err = tx.Commit()
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
 		tx.Rollback()
-		return
+		return http.StatusBadRequest, err
 	}
 
-	ctx.JSON(http.StatusCreated, a)
+	return http.StatusCreated, a
 }
