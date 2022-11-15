@@ -14,9 +14,6 @@ type User struct {
 // Fields of the User.
 func (User) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("password"),
-		field.String("email"),
-		field.Bool("is_admin").Default(false),
 		field.String("first_name"),
 		field.String("last_name"),
 		field.String("address"),
@@ -31,7 +28,8 @@ func (User) Fields() []ent.Field {
 // Edges of the User.
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("card", Card.Type),
-		edge.To("note_flows", Flaw.Type),
+		edge.To("card", Card.Type).StructTag(`json:"cards"`),
+		edge.To("note_flaws", Flaw.Type).StructTag(`json:"flaws"`),
+		edge.From("account", Account.Type).Ref("user").Required(),
 	}
 }

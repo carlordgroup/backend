@@ -6,6 +6,7 @@ services:
       - "8686:8686"
     environment:
       - DATABASE=postgresql://postgres@database/postgres?sslmode=disable
+      - SECRET=Mutable-Freemason-Unleaded3-Phoney
     restart: on-failure
     depends_on:
       - database

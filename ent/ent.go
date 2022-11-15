@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"carlord/ent/account"
 	"carlord/ent/billing"
 	"carlord/ent/booking"
 	"carlord/ent/car"
@@ -37,6 +38,7 @@ type OrderFunc func(*sql.Selector)
 // columnChecker returns a function indicates if the column exists in the given column.
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
+		account.Table:  account.ValidColumn,
 		billing.Table:  billing.ValidColumn,
 		booking.Table:  booking.ValidColumn,
 		car.Table:      car.ValidColumn,

@@ -8,6 +8,19 @@ import (
 )
 
 var (
+	// AccountsColumns holds the columns for the "accounts" table.
+	AccountsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "password", Type: field.TypeString},
+		{Name: "email", Type: field.TypeString, Unique: true},
+		{Name: "is_admin", Type: field.TypeBool, Default: false},
+	}
+	// AccountsTable holds the schema information for the "accounts" table.
+	AccountsTable = &schema.Table{
+		Name:       "accounts",
+		Columns:    AccountsColumns,
+		PrimaryKey: []*schema.Column{AccountsColumns[0]},
+	}
 	// BillingsColumns holds the columns for the "billings" table.
 	BillingsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -63,7 +76,7 @@ var (
 	// FlawsColumns holds the columns for the "flaws" table.
 	FlawsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "user_note_flows", Type: field.TypeInt, Nullable: true},
+		{Name: "user_note_flaws", Type: field.TypeInt, Nullable: true},
 	}
 	// FlawsTable holds the schema information for the "flaws" table.
 	FlawsTable = &schema.Table{
@@ -72,7 +85,7 @@ var (
 		PrimaryKey: []*schema.Column{FlawsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "flaws_users_note_flows",
+				Symbol:     "flaws_users_note_flaws",
 				Columns:    []*schema.Column{FlawsColumns[1]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -92,9 +105,6 @@ var (
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "password", Type: field.TypeString},
-		{Name: "email", Type: field.TypeString},
-		{Name: "is_admin", Type: field.TypeBool, Default: false},
 		{Name: "first_name", Type: field.TypeString},
 		{Name: "last_name", Type: field.TypeString},
 		{Name: "address", Type: field.TypeString},
@@ -110,8 +120,34 @@ var (
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
 	}
+	// AccountUserColumns holds the columns for the "account_user" table.
+	AccountUserColumns = []*schema.Column{
+		{Name: "account_id", Type: field.TypeInt},
+		{Name: "user_id", Type: field.TypeInt},
+	}
+	// AccountUserTable holds the schema information for the "account_user" table.
+	AccountUserTable = &schema.Table{
+		Name:       "account_user",
+		Columns:    AccountUserColumns,
+		PrimaryKey: []*schema.Column{AccountUserColumns[0], AccountUserColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "account_user_account_id",
+				Columns:    []*schema.Column{AccountUserColumns[0]},
+				RefColumns: []*schema.Column{AccountsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "account_user_user_id",
+				Columns:    []*schema.Column{AccountUserColumns[1]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AccountsTable,
 		BillingsTable,
 		BookingsTable,
 		CarsTable,
@@ -119,10 +155,13 @@ var (
 		FlawsTable,
 		LocationsTable,
 		UsersTable,
+		AccountUserTable,
 	}
 )
 
 func init() {
 	CardsTable.ForeignKeys[0].RefTable = UsersTable
 	FlawsTable.ForeignKeys[0].RefTable = UsersTable
+	AccountUserTable.ForeignKeys[0].RefTable = AccountsTable
+	AccountUserTable.ForeignKeys[1].RefTable = UsersTable
 }

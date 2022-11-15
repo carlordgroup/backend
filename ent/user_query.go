@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"carlord/ent/account"
 	"carlord/ent/card"
 	"carlord/ent/flaw"
 	"carlord/ent/predicate"
@@ -27,7 +28,8 @@ type UserQuery struct {
 	fields        []string
 	predicates    []predicate.User
 	withCard      *CardQuery
-	withNoteFlows *FlawQuery
+	withNoteFlaws *FlawQuery
+	withAccount   *AccountQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -86,8 +88,8 @@ func (uq *UserQuery) QueryCard() *CardQuery {
 	return query
 }
 
-// QueryNoteFlows chains the current query on the "note_flows" edge.
-func (uq *UserQuery) QueryNoteFlows() *FlawQuery {
+// QueryNoteFlaws chains the current query on the "note_flaws" edge.
+func (uq *UserQuery) QueryNoteFlaws() *FlawQuery {
 	query := &FlawQuery{config: uq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := uq.prepareQuery(ctx); err != nil {
@@ -100,7 +102,29 @@ func (uq *UserQuery) QueryNoteFlows() *FlawQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(flaw.Table, flaw.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.NoteFlowsTable, user.NoteFlowsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.NoteFlawsTable, user.NoteFlawsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAccount chains the current query on the "account" edge.
+func (uq *UserQuery) QueryAccount() *AccountQuery {
+	query := &AccountQuery{config: uq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(account.Table, account.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, user.AccountTable, user.AccountPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -290,7 +314,8 @@ func (uq *UserQuery) Clone() *UserQuery {
 		order:         append([]OrderFunc{}, uq.order...),
 		predicates:    append([]predicate.User{}, uq.predicates...),
 		withCard:      uq.withCard.Clone(),
-		withNoteFlows: uq.withNoteFlows.Clone(),
+		withNoteFlaws: uq.withNoteFlaws.Clone(),
+		withAccount:   uq.withAccount.Clone(),
 		// clone intermediate query.
 		sql:    uq.sql.Clone(),
 		path:   uq.path,
@@ -309,14 +334,25 @@ func (uq *UserQuery) WithCard(opts ...func(*CardQuery)) *UserQuery {
 	return uq
 }
 
-// WithNoteFlows tells the query-builder to eager-load the nodes that are connected to
-// the "note_flows" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithNoteFlows(opts ...func(*FlawQuery)) *UserQuery {
+// WithNoteFlaws tells the query-builder to eager-load the nodes that are connected to
+// the "note_flaws" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithNoteFlaws(opts ...func(*FlawQuery)) *UserQuery {
 	query := &FlawQuery{config: uq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	uq.withNoteFlows = query
+	uq.withNoteFlaws = query
+	return uq
+}
+
+// WithAccount tells the query-builder to eager-load the nodes that are connected to
+// the "account" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithAccount(opts ...func(*AccountQuery)) *UserQuery {
+	query := &AccountQuery{config: uq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withAccount = query
 	return uq
 }
 
@@ -326,12 +362,12 @@ func (uq *UserQuery) WithNoteFlows(opts ...func(*FlawQuery)) *UserQuery {
 // Example:
 //
 //	var v []struct {
-//		Password string `json:"password,omitempty"`
+//		FirstName string `json:"first_name,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.User.Query().
-//		GroupBy(user.FieldPassword).
+//		GroupBy(user.FieldFirstName).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (uq *UserQuery) GroupBy(field string, fields ...string) *UserGroupBy {
@@ -354,11 +390,11 @@ func (uq *UserQuery) GroupBy(field string, fields ...string) *UserGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Password string `json:"password,omitempty"`
+//		FirstName string `json:"first_name,omitempty"`
 //	}
 //
 //	client.User.Query().
-//		Select(user.FieldPassword).
+//		Select(user.FieldFirstName).
 //		Scan(ctx, &v)
 func (uq *UserQuery) Select(fields ...string) *UserSelect {
 	uq.fields = append(uq.fields, fields...)
@@ -393,9 +429,10 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			uq.withCard != nil,
-			uq.withNoteFlows != nil,
+			uq.withNoteFlaws != nil,
+			uq.withAccount != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -423,10 +460,17 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			return nil, err
 		}
 	}
-	if query := uq.withNoteFlows; query != nil {
-		if err := uq.loadNoteFlows(ctx, query, nodes,
-			func(n *User) { n.Edges.NoteFlows = []*Flaw{} },
-			func(n *User, e *Flaw) { n.Edges.NoteFlows = append(n.Edges.NoteFlows, e) }); err != nil {
+	if query := uq.withNoteFlaws; query != nil {
+		if err := uq.loadNoteFlaws(ctx, query, nodes,
+			func(n *User) { n.Edges.NoteFlaws = []*Flaw{} },
+			func(n *User, e *Flaw) { n.Edges.NoteFlaws = append(n.Edges.NoteFlaws, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := uq.withAccount; query != nil {
+		if err := uq.loadAccount(ctx, query, nodes,
+			func(n *User) { n.Edges.Account = []*Account{} },
+			func(n *User, e *Account) { n.Edges.Account = append(n.Edges.Account, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -464,7 +508,7 @@ func (uq *UserQuery) loadCard(ctx context.Context, query *CardQuery, nodes []*Us
 	}
 	return nil
 }
-func (uq *UserQuery) loadNoteFlows(ctx context.Context, query *FlawQuery, nodes []*User, init func(*User), assign func(*User, *Flaw)) error {
+func (uq *UserQuery) loadNoteFlaws(ctx context.Context, query *FlawQuery, nodes []*User, init func(*User), assign func(*User, *Flaw)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[int]*User)
 	for i := range nodes {
@@ -476,22 +520,80 @@ func (uq *UserQuery) loadNoteFlows(ctx context.Context, query *FlawQuery, nodes 
 	}
 	query.withFKs = true
 	query.Where(predicate.Flaw(func(s *sql.Selector) {
-		s.Where(sql.InValues(user.NoteFlowsColumn, fks...))
+		s.Where(sql.InValues(user.NoteFlawsColumn, fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.user_note_flows
+		fk := n.user_note_flaws
 		if fk == nil {
-			return fmt.Errorf(`foreign-key "user_note_flows" is nil for node %v`, n.ID)
+			return fmt.Errorf(`foreign-key "user_note_flaws" is nil for node %v`, n.ID)
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "user_note_flows" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "user_note_flaws" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
+	}
+	return nil
+}
+func (uq *UserQuery) loadAccount(ctx context.Context, query *AccountQuery, nodes []*User, init func(*User), assign func(*User, *Account)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*User)
+	nids := make(map[int]map[*User]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(user.AccountTable)
+		s.Join(joinT).On(s.C(account.FieldID), joinT.C(user.AccountPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(user.AccountPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(user.AccountPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+		assign := spec.Assign
+		values := spec.ScanValues
+		spec.ScanValues = func(columns []string) ([]any, error) {
+			values, err := values(columns[1:])
+			if err != nil {
+				return nil, err
+			}
+			return append([]any{new(sql.NullInt64)}, values...), nil
+		}
+		spec.Assign = func(columns []string, values []any) error {
+			outValue := int(values[0].(*sql.NullInt64).Int64)
+			inValue := int(values[1].(*sql.NullInt64).Int64)
+			if nids[inValue] == nil {
+				nids[inValue] = map[*User]struct{}{byID[outValue]: {}}
+				return assign(columns[1:], values[1:])
+			}
+			nids[inValue][byID[outValue]] = struct{}{}
+			return nil
+		}
+	})
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "account" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }

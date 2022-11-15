@@ -7,12 +7,6 @@ const (
 	Label = "user"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldPassword holds the string denoting the password field in the database.
-	FieldPassword = "password"
-	// FieldEmail holds the string denoting the email field in the database.
-	FieldEmail = "email"
-	// FieldIsAdmin holds the string denoting the is_admin field in the database.
-	FieldIsAdmin = "is_admin"
 	// FieldFirstName holds the string denoting the first_name field in the database.
 	FieldFirstName = "first_name"
 	// FieldLastName holds the string denoting the last_name field in the database.
@@ -31,8 +25,10 @@ const (
 	FieldBirthday = "birthday"
 	// EdgeCard holds the string denoting the card edge name in mutations.
 	EdgeCard = "card"
-	// EdgeNoteFlows holds the string denoting the note_flows edge name in mutations.
-	EdgeNoteFlows = "note_flows"
+	// EdgeNoteFlaws holds the string denoting the note_flaws edge name in mutations.
+	EdgeNoteFlaws = "note_flaws"
+	// EdgeAccount holds the string denoting the account edge name in mutations.
+	EdgeAccount = "account"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// CardTable is the table that holds the card relation/edge.
@@ -42,21 +38,23 @@ const (
 	CardInverseTable = "cards"
 	// CardColumn is the table column denoting the card relation/edge.
 	CardColumn = "user_card"
-	// NoteFlowsTable is the table that holds the note_flows relation/edge.
-	NoteFlowsTable = "flaws"
-	// NoteFlowsInverseTable is the table name for the Flaw entity.
+	// NoteFlawsTable is the table that holds the note_flaws relation/edge.
+	NoteFlawsTable = "flaws"
+	// NoteFlawsInverseTable is the table name for the Flaw entity.
 	// It exists in this package in order to avoid circular dependency with the "flaw" package.
-	NoteFlowsInverseTable = "flaws"
-	// NoteFlowsColumn is the table column denoting the note_flows relation/edge.
-	NoteFlowsColumn = "user_note_flows"
+	NoteFlawsInverseTable = "flaws"
+	// NoteFlawsColumn is the table column denoting the note_flaws relation/edge.
+	NoteFlawsColumn = "user_note_flaws"
+	// AccountTable is the table that holds the account relation/edge. The primary key declared below.
+	AccountTable = "account_user"
+	// AccountInverseTable is the table name for the Account entity.
+	// It exists in this package in order to avoid circular dependency with the "account" package.
+	AccountInverseTable = "accounts"
 )
 
 // Columns holds all SQL columns for user fields.
 var Columns = []string{
 	FieldID,
-	FieldPassword,
-	FieldEmail,
-	FieldIsAdmin,
 	FieldFirstName,
 	FieldLastName,
 	FieldAddress,
@@ -67,6 +65,12 @@ var Columns = []string{
 	FieldBirthday,
 }
 
+var (
+	// AccountPrimaryKey and AccountColumn2 are the table columns denoting the
+	// primary key for the account relation (M2M).
+	AccountPrimaryKey = []string{"account_id", "user_id"}
+)
+
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
@@ -76,8 +80,3 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
-
-var (
-	// DefaultIsAdmin holds the default value on creation for the "is_admin" field.
-	DefaultIsAdmin bool
-)
