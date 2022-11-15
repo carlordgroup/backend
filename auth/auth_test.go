@@ -1,14 +1,13 @@
 package auth
 
 import (
-	"bytes"
 	"carlord/ent"
+	"carlord/utils"
 	"context"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
-	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -29,18 +28,14 @@ func init() {
 		return
 	}
 	router = gin.Default()
-	New(client, router)
+	s := New(client)
+	s.RegisterRouter(router)
 
 }
 
 type testPack struct {
 	login  LoginCredential
 	result int
-}
-
-func toJson(v interface{}) io.Reader {
-	data, _ := json.Marshal(v)
-	return bytes.NewReader(data)
 }
 
 func TestRegister(t *testing.T) {
@@ -63,7 +58,7 @@ func TestRegister(t *testing.T) {
 	}
 
 	for _, pack := range payload {
-		req, _ := http.NewRequest(http.MethodPost, "/register", toJson(pack.login))
+		req, _ := http.NewRequest(http.MethodPost, "/register", utils.ToJson(pack.login))
 		w := httptest.NewRecorder()
 		router.ServeHTTP(w, req)
 		assert.Equal(t, pack.result, w.Code)
@@ -93,7 +88,7 @@ func TestLogin(t *testing.T) {
 
 	for _, pack := range payload {
 
-		req, _ := http.NewRequest(http.MethodPost, "/login", toJson(pack.login))
+		req, _ := http.NewRequest(http.MethodPost, "/login", utils.ToJson(pack.login))
 		w := httptest.NewRecorder()
 
 		router.ServeHTTP(w, req)
@@ -101,12 +96,12 @@ func TestLogin(t *testing.T) {
 	}
 }
 
-type token struct {
-	Token string `json:"token"`
-}
-
 func TestSelf(t *testing.T) {
-	req, _ := http.NewRequest(http.MethodPost, "/login", toJson(LoginCredential{
+	type token struct {
+		Token string `json:"token"`
+	}
+
+	req, _ := http.NewRequest(http.MethodPost, "/login", utils.ToJson(LoginCredential{
 		Email:       "doe@doe.doe",
 		RawPassword: "aaaaaddddd",
 	}))

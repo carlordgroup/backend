@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"log"
+	"net/http"
 	"os"
 	"time"
 )
@@ -88,4 +89,20 @@ func (s *service) initMiddleware() *jwt.GinJWTMiddleware {
 
 	return authMiddleware
 
+}
+
+func (s *service) MustLogin() gin.HandlerFunc {
+	return s.auth.MiddlewareFunc()
+}
+
+func (s *service) GetAccountUser() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		acc, err := s.client.Account.Query().WithUser().Where(account.ID(ctx.MustGet("id").(int))).Only(ctx)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, err)
+			return
+		}
+		ctx.Set("account", acc)
+		ctx.Next()
+	}
 }

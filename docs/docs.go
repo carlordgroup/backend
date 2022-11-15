@@ -25,6 +25,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "auth"
+                ],
                 "summary": "get login user info",
                 "responses": {
                     "200": {
@@ -45,6 +48,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "auth"
+                ],
                 "summary": "login",
                 "parameters": [
                     {
@@ -61,7 +67,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/auth.token"
+                            "$ref": "#/definitions/auth.tokenSample"
                         }
                     }
                 }
@@ -74,6 +80,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "auth"
                 ],
                 "summary": "register a user",
                 "parameters": [
@@ -96,6 +105,59 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/user/": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "read a user info",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ent.User"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "update a user info",
+                "parameters": [
+                    {
+                        "description": "updated info",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ent.User"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ent.User"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -114,7 +176,7 @@ const docTemplate = `{
                 }
             }
         },
-        "auth.token": {
+        "auth.tokenSample": {
             "type": "object",
             "properties": {
                 "token": {
@@ -148,10 +210,7 @@ const docTemplate = `{
             "properties": {
                 "user": {
                     "description": "User holds the value of the user edge.",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/ent.User"
-                    }
+                    "$ref": "#/definitions/ent.User"
                 }
             }
         },
@@ -248,10 +307,7 @@ const docTemplate = `{
             "properties": {
                 "account": {
                     "description": "Account holds the value of the account edge.",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/ent.Account"
-                    }
+                    "$ref": "#/definitions/ent.Account"
                 },
                 "cards": {
                     "description": "Card holds the value of the card edge.",

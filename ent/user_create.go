@@ -29,9 +29,25 @@ func (uc *UserCreate) SetFirstName(s string) *UserCreate {
 	return uc
 }
 
+// SetNillableFirstName sets the "first_name" field if the given value is not nil.
+func (uc *UserCreate) SetNillableFirstName(s *string) *UserCreate {
+	if s != nil {
+		uc.SetFirstName(*s)
+	}
+	return uc
+}
+
 // SetLastName sets the "last_name" field.
 func (uc *UserCreate) SetLastName(s string) *UserCreate {
 	uc.mutation.SetLastName(s)
+	return uc
+}
+
+// SetNillableLastName sets the "last_name" field if the given value is not nil.
+func (uc *UserCreate) SetNillableLastName(s *string) *UserCreate {
+	if s != nil {
+		uc.SetLastName(*s)
+	}
 	return uc
 }
 
@@ -41,9 +57,25 @@ func (uc *UserCreate) SetAddress(s string) *UserCreate {
 	return uc
 }
 
+// SetNillableAddress sets the "address" field if the given value is not nil.
+func (uc *UserCreate) SetNillableAddress(s *string) *UserCreate {
+	if s != nil {
+		uc.SetAddress(*s)
+	}
+	return uc
+}
+
 // SetPostalCode sets the "postal_code" field.
 func (uc *UserCreate) SetPostalCode(s string) *UserCreate {
 	uc.mutation.SetPostalCode(s)
+	return uc
+}
+
+// SetNillablePostalCode sets the "postal_code" field if the given value is not nil.
+func (uc *UserCreate) SetNillablePostalCode(s *string) *UserCreate {
+	if s != nil {
+		uc.SetPostalCode(*s)
+	}
 	return uc
 }
 
@@ -53,9 +85,25 @@ func (uc *UserCreate) SetTel(s string) *UserCreate {
 	return uc
 }
 
+// SetNillableTel sets the "tel" field if the given value is not nil.
+func (uc *UserCreate) SetNillableTel(s *string) *UserCreate {
+	if s != nil {
+		uc.SetTel(*s)
+	}
+	return uc
+}
+
 // SetDriverLicenseID sets the "driver_license_id" field.
 func (uc *UserCreate) SetDriverLicenseID(s string) *UserCreate {
 	uc.mutation.SetDriverLicenseID(s)
+	return uc
+}
+
+// SetNillableDriverLicenseID sets the "driver_license_id" field if the given value is not nil.
+func (uc *UserCreate) SetNillableDriverLicenseID(s *string) *UserCreate {
+	if s != nil {
+		uc.SetDriverLicenseID(*s)
+	}
 	return uc
 }
 
@@ -65,9 +113,31 @@ func (uc *UserCreate) SetDriverLicenseCountry(s string) *UserCreate {
 	return uc
 }
 
+// SetNillableDriverLicenseCountry sets the "driver_license_country" field if the given value is not nil.
+func (uc *UserCreate) SetNillableDriverLicenseCountry(s *string) *UserCreate {
+	if s != nil {
+		uc.SetDriverLicenseCountry(*s)
+	}
+	return uc
+}
+
 // SetBirthday sets the "birthday" field.
 func (uc *UserCreate) SetBirthday(t time.Time) *UserCreate {
 	uc.mutation.SetBirthday(t)
+	return uc
+}
+
+// SetNillableBirthday sets the "birthday" field if the given value is not nil.
+func (uc *UserCreate) SetNillableBirthday(t *time.Time) *UserCreate {
+	if t != nil {
+		uc.SetBirthday(*t)
+	}
+	return uc
+}
+
+// SetID sets the "id" field.
+func (uc *UserCreate) SetID(i int) *UserCreate {
+	uc.mutation.SetID(i)
 	return uc
 }
 
@@ -101,19 +171,15 @@ func (uc *UserCreate) AddNoteFlaws(f ...*Flaw) *UserCreate {
 	return uc.AddNoteFlawIDs(ids...)
 }
 
-// AddAccountIDs adds the "account" edge to the Account entity by IDs.
-func (uc *UserCreate) AddAccountIDs(ids ...int) *UserCreate {
-	uc.mutation.AddAccountIDs(ids...)
+// SetAccountID sets the "account" edge to the Account entity by ID.
+func (uc *UserCreate) SetAccountID(id int) *UserCreate {
+	uc.mutation.SetAccountID(id)
 	return uc
 }
 
-// AddAccount adds the "account" edges to the Account entity.
-func (uc *UserCreate) AddAccount(a ...*Account) *UserCreate {
-	ids := make([]int, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
-	}
-	return uc.AddAccountIDs(ids...)
+// SetAccount sets the "account" edge to the Account entity.
+func (uc *UserCreate) SetAccount(a *Account) *UserCreate {
+	return uc.SetAccountID(a.ID)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -127,6 +193,7 @@ func (uc *UserCreate) Save(ctx context.Context) (*User, error) {
 		err  error
 		node *User
 	)
+	uc.defaults()
 	if len(uc.hooks) == 0 {
 		if err = uc.check(); err != nil {
 			return nil, err
@@ -190,6 +257,42 @@ func (uc *UserCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (uc *UserCreate) defaults() {
+	if _, ok := uc.mutation.FirstName(); !ok {
+		v := user.DefaultFirstName
+		uc.mutation.SetFirstName(v)
+	}
+	if _, ok := uc.mutation.LastName(); !ok {
+		v := user.DefaultLastName
+		uc.mutation.SetLastName(v)
+	}
+	if _, ok := uc.mutation.Address(); !ok {
+		v := user.DefaultAddress
+		uc.mutation.SetAddress(v)
+	}
+	if _, ok := uc.mutation.PostalCode(); !ok {
+		v := user.DefaultPostalCode
+		uc.mutation.SetPostalCode(v)
+	}
+	if _, ok := uc.mutation.Tel(); !ok {
+		v := user.DefaultTel
+		uc.mutation.SetTel(v)
+	}
+	if _, ok := uc.mutation.DriverLicenseID(); !ok {
+		v := user.DefaultDriverLicenseID
+		uc.mutation.SetDriverLicenseID(v)
+	}
+	if _, ok := uc.mutation.DriverLicenseCountry(); !ok {
+		v := user.DefaultDriverLicenseCountry
+		uc.mutation.SetDriverLicenseCountry(v)
+	}
+	if _, ok := uc.mutation.Birthday(); !ok {
+		v := user.DefaultBirthday()
+		uc.mutation.SetBirthday(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.FirstName(); !ok {
@@ -216,7 +319,7 @@ func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.Birthday(); !ok {
 		return &ValidationError{Name: "birthday", err: errors.New(`ent: missing required field "User.birthday"`)}
 	}
-	if len(uc.mutation.AccountIDs()) == 0 {
+	if _, ok := uc.mutation.AccountID(); !ok {
 		return &ValidationError{Name: "account", err: errors.New(`ent: missing required edge "User.account"`)}
 	}
 	return nil
@@ -230,8 +333,10 @@ func (uc *UserCreate) sqlSave(ctx context.Context) (*User, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != _node.ID {
+		id := _spec.ID.Value.(int64)
+		_node.ID = int(id)
+	}
 	return _node, nil
 }
 
@@ -246,6 +351,10 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	if id, ok := uc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := uc.mutation.FirstName(); ok {
 		_spec.SetField(user.FieldFirstName, field.TypeString, value)
 		_node.FirstName = value
@@ -318,10 +427,10 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	}
 	if nodes := uc.mutation.AccountIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   user.AccountTable,
-			Columns: user.AccountPrimaryKey,
+			Columns: []string{user.AccountColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -333,6 +442,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.account_user = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -352,6 +462,7 @@ func (ucb *UserCreateBulk) Save(ctx context.Context) ([]*User, error) {
 	for i := range ucb.builders {
 		func(i int, root context.Context) {
 			builder := ucb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*UserMutation)
 				if !ok {
@@ -378,7 +489,7 @@ func (ucb *UserCreateBulk) Save(ctx context.Context) ([]*User, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
+				if specs[i].ID.Value != nil && nodes[i].ID == 0 {
 					id := specs[i].ID.Value.(int64)
 					nodes[i].ID = int(id)
 				}

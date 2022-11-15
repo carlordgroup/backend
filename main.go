@@ -4,6 +4,7 @@ import (
 	"carlord/auth"
 	"carlord/docs"
 	"carlord/ent"
+	"carlord/user"
 	"context"
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
@@ -26,7 +27,12 @@ func main() {
 
 	r := gin.Default()
 	g := r.Group("account/")
-	auth.New(client, g)
+	authService := auth.New(client)
+	authService.RegisterRouter(g)
+
+	g = r.Group("user/")
+	user.New(client).RegisterRouter(g, authService)
+
 	docs.SwaggerInfo.BasePath = "/"
 	r.GET("/api/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	r.Run("0.0.0.0:8686")

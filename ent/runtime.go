@@ -5,6 +5,8 @@ package ent
 import (
 	"carlord/ent/account"
 	"carlord/ent/schema"
+	"carlord/ent/user"
+	"time"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -17,4 +19,38 @@ func init() {
 	accountDescIsAdmin := accountFields[2].Descriptor()
 	// account.DefaultIsAdmin holds the default value on creation for the is_admin field.
 	account.DefaultIsAdmin = accountDescIsAdmin.Default.(bool)
+	userFields := schema.User{}.Fields()
+	_ = userFields
+	// userDescFirstName is the schema descriptor for first_name field.
+	userDescFirstName := userFields[1].Descriptor()
+	// user.DefaultFirstName holds the default value on creation for the first_name field.
+	user.DefaultFirstName = userDescFirstName.Default.(string)
+	// userDescLastName is the schema descriptor for last_name field.
+	userDescLastName := userFields[2].Descriptor()
+	// user.DefaultLastName holds the default value on creation for the last_name field.
+	user.DefaultLastName = userDescLastName.Default.(string)
+	// userDescAddress is the schema descriptor for address field.
+	userDescAddress := userFields[3].Descriptor()
+	// user.DefaultAddress holds the default value on creation for the address field.
+	user.DefaultAddress = userDescAddress.Default.(string)
+	// userDescPostalCode is the schema descriptor for postal_code field.
+	userDescPostalCode := userFields[4].Descriptor()
+	// user.DefaultPostalCode holds the default value on creation for the postal_code field.
+	user.DefaultPostalCode = userDescPostalCode.Default.(string)
+	// userDescTel is the schema descriptor for tel field.
+	userDescTel := userFields[5].Descriptor()
+	// user.DefaultTel holds the default value on creation for the tel field.
+	user.DefaultTel = userDescTel.Default.(string)
+	// userDescDriverLicenseID is the schema descriptor for driver_license_id field.
+	userDescDriverLicenseID := userFields[6].Descriptor()
+	// user.DefaultDriverLicenseID holds the default value on creation for the driver_license_id field.
+	user.DefaultDriverLicenseID = userDescDriverLicenseID.Default.(string)
+	// userDescDriverLicenseCountry is the schema descriptor for driver_license_country field.
+	userDescDriverLicenseCountry := userFields[7].Descriptor()
+	// user.DefaultDriverLicenseCountry holds the default value on creation for the driver_license_country field.
+	user.DefaultDriverLicenseCountry = userDescDriverLicenseCountry.Default.(string)
+	// userDescBirthday is the schema descriptor for birthday field.
+	userDescBirthday := userFields[8].Descriptor()
+	// user.DefaultBirthday holds the default value on creation for the birthday field.
+	user.DefaultBirthday = userDescBirthday.Default.(func() time.Time)
 }

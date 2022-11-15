@@ -105,43 +105,27 @@ var (
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "first_name", Type: field.TypeString},
-		{Name: "last_name", Type: field.TypeString},
-		{Name: "address", Type: field.TypeString},
-		{Name: "postal_code", Type: field.TypeString},
-		{Name: "tel", Type: field.TypeString},
-		{Name: "driver_license_id", Type: field.TypeString},
-		{Name: "driver_license_country", Type: field.TypeString},
+		{Name: "first_name", Type: field.TypeString, Default: ""},
+		{Name: "last_name", Type: field.TypeString, Default: ""},
+		{Name: "address", Type: field.TypeString, Default: ""},
+		{Name: "postal_code", Type: field.TypeString, Default: ""},
+		{Name: "tel", Type: field.TypeString, Default: ""},
+		{Name: "driver_license_id", Type: field.TypeString, Default: ""},
+		{Name: "driver_license_country", Type: field.TypeString, Default: ""},
 		{Name: "birthday", Type: field.TypeTime},
+		{Name: "account_user", Type: field.TypeInt, Unique: true},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
 		Name:       "users",
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
-	}
-	// AccountUserColumns holds the columns for the "account_user" table.
-	AccountUserColumns = []*schema.Column{
-		{Name: "account_id", Type: field.TypeInt},
-		{Name: "user_id", Type: field.TypeInt},
-	}
-	// AccountUserTable holds the schema information for the "account_user" table.
-	AccountUserTable = &schema.Table{
-		Name:       "account_user",
-		Columns:    AccountUserColumns,
-		PrimaryKey: []*schema.Column{AccountUserColumns[0], AccountUserColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "account_user_account_id",
-				Columns:    []*schema.Column{AccountUserColumns[0]},
+				Symbol:     "users_accounts_user",
+				Columns:    []*schema.Column{UsersColumns[9]},
 				RefColumns: []*schema.Column{AccountsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "account_user_user_id",
-				Columns:    []*schema.Column{AccountUserColumns[1]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.Cascade,
+				OnDelete:   schema.NoAction,
 			},
 		},
 	}
@@ -155,13 +139,11 @@ var (
 		FlawsTable,
 		LocationsTable,
 		UsersTable,
-		AccountUserTable,
 	}
 )
 
 func init() {
 	CardsTable.ForeignKeys[0].RefTable = UsersTable
 	FlawsTable.ForeignKeys[0].RefTable = UsersTable
-	AccountUserTable.ForeignKeys[0].RefTable = AccountsTable
-	AccountUserTable.ForeignKeys[1].RefTable = UsersTable
+	UsersTable.ForeignKeys[0].RefTable = AccountsTable
 }

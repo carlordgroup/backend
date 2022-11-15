@@ -956,7 +956,7 @@ func HasAccount() predicate.User {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(AccountTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, AccountTable, AccountPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2O, true, AccountTable, AccountColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -968,7 +968,7 @@ func HasAccountWith(preds ...predicate.Account) predicate.User {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(AccountInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, AccountTable, AccountPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2O, true, AccountTable, AccountColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

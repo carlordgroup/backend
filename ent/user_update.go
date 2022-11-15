@@ -37,9 +37,25 @@ func (uu *UserUpdate) SetFirstName(s string) *UserUpdate {
 	return uu
 }
 
+// SetNillableFirstName sets the "first_name" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableFirstName(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetFirstName(*s)
+	}
+	return uu
+}
+
 // SetLastName sets the "last_name" field.
 func (uu *UserUpdate) SetLastName(s string) *UserUpdate {
 	uu.mutation.SetLastName(s)
+	return uu
+}
+
+// SetNillableLastName sets the "last_name" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableLastName(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetLastName(*s)
+	}
 	return uu
 }
 
@@ -49,9 +65,25 @@ func (uu *UserUpdate) SetAddress(s string) *UserUpdate {
 	return uu
 }
 
+// SetNillableAddress sets the "address" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableAddress(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetAddress(*s)
+	}
+	return uu
+}
+
 // SetPostalCode sets the "postal_code" field.
 func (uu *UserUpdate) SetPostalCode(s string) *UserUpdate {
 	uu.mutation.SetPostalCode(s)
+	return uu
+}
+
+// SetNillablePostalCode sets the "postal_code" field if the given value is not nil.
+func (uu *UserUpdate) SetNillablePostalCode(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetPostalCode(*s)
+	}
 	return uu
 }
 
@@ -61,9 +93,25 @@ func (uu *UserUpdate) SetTel(s string) *UserUpdate {
 	return uu
 }
 
+// SetNillableTel sets the "tel" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableTel(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetTel(*s)
+	}
+	return uu
+}
+
 // SetDriverLicenseID sets the "driver_license_id" field.
 func (uu *UserUpdate) SetDriverLicenseID(s string) *UserUpdate {
 	uu.mutation.SetDriverLicenseID(s)
+	return uu
+}
+
+// SetNillableDriverLicenseID sets the "driver_license_id" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableDriverLicenseID(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetDriverLicenseID(*s)
+	}
 	return uu
 }
 
@@ -73,9 +121,25 @@ func (uu *UserUpdate) SetDriverLicenseCountry(s string) *UserUpdate {
 	return uu
 }
 
+// SetNillableDriverLicenseCountry sets the "driver_license_country" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableDriverLicenseCountry(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetDriverLicenseCountry(*s)
+	}
+	return uu
+}
+
 // SetBirthday sets the "birthday" field.
 func (uu *UserUpdate) SetBirthday(t time.Time) *UserUpdate {
 	uu.mutation.SetBirthday(t)
+	return uu
+}
+
+// SetNillableBirthday sets the "birthday" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableBirthday(t *time.Time) *UserUpdate {
+	if t != nil {
+		uu.SetBirthday(*t)
+	}
 	return uu
 }
 
@@ -109,19 +173,15 @@ func (uu *UserUpdate) AddNoteFlaws(f ...*Flaw) *UserUpdate {
 	return uu.AddNoteFlawIDs(ids...)
 }
 
-// AddAccountIDs adds the "account" edge to the Account entity by IDs.
-func (uu *UserUpdate) AddAccountIDs(ids ...int) *UserUpdate {
-	uu.mutation.AddAccountIDs(ids...)
+// SetAccountID sets the "account" edge to the Account entity by ID.
+func (uu *UserUpdate) SetAccountID(id int) *UserUpdate {
+	uu.mutation.SetAccountID(id)
 	return uu
 }
 
-// AddAccount adds the "account" edges to the Account entity.
-func (uu *UserUpdate) AddAccount(a ...*Account) *UserUpdate {
-	ids := make([]int, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
-	}
-	return uu.AddAccountIDs(ids...)
+// SetAccount sets the "account" edge to the Account entity.
+func (uu *UserUpdate) SetAccount(a *Account) *UserUpdate {
+	return uu.SetAccountID(a.ID)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -171,25 +231,10 @@ func (uu *UserUpdate) RemoveNoteFlaws(f ...*Flaw) *UserUpdate {
 	return uu.RemoveNoteFlawIDs(ids...)
 }
 
-// ClearAccount clears all "account" edges to the Account entity.
+// ClearAccount clears the "account" edge to the Account entity.
 func (uu *UserUpdate) ClearAccount() *UserUpdate {
 	uu.mutation.ClearAccount()
 	return uu
-}
-
-// RemoveAccountIDs removes the "account" edge to Account entities by IDs.
-func (uu *UserUpdate) RemoveAccountIDs(ids ...int) *UserUpdate {
-	uu.mutation.RemoveAccountIDs(ids...)
-	return uu
-}
-
-// RemoveAccount removes "account" edges to Account entities.
-func (uu *UserUpdate) RemoveAccount(a ...*Account) *UserUpdate {
-	ids := make([]int, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
-	}
-	return uu.RemoveAccountIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -199,12 +244,18 @@ func (uu *UserUpdate) Save(ctx context.Context) (int, error) {
 		affected int
 	)
 	if len(uu.hooks) == 0 {
+		if err = uu.check(); err != nil {
+			return 0, err
+		}
 		affected, err = uu.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*UserMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = uu.check(); err != nil {
+				return 0, err
 			}
 			uu.mutation = mutation
 			affected, err = uu.sqlSave(ctx)
@@ -244,6 +295,14 @@ func (uu *UserUpdate) ExecX(ctx context.Context) {
 	if err := uu.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// check runs all checks and user-defined validators on the builder.
+func (uu *UserUpdate) check() error {
+	if _, ok := uu.mutation.AccountID(); uu.mutation.AccountCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "User.account"`)
+	}
+	return nil
 }
 
 func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
@@ -398,10 +457,10 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if uu.mutation.AccountCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   user.AccountTable,
-			Columns: user.AccountPrimaryKey,
+			Columns: []string{user.AccountColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -409,34 +468,15 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 					Column: account.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uu.mutation.RemovedAccountIDs(); len(nodes) > 0 && !uu.mutation.AccountCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   user.AccountTable,
-			Columns: user.AccountPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: account.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := uu.mutation.AccountIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   user.AccountTable,
-			Columns: user.AccountPrimaryKey,
+			Columns: []string{user.AccountColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -475,9 +515,25 @@ func (uuo *UserUpdateOne) SetFirstName(s string) *UserUpdateOne {
 	return uuo
 }
 
+// SetNillableFirstName sets the "first_name" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableFirstName(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetFirstName(*s)
+	}
+	return uuo
+}
+
 // SetLastName sets the "last_name" field.
 func (uuo *UserUpdateOne) SetLastName(s string) *UserUpdateOne {
 	uuo.mutation.SetLastName(s)
+	return uuo
+}
+
+// SetNillableLastName sets the "last_name" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableLastName(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetLastName(*s)
+	}
 	return uuo
 }
 
@@ -487,9 +543,25 @@ func (uuo *UserUpdateOne) SetAddress(s string) *UserUpdateOne {
 	return uuo
 }
 
+// SetNillableAddress sets the "address" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableAddress(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetAddress(*s)
+	}
+	return uuo
+}
+
 // SetPostalCode sets the "postal_code" field.
 func (uuo *UserUpdateOne) SetPostalCode(s string) *UserUpdateOne {
 	uuo.mutation.SetPostalCode(s)
+	return uuo
+}
+
+// SetNillablePostalCode sets the "postal_code" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillablePostalCode(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetPostalCode(*s)
+	}
 	return uuo
 }
 
@@ -499,9 +571,25 @@ func (uuo *UserUpdateOne) SetTel(s string) *UserUpdateOne {
 	return uuo
 }
 
+// SetNillableTel sets the "tel" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableTel(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetTel(*s)
+	}
+	return uuo
+}
+
 // SetDriverLicenseID sets the "driver_license_id" field.
 func (uuo *UserUpdateOne) SetDriverLicenseID(s string) *UserUpdateOne {
 	uuo.mutation.SetDriverLicenseID(s)
+	return uuo
+}
+
+// SetNillableDriverLicenseID sets the "driver_license_id" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableDriverLicenseID(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetDriverLicenseID(*s)
+	}
 	return uuo
 }
 
@@ -511,9 +599,25 @@ func (uuo *UserUpdateOne) SetDriverLicenseCountry(s string) *UserUpdateOne {
 	return uuo
 }
 
+// SetNillableDriverLicenseCountry sets the "driver_license_country" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableDriverLicenseCountry(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetDriverLicenseCountry(*s)
+	}
+	return uuo
+}
+
 // SetBirthday sets the "birthday" field.
 func (uuo *UserUpdateOne) SetBirthday(t time.Time) *UserUpdateOne {
 	uuo.mutation.SetBirthday(t)
+	return uuo
+}
+
+// SetNillableBirthday sets the "birthday" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableBirthday(t *time.Time) *UserUpdateOne {
+	if t != nil {
+		uuo.SetBirthday(*t)
+	}
 	return uuo
 }
 
@@ -547,19 +651,15 @@ func (uuo *UserUpdateOne) AddNoteFlaws(f ...*Flaw) *UserUpdateOne {
 	return uuo.AddNoteFlawIDs(ids...)
 }
 
-// AddAccountIDs adds the "account" edge to the Account entity by IDs.
-func (uuo *UserUpdateOne) AddAccountIDs(ids ...int) *UserUpdateOne {
-	uuo.mutation.AddAccountIDs(ids...)
+// SetAccountID sets the "account" edge to the Account entity by ID.
+func (uuo *UserUpdateOne) SetAccountID(id int) *UserUpdateOne {
+	uuo.mutation.SetAccountID(id)
 	return uuo
 }
 
-// AddAccount adds the "account" edges to the Account entity.
-func (uuo *UserUpdateOne) AddAccount(a ...*Account) *UserUpdateOne {
-	ids := make([]int, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
-	}
-	return uuo.AddAccountIDs(ids...)
+// SetAccount sets the "account" edge to the Account entity.
+func (uuo *UserUpdateOne) SetAccount(a *Account) *UserUpdateOne {
+	return uuo.SetAccountID(a.ID)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -609,25 +709,10 @@ func (uuo *UserUpdateOne) RemoveNoteFlaws(f ...*Flaw) *UserUpdateOne {
 	return uuo.RemoveNoteFlawIDs(ids...)
 }
 
-// ClearAccount clears all "account" edges to the Account entity.
+// ClearAccount clears the "account" edge to the Account entity.
 func (uuo *UserUpdateOne) ClearAccount() *UserUpdateOne {
 	uuo.mutation.ClearAccount()
 	return uuo
-}
-
-// RemoveAccountIDs removes the "account" edge to Account entities by IDs.
-func (uuo *UserUpdateOne) RemoveAccountIDs(ids ...int) *UserUpdateOne {
-	uuo.mutation.RemoveAccountIDs(ids...)
-	return uuo
-}
-
-// RemoveAccount removes "account" edges to Account entities.
-func (uuo *UserUpdateOne) RemoveAccount(a ...*Account) *UserUpdateOne {
-	ids := make([]int, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
-	}
-	return uuo.RemoveAccountIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -644,12 +729,18 @@ func (uuo *UserUpdateOne) Save(ctx context.Context) (*User, error) {
 		node *User
 	)
 	if len(uuo.hooks) == 0 {
+		if err = uuo.check(); err != nil {
+			return nil, err
+		}
 		node, err = uuo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*UserMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = uuo.check(); err != nil {
+				return nil, err
 			}
 			uuo.mutation = mutation
 			node, err = uuo.sqlSave(ctx)
@@ -695,6 +786,14 @@ func (uuo *UserUpdateOne) ExecX(ctx context.Context) {
 	if err := uuo.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// check runs all checks and user-defined validators on the builder.
+func (uuo *UserUpdateOne) check() error {
+	if _, ok := uuo.mutation.AccountID(); uuo.mutation.AccountCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "User.account"`)
+	}
+	return nil
 }
 
 func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
@@ -866,10 +965,10 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if uuo.mutation.AccountCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   user.AccountTable,
-			Columns: user.AccountPrimaryKey,
+			Columns: []string{user.AccountColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -877,34 +976,15 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 					Column: account.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uuo.mutation.RemovedAccountIDs(); len(nodes) > 0 && !uuo.mutation.AccountCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   user.AccountTable,
-			Columns: user.AccountPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: account.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := uuo.mutation.AccountIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   user.AccountTable,
-			Columns: user.AccountPrimaryKey,
+			Columns: []string{user.AccountColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

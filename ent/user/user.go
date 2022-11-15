@@ -2,6 +2,10 @@
 
 package user
 
+import (
+	"time"
+)
+
 const (
 	// Label holds the string label denoting the user type in the database.
 	Label = "user"
@@ -45,11 +49,13 @@ const (
 	NoteFlawsInverseTable = "flaws"
 	// NoteFlawsColumn is the table column denoting the note_flaws relation/edge.
 	NoteFlawsColumn = "user_note_flaws"
-	// AccountTable is the table that holds the account relation/edge. The primary key declared below.
-	AccountTable = "account_user"
+	// AccountTable is the table that holds the account relation/edge.
+	AccountTable = "users"
 	// AccountInverseTable is the table name for the Account entity.
 	// It exists in this package in order to avoid circular dependency with the "account" package.
 	AccountInverseTable = "accounts"
+	// AccountColumn is the table column denoting the account relation/edge.
+	AccountColumn = "account_user"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -65,11 +71,11 @@ var Columns = []string{
 	FieldBirthday,
 }
 
-var (
-	// AccountPrimaryKey and AccountColumn2 are the table columns denoting the
-	// primary key for the account relation (M2M).
-	AccountPrimaryKey = []string{"account_id", "user_id"}
-)
+// ForeignKeys holds the SQL foreign-keys that are owned by the "users"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"account_user",
+}
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -78,5 +84,29 @@ func ValidColumn(column string) bool {
 			return true
 		}
 	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
+			return true
+		}
+	}
 	return false
 }
+
+var (
+	// DefaultFirstName holds the default value on creation for the "first_name" field.
+	DefaultFirstName string
+	// DefaultLastName holds the default value on creation for the "last_name" field.
+	DefaultLastName string
+	// DefaultAddress holds the default value on creation for the "address" field.
+	DefaultAddress string
+	// DefaultPostalCode holds the default value on creation for the "postal_code" field.
+	DefaultPostalCode string
+	// DefaultTel holds the default value on creation for the "tel" field.
+	DefaultTel string
+	// DefaultDriverLicenseID holds the default value on creation for the "driver_license_id" field.
+	DefaultDriverLicenseID string
+	// DefaultDriverLicenseCountry holds the default value on creation for the "driver_license_country" field.
+	DefaultDriverLicenseCountry string
+	// DefaultBirthday holds the default value on creation for the "birthday" field.
+	DefaultBirthday func() time.Time
+)

@@ -17,11 +17,13 @@ const (
 	EdgeUser = "user"
 	// Table holds the table name of the account in the database.
 	Table = "accounts"
-	// UserTable is the table that holds the user relation/edge. The primary key declared below.
-	UserTable = "account_user"
+	// UserTable is the table that holds the user relation/edge.
+	UserTable = "users"
 	// UserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
 	UserInverseTable = "users"
+	// UserColumn is the table column denoting the user relation/edge.
+	UserColumn = "account_user"
 )
 
 // Columns holds all SQL columns for account fields.
@@ -31,12 +33,6 @@ var Columns = []string{
 	FieldEmail,
 	FieldIsAdmin,
 }
-
-var (
-	// UserPrimaryKey and UserColumn2 are the table columns denoting the
-	// primary key for the user relation (M2M).
-	UserPrimaryKey = []string{"account_id", "user_id"}
-)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
