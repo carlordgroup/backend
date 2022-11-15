@@ -14,6 +14,19 @@ definitions:
       token:
         type: string
     type: object
+  card.cardBinding:
+    properties:
+      cardholder_name:
+        type: string
+      number:
+        type: string
+      valid_until:
+        type: string
+    required:
+    - cardholder_name
+    - number
+    - valid_until
+    type: object
   ent.Account:
     properties:
       edges:
@@ -182,6 +195,72 @@ paths:
       summary: register a user
       tags:
       - auth
+  /card/:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/ent.Card'
+            type: array
+      summary: get cards of user
+      tags:
+      - card
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: create card
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/card.cardBinding'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ent.Card'
+      summary: create a card
+      tags:
+      - card
+  /card/:id:
+    delete:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: delete a card
+      tags:
+      - card
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: edit card
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/card.cardBinding'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ent.Card'
+      summary: edit a card
+      tags:
+      - card
   /user/:
     get:
       consumes:

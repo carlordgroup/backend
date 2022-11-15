@@ -2,6 +2,7 @@ package main
 
 import (
 	"carlord/auth"
+	"carlord/card"
 	"carlord/docs"
 	"carlord/ent"
 	"carlord/user"
@@ -26,12 +27,16 @@ func main() {
 	}
 
 	r := gin.Default()
+
 	g := r.Group("account/")
 	authService := auth.New(client)
 	authService.RegisterRouter(g)
 
 	g = r.Group("user/")
 	user.New(client).RegisterRouter(g, authService)
+
+	g = r.Group("card/")
+	card.New(client).RegisterRouter(g, authService)
 
 	docs.SwaggerInfo.BasePath = "/"
 	r.GET("/api/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))

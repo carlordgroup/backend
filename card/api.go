@@ -4,6 +4,8 @@ import (
 	"carlord/ent"
 	"carlord/ent/card"
 	"carlord/ent/user"
+	"carlord/web"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -25,49 +27,123 @@ func New(client *ent.Client) *service {
 
 func (s *service) RegisterRouter(group gin.IRoutes, auth Authenticate) {
 	group.Use(auth.MustLogin())
-	group.GET("/", s.get)
-	group.POST("/:id", s.post)
-	group.DELETE(auth.GetAccountUser())
+	group.GET("/", web.W(s.get))
+	group.POST("/:id", web.W(s.post))
+	group.POST("/", web.W(s.create))
+	group.DELETE("/:id", web.W(s.delete))
 }
 
-func (s *service) get(ctx *gin.Context) {
+// Get Card godoc
+// @Tags card
+// @Summary get cards of user
+// @Produce json
+// @Success 200 {object} []ent.Card
+// @Router /card/ [get]
+func (s *service) get(ctx *gin.Context) (int, any) {
 	cards, err := s.client.Card.Query().Where(card.HasOwnerWith(user.ID(ctx.MustGet("id").(int)))).All(ctx)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, err)
-		return
+		return http.StatusInternalServerError, err
 	}
-	ctx.JSON(http.StatusOK, cards)
-
+	return http.StatusOK, cards
 }
 
-func (s *service) post(ctx *gin.Context) {
+// helper method
+func (s *service) hasCard(ctx *gin.Context) (*ent.Card, error) {
 	type cardID struct {
 		ID int `uri:"id"`
 	}
 	var c cardID
 	err := ctx.ShouldBindUri(&c)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
-		return
-	}
-
-	var cardInfo ent.Card
-	err = ctx.ShouldBindJSON(&cardInfo)
-	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
-		return
+		return nil, err
 	}
 
 	editCard, err := s.client.Card.Query().Where(card.And(card.HasOwnerWith(user.ID(ctx.MustGet("id").(int))), card.ID(c.ID))).Only(ctx)
-	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, err)
-		return
-	}
-	editCard, err = s.client.Card.UpdateOne(editCard).SetNumber(cardInfo.Number).SetCardholderName(cardInfo.CardholderName).SetValidUntil(cardInfo.ValidUntil).Save(ctx)
-	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
-		return
-	}
-	ctx.JSON(http.StatusOK, editCard)
+	return editCard, nil
+}
 
+type cardBinding struct {
+	Number         string `json:"number" binding:"numeric,required"`
+	CardholderName string `json:"cardholder_name" binding:"required"`
+	ValidUntil     string `json:"valid_until" binding:"required"`
+}
+
+// Edit Card godoc
+// @Tags card
+// @Param request body cardBinding true "edit card"
+// @Summary edit a card
+// @Accept json
+// @Produce json
+// @Success 200 {object} ent.Card
+// @Router /card/:id [post]
+func (s *service) post(ctx *gin.Context) (int, any) {
+
+	oldCard, err := s.hasCard(ctx)
+	if err != nil {
+		return http.StatusBadRequest, err
+	}
+	if oldCard == nil {
+		return http.StatusNotFound, errors.New("this is not your card")
+	}
+	var cardInfo cardBinding
+
+	err = ctx.ShouldBindJSON(&cardInfo)
+	if err != nil {
+		return http.StatusBadRequest, err
+	}
+	oldCard, err = s.client.Card.UpdateOne(oldCard).SetNumber(cardInfo.Number).SetCardholderName(cardInfo.CardholderName).SetValidUntil(cardInfo.ValidUntil).Save(ctx)
+	if err != nil {
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, oldCard
+
+}
+
+// Create Card godoc
+// @Tags card
+// @Param request body cardBinding true "create card"
+// @Summary create a card
+// @Accept json
+// @Produce json
+// @Success 201 {object} ent.Card
+// @Router /card/ [post]
+func (s *service) create(ctx *gin.Context) (int, any) {
+
+	var cardInfo cardBinding
+
+	err := ctx.ShouldBindJSON(&cardInfo)
+	if err != nil {
+		return http.StatusBadRequest, err
+	}
+	newCard, err := s.client.Card.Create().SetNumber(cardInfo.Number).
+		SetCardholderName(cardInfo.CardholderName).
+		SetValidUntil(cardInfo.ValidUntil).
+		SetOwnerID(ctx.MustGet("id").(int)).Save(ctx)
+	if err != nil {
+		return http.StatusBadRequest, err
+	}
+	return http.StatusCreated, newCard
+}
+
+// Delete Card godoc
+// @Tags card
+// @Summary delete a card
+// @Accept json
+// @Produce json
+// @Success 204
+// @Router /card/:id [delete]
+func (s *service) delete(ctx *gin.Context) (int, any) {
+	oldCard, err := s.hasCard(ctx)
+	if err != nil {
+		return http.StatusBadRequest, err
+	}
+	if oldCard == nil {
+		return http.StatusNotFound, errors.New("this is not your card")
+	}
+
+	err = s.client.Card.DeleteOne(oldCard).Exec(ctx)
+	if err != nil {
+		return http.StatusBadRequest, err
+	}
+	return http.StatusNoContent, nil
 }
