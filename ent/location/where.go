@@ -6,6 +6,7 @@ import (
 	"carlord/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // ID filters vertices based on their ID field.
@@ -76,6 +77,282 @@ func IDLT(id int) predicate.Location {
 func IDLTE(id int) predicate.Location {
 	return predicate.Location(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldID), id))
+	})
+}
+
+// Name applies equality check predicate on the "name" field. It's identical to NameEQ.
+func Name(v string) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldName), v))
+	})
+}
+
+// Latitude applies equality check predicate on the "latitude" field. It's identical to LatitudeEQ.
+func Latitude(v float32) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldLatitude), v))
+	})
+}
+
+// Longitude applies equality check predicate on the "longitude" field. It's identical to LongitudeEQ.
+func Longitude(v float32) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldLongitude), v))
+	})
+}
+
+// NameEQ applies the EQ predicate on the "name" field.
+func NameEQ(v string) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldName), v))
+	})
+}
+
+// NameNEQ applies the NEQ predicate on the "name" field.
+func NameNEQ(v string) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldName), v))
+	})
+}
+
+// NameIn applies the In predicate on the "name" field.
+func NameIn(vs ...string) predicate.Location {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldName), v...))
+	})
+}
+
+// NameNotIn applies the NotIn predicate on the "name" field.
+func NameNotIn(vs ...string) predicate.Location {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldName), v...))
+	})
+}
+
+// NameGT applies the GT predicate on the "name" field.
+func NameGT(v string) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldName), v))
+	})
+}
+
+// NameGTE applies the GTE predicate on the "name" field.
+func NameGTE(v string) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldName), v))
+	})
+}
+
+// NameLT applies the LT predicate on the "name" field.
+func NameLT(v string) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldName), v))
+	})
+}
+
+// NameLTE applies the LTE predicate on the "name" field.
+func NameLTE(v string) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldName), v))
+	})
+}
+
+// NameContains applies the Contains predicate on the "name" field.
+func NameContains(v string) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldName), v))
+	})
+}
+
+// NameHasPrefix applies the HasPrefix predicate on the "name" field.
+func NameHasPrefix(v string) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldName), v))
+	})
+}
+
+// NameHasSuffix applies the HasSuffix predicate on the "name" field.
+func NameHasSuffix(v string) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldName), v))
+	})
+}
+
+// NameEqualFold applies the EqualFold predicate on the "name" field.
+func NameEqualFold(v string) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldName), v))
+	})
+}
+
+// NameContainsFold applies the ContainsFold predicate on the "name" field.
+func NameContainsFold(v string) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldName), v))
+	})
+}
+
+// LatitudeEQ applies the EQ predicate on the "latitude" field.
+func LatitudeEQ(v float32) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldLatitude), v))
+	})
+}
+
+// LatitudeNEQ applies the NEQ predicate on the "latitude" field.
+func LatitudeNEQ(v float32) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldLatitude), v))
+	})
+}
+
+// LatitudeIn applies the In predicate on the "latitude" field.
+func LatitudeIn(vs ...float32) predicate.Location {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldLatitude), v...))
+	})
+}
+
+// LatitudeNotIn applies the NotIn predicate on the "latitude" field.
+func LatitudeNotIn(vs ...float32) predicate.Location {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldLatitude), v...))
+	})
+}
+
+// LatitudeGT applies the GT predicate on the "latitude" field.
+func LatitudeGT(v float32) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldLatitude), v))
+	})
+}
+
+// LatitudeGTE applies the GTE predicate on the "latitude" field.
+func LatitudeGTE(v float32) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldLatitude), v))
+	})
+}
+
+// LatitudeLT applies the LT predicate on the "latitude" field.
+func LatitudeLT(v float32) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldLatitude), v))
+	})
+}
+
+// LatitudeLTE applies the LTE predicate on the "latitude" field.
+func LatitudeLTE(v float32) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldLatitude), v))
+	})
+}
+
+// LongitudeEQ applies the EQ predicate on the "longitude" field.
+func LongitudeEQ(v float32) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldLongitude), v))
+	})
+}
+
+// LongitudeNEQ applies the NEQ predicate on the "longitude" field.
+func LongitudeNEQ(v float32) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldLongitude), v))
+	})
+}
+
+// LongitudeIn applies the In predicate on the "longitude" field.
+func LongitudeIn(vs ...float32) predicate.Location {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldLongitude), v...))
+	})
+}
+
+// LongitudeNotIn applies the NotIn predicate on the "longitude" field.
+func LongitudeNotIn(vs ...float32) predicate.Location {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldLongitude), v...))
+	})
+}
+
+// LongitudeGT applies the GT predicate on the "longitude" field.
+func LongitudeGT(v float32) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldLongitude), v))
+	})
+}
+
+// LongitudeGTE applies the GTE predicate on the "longitude" field.
+func LongitudeGTE(v float32) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldLongitude), v))
+	})
+}
+
+// LongitudeLT applies the LT predicate on the "longitude" field.
+func LongitudeLT(v float32) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldLongitude), v))
+	})
+}
+
+// LongitudeLTE applies the LTE predicate on the "longitude" field.
+func LongitudeLTE(v float32) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldLongitude), v))
+	})
+}
+
+// HasCars applies the HasEdge predicate on the "cars" edge.
+func HasCars() predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(CarsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, CarsTable, CarsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCarsWith applies the HasEdge predicate on the "cars" edge with a given conditions (other predicates).
+func HasCarsWith(preds ...predicate.Car) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(CarsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, CarsTable, CarsColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
 	})
 }
 

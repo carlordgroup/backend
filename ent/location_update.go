@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"carlord/ent/car"
 	"carlord/ent/location"
 	"carlord/ent/predicate"
 	"context"
@@ -27,9 +28,77 @@ func (lu *LocationUpdate) Where(ps ...predicate.Location) *LocationUpdate {
 	return lu
 }
 
+// SetName sets the "name" field.
+func (lu *LocationUpdate) SetName(s string) *LocationUpdate {
+	lu.mutation.SetName(s)
+	return lu
+}
+
+// SetLatitude sets the "latitude" field.
+func (lu *LocationUpdate) SetLatitude(f float32) *LocationUpdate {
+	lu.mutation.ResetLatitude()
+	lu.mutation.SetLatitude(f)
+	return lu
+}
+
+// AddLatitude adds f to the "latitude" field.
+func (lu *LocationUpdate) AddLatitude(f float32) *LocationUpdate {
+	lu.mutation.AddLatitude(f)
+	return lu
+}
+
+// SetLongitude sets the "longitude" field.
+func (lu *LocationUpdate) SetLongitude(f float32) *LocationUpdate {
+	lu.mutation.ResetLongitude()
+	lu.mutation.SetLongitude(f)
+	return lu
+}
+
+// AddLongitude adds f to the "longitude" field.
+func (lu *LocationUpdate) AddLongitude(f float32) *LocationUpdate {
+	lu.mutation.AddLongitude(f)
+	return lu
+}
+
+// AddCarIDs adds the "cars" edge to the Car entity by IDs.
+func (lu *LocationUpdate) AddCarIDs(ids ...int) *LocationUpdate {
+	lu.mutation.AddCarIDs(ids...)
+	return lu
+}
+
+// AddCars adds the "cars" edges to the Car entity.
+func (lu *LocationUpdate) AddCars(c ...*Car) *LocationUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return lu.AddCarIDs(ids...)
+}
+
 // Mutation returns the LocationMutation object of the builder.
 func (lu *LocationUpdate) Mutation() *LocationMutation {
 	return lu.mutation
+}
+
+// ClearCars clears all "cars" edges to the Car entity.
+func (lu *LocationUpdate) ClearCars() *LocationUpdate {
+	lu.mutation.ClearCars()
+	return lu
+}
+
+// RemoveCarIDs removes the "cars" edge to Car entities by IDs.
+func (lu *LocationUpdate) RemoveCarIDs(ids ...int) *LocationUpdate {
+	lu.mutation.RemoveCarIDs(ids...)
+	return lu
+}
+
+// RemoveCars removes "cars" edges to Car entities.
+func (lu *LocationUpdate) RemoveCars(c ...*Car) *LocationUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return lu.RemoveCarIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -104,6 +173,75 @@ func (lu *LocationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := lu.mutation.Name(); ok {
+		_spec.SetField(location.FieldName, field.TypeString, value)
+	}
+	if value, ok := lu.mutation.Latitude(); ok {
+		_spec.SetField(location.FieldLatitude, field.TypeFloat32, value)
+	}
+	if value, ok := lu.mutation.AddedLatitude(); ok {
+		_spec.AddField(location.FieldLatitude, field.TypeFloat32, value)
+	}
+	if value, ok := lu.mutation.Longitude(); ok {
+		_spec.SetField(location.FieldLongitude, field.TypeFloat32, value)
+	}
+	if value, ok := lu.mutation.AddedLongitude(); ok {
+		_spec.AddField(location.FieldLongitude, field.TypeFloat32, value)
+	}
+	if lu.mutation.CarsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   location.CarsTable,
+			Columns: []string{location.CarsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: car.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lu.mutation.RemovedCarsIDs(); len(nodes) > 0 && !lu.mutation.CarsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   location.CarsTable,
+			Columns: []string{location.CarsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: car.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lu.mutation.CarsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   location.CarsTable,
+			Columns: []string{location.CarsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: car.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, lu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{location.Label}
@@ -123,9 +261,77 @@ type LocationUpdateOne struct {
 	mutation *LocationMutation
 }
 
+// SetName sets the "name" field.
+func (luo *LocationUpdateOne) SetName(s string) *LocationUpdateOne {
+	luo.mutation.SetName(s)
+	return luo
+}
+
+// SetLatitude sets the "latitude" field.
+func (luo *LocationUpdateOne) SetLatitude(f float32) *LocationUpdateOne {
+	luo.mutation.ResetLatitude()
+	luo.mutation.SetLatitude(f)
+	return luo
+}
+
+// AddLatitude adds f to the "latitude" field.
+func (luo *LocationUpdateOne) AddLatitude(f float32) *LocationUpdateOne {
+	luo.mutation.AddLatitude(f)
+	return luo
+}
+
+// SetLongitude sets the "longitude" field.
+func (luo *LocationUpdateOne) SetLongitude(f float32) *LocationUpdateOne {
+	luo.mutation.ResetLongitude()
+	luo.mutation.SetLongitude(f)
+	return luo
+}
+
+// AddLongitude adds f to the "longitude" field.
+func (luo *LocationUpdateOne) AddLongitude(f float32) *LocationUpdateOne {
+	luo.mutation.AddLongitude(f)
+	return luo
+}
+
+// AddCarIDs adds the "cars" edge to the Car entity by IDs.
+func (luo *LocationUpdateOne) AddCarIDs(ids ...int) *LocationUpdateOne {
+	luo.mutation.AddCarIDs(ids...)
+	return luo
+}
+
+// AddCars adds the "cars" edges to the Car entity.
+func (luo *LocationUpdateOne) AddCars(c ...*Car) *LocationUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return luo.AddCarIDs(ids...)
+}
+
 // Mutation returns the LocationMutation object of the builder.
 func (luo *LocationUpdateOne) Mutation() *LocationMutation {
 	return luo.mutation
+}
+
+// ClearCars clears all "cars" edges to the Car entity.
+func (luo *LocationUpdateOne) ClearCars() *LocationUpdateOne {
+	luo.mutation.ClearCars()
+	return luo
+}
+
+// RemoveCarIDs removes the "cars" edge to Car entities by IDs.
+func (luo *LocationUpdateOne) RemoveCarIDs(ids ...int) *LocationUpdateOne {
+	luo.mutation.RemoveCarIDs(ids...)
+	return luo
+}
+
+// RemoveCars removes "cars" edges to Car entities.
+func (luo *LocationUpdateOne) RemoveCars(c ...*Car) *LocationUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return luo.RemoveCarIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -229,6 +435,75 @@ func (luo *LocationUpdateOne) sqlSave(ctx context.Context) (_node *Location, err
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := luo.mutation.Name(); ok {
+		_spec.SetField(location.FieldName, field.TypeString, value)
+	}
+	if value, ok := luo.mutation.Latitude(); ok {
+		_spec.SetField(location.FieldLatitude, field.TypeFloat32, value)
+	}
+	if value, ok := luo.mutation.AddedLatitude(); ok {
+		_spec.AddField(location.FieldLatitude, field.TypeFloat32, value)
+	}
+	if value, ok := luo.mutation.Longitude(); ok {
+		_spec.SetField(location.FieldLongitude, field.TypeFloat32, value)
+	}
+	if value, ok := luo.mutation.AddedLongitude(); ok {
+		_spec.AddField(location.FieldLongitude, field.TypeFloat32, value)
+	}
+	if luo.mutation.CarsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   location.CarsTable,
+			Columns: []string{location.CarsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: car.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := luo.mutation.RemovedCarsIDs(); len(nodes) > 0 && !luo.mutation.CarsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   location.CarsTable,
+			Columns: []string{location.CarsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: car.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := luo.mutation.CarsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   location.CarsTable,
+			Columns: []string{location.CarsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: car.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Location{config: luo.config}
 	_spec.Assign = _node.assignValues

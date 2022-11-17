@@ -47,9 +47,11 @@ type UserEdges struct {
 	NoteFlaws []*Flaw `json:"flaws"`
 	// Account holds the value of the account edge.
 	Account *Account `json:"account,omitempty"`
+	// Booking holds the value of the booking edge.
+	Booking []*Booking `json:"booking,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // CardOrErr returns the Card value or an error if the edge
@@ -81,6 +83,15 @@ func (e UserEdges) AccountOrErr() (*Account, error) {
 		return e.Account, nil
 	}
 	return nil, &NotLoadedError{edge: "account"}
+}
+
+// BookingOrErr returns the Booking value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) BookingOrErr() ([]*Booking, error) {
+	if e.loadedTypes[3] {
+		return e.Booking, nil
+	}
+	return nil, &NotLoadedError{edge: "booking"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -190,6 +201,11 @@ func (u *User) QueryNoteFlaws() *FlawQuery {
 // QueryAccount queries the "account" edge of the User entity.
 func (u *User) QueryAccount() *AccountQuery {
 	return (&UserClient{config: u.config}).QueryAccount(u)
+}
+
+// QueryBooking queries the "booking" edge of the User entity.
+func (u *User) QueryBooking() *BookingQuery {
+	return (&UserClient{config: u.config}).QueryBooking(u)
 }
 
 // Update returns a builder for updating this User.

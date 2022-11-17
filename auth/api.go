@@ -25,7 +25,7 @@ func New(client *ent.Client) *service {
 	return &s
 }
 
-func (s *service) RegisterRouter(group gin.IRoutes) {
+func (s *service) RegisterRouter(group gin.IRouter) {
 	group.POST("/login", login(s.auth))
 	group.POST("/refresh", s.auth.RefreshHandler)
 	group.POST("/register", web.W(s.register))

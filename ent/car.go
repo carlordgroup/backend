@@ -12,9 +12,66 @@ import (
 
 // Car is the model entity for the Car schema.
 type Car struct {
-	config
+	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
+	// Color holds the value of the "color" field.
+	Color string `json:"color,omitempty"`
+	// Brand holds the value of the "brand" field.
+	Brand string `json:"brand,omitempty"`
+	// Model holds the value of the "model" field.
+	Model string `json:"model,omitempty"`
+	// Year holds the value of the "year" field.
+	Year int `json:"year,omitempty"`
+	// Status holds the value of the "status" field.
+	Status string `json:"status,omitempty"`
+	// CarType holds the value of the "car_type" field.
+	CarType string `json:"car_type,omitempty"`
+	// PlateNumber holds the value of the "plate_number" field.
+	PlateNumber string `json:"plate_number,omitempty"`
+	// PlateCountry holds the value of the "plate_country" field.
+	PlateCountry string `json:"plate_country,omitempty"`
+	// UnitPrice holds the value of the "unit_price" field.
+	UnitPrice float32 `json:"unit_price,omitempty"`
+	// Price holds the value of the "price" field.
+	Price float32 `json:"price,omitempty"`
+	// Mileage holds the value of the "mileage" field.
+	Mileage int `json:"mileage,omitempty"`
+	// Deposit holds the value of the "deposit" field.
+	Deposit float32 `json:"deposit,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the CarQuery when eager-loading is set.
+	Edges         CarEdges `json:"edges"`
+	location_cars *int
+}
+
+// CarEdges holds the relations/edges for other nodes in the graph.
+type CarEdges struct {
+	// Location holds the value of the location edge.
+	Location []*Location `json:"location,omitempty"`
+	// Booking holds the value of the booking edge.
+	Booking []*Booking `json:"booking,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [2]bool
+}
+
+// LocationOrErr returns the Location value or an error if the edge
+// was not loaded in eager-loading.
+func (e CarEdges) LocationOrErr() ([]*Location, error) {
+	if e.loadedTypes[0] {
+		return e.Location, nil
+	}
+	return nil, &NotLoadedError{edge: "location"}
+}
+
+// BookingOrErr returns the Booking value or an error if the edge
+// was not loaded in eager-loading.
+func (e CarEdges) BookingOrErr() ([]*Booking, error) {
+	if e.loadedTypes[1] {
+		return e.Booking, nil
+	}
+	return nil, &NotLoadedError{edge: "booking"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -22,7 +79,13 @@ func (*Car) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case car.FieldID:
+		case car.FieldUnitPrice, car.FieldPrice, car.FieldDeposit:
+			values[i] = new(sql.NullFloat64)
+		case car.FieldID, car.FieldYear, car.FieldMileage:
+			values[i] = new(sql.NullInt64)
+		case car.FieldColor, car.FieldBrand, car.FieldModel, car.FieldStatus, car.FieldCarType, car.FieldPlateNumber, car.FieldPlateCountry:
+			values[i] = new(sql.NullString)
+		case car.ForeignKeys[0]: // location_cars
 			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Car", columns[i])
@@ -45,9 +108,98 @@ func (c *Car) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			c.ID = int(value.Int64)
+		case car.FieldColor:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field color", values[i])
+			} else if value.Valid {
+				c.Color = value.String
+			}
+		case car.FieldBrand:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field brand", values[i])
+			} else if value.Valid {
+				c.Brand = value.String
+			}
+		case car.FieldModel:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field model", values[i])
+			} else if value.Valid {
+				c.Model = value.String
+			}
+		case car.FieldYear:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field year", values[i])
+			} else if value.Valid {
+				c.Year = int(value.Int64)
+			}
+		case car.FieldStatus:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field status", values[i])
+			} else if value.Valid {
+				c.Status = value.String
+			}
+		case car.FieldCarType:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field car_type", values[i])
+			} else if value.Valid {
+				c.CarType = value.String
+			}
+		case car.FieldPlateNumber:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field plate_number", values[i])
+			} else if value.Valid {
+				c.PlateNumber = value.String
+			}
+		case car.FieldPlateCountry:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field plate_country", values[i])
+			} else if value.Valid {
+				c.PlateCountry = value.String
+			}
+		case car.FieldUnitPrice:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field unit_price", values[i])
+			} else if value.Valid {
+				c.UnitPrice = float32(value.Float64)
+			}
+		case car.FieldPrice:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field price", values[i])
+			} else if value.Valid {
+				c.Price = float32(value.Float64)
+			}
+		case car.FieldMileage:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field mileage", values[i])
+			} else if value.Valid {
+				c.Mileage = int(value.Int64)
+			}
+		case car.FieldDeposit:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field deposit", values[i])
+			} else if value.Valid {
+				c.Deposit = float32(value.Float64)
+			}
+		case car.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field location_cars", value)
+			} else if value.Valid {
+				c.location_cars = new(int)
+				*c.location_cars = int(value.Int64)
+			}
 		}
 	}
 	return nil
+}
+
+// QueryLocation queries the "location" edge of the Car entity.
+func (c *Car) QueryLocation() *LocationQuery {
+	return (&CarClient{config: c.config}).QueryLocation(c)
+}
+
+// QueryBooking queries the "booking" edge of the Car entity.
+func (c *Car) QueryBooking() *BookingQuery {
+	return (&CarClient{config: c.config}).QueryBooking(c)
 }
 
 // Update returns a builder for updating this Car.
@@ -72,7 +224,42 @@ func (c *Car) Unwrap() *Car {
 func (c *Car) String() string {
 	var builder strings.Builder
 	builder.WriteString("Car(")
-	builder.WriteString(fmt.Sprintf("id=%v", c.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", c.ID))
+	builder.WriteString("color=")
+	builder.WriteString(c.Color)
+	builder.WriteString(", ")
+	builder.WriteString("brand=")
+	builder.WriteString(c.Brand)
+	builder.WriteString(", ")
+	builder.WriteString("model=")
+	builder.WriteString(c.Model)
+	builder.WriteString(", ")
+	builder.WriteString("year=")
+	builder.WriteString(fmt.Sprintf("%v", c.Year))
+	builder.WriteString(", ")
+	builder.WriteString("status=")
+	builder.WriteString(c.Status)
+	builder.WriteString(", ")
+	builder.WriteString("car_type=")
+	builder.WriteString(c.CarType)
+	builder.WriteString(", ")
+	builder.WriteString("plate_number=")
+	builder.WriteString(c.PlateNumber)
+	builder.WriteString(", ")
+	builder.WriteString("plate_country=")
+	builder.WriteString(c.PlateCountry)
+	builder.WriteString(", ")
+	builder.WriteString("unit_price=")
+	builder.WriteString(fmt.Sprintf("%v", c.UnitPrice))
+	builder.WriteString(", ")
+	builder.WriteString("price=")
+	builder.WriteString(fmt.Sprintf("%v", c.Price))
+	builder.WriteString(", ")
+	builder.WriteString("mileage=")
+	builder.WriteString(fmt.Sprintf("%v", c.Mileage))
+	builder.WriteString(", ")
+	builder.WriteString("deposit=")
+	builder.WriteString(fmt.Sprintf("%v", c.Deposit))
 	builder.WriteByte(')')
 	return builder.String()
 }

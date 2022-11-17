@@ -4,6 +4,8 @@ package ent
 
 import (
 	"carlord/ent/billing"
+	"carlord/ent/booking"
+	"carlord/ent/card"
 	"carlord/ent/predicate"
 	"context"
 	"errors"
@@ -27,9 +29,81 @@ func (bu *BillingUpdate) Where(ps ...predicate.Billing) *BillingUpdate {
 	return bu
 }
 
+// AddBookingIDs adds the "booking" edge to the Booking entity by IDs.
+func (bu *BillingUpdate) AddBookingIDs(ids ...int) *BillingUpdate {
+	bu.mutation.AddBookingIDs(ids...)
+	return bu
+}
+
+// AddBooking adds the "booking" edges to the Booking entity.
+func (bu *BillingUpdate) AddBooking(b ...*Booking) *BillingUpdate {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return bu.AddBookingIDs(ids...)
+}
+
+// AddCardIDs adds the "card" edge to the Card entity by IDs.
+func (bu *BillingUpdate) AddCardIDs(ids ...int) *BillingUpdate {
+	bu.mutation.AddCardIDs(ids...)
+	return bu
+}
+
+// AddCard adds the "card" edges to the Card entity.
+func (bu *BillingUpdate) AddCard(c ...*Card) *BillingUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return bu.AddCardIDs(ids...)
+}
+
 // Mutation returns the BillingMutation object of the builder.
 func (bu *BillingUpdate) Mutation() *BillingMutation {
 	return bu.mutation
+}
+
+// ClearBooking clears all "booking" edges to the Booking entity.
+func (bu *BillingUpdate) ClearBooking() *BillingUpdate {
+	bu.mutation.ClearBooking()
+	return bu
+}
+
+// RemoveBookingIDs removes the "booking" edge to Booking entities by IDs.
+func (bu *BillingUpdate) RemoveBookingIDs(ids ...int) *BillingUpdate {
+	bu.mutation.RemoveBookingIDs(ids...)
+	return bu
+}
+
+// RemoveBooking removes "booking" edges to Booking entities.
+func (bu *BillingUpdate) RemoveBooking(b ...*Booking) *BillingUpdate {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return bu.RemoveBookingIDs(ids...)
+}
+
+// ClearCard clears all "card" edges to the Card entity.
+func (bu *BillingUpdate) ClearCard() *BillingUpdate {
+	bu.mutation.ClearCard()
+	return bu
+}
+
+// RemoveCardIDs removes the "card" edge to Card entities by IDs.
+func (bu *BillingUpdate) RemoveCardIDs(ids ...int) *BillingUpdate {
+	bu.mutation.RemoveCardIDs(ids...)
+	return bu
+}
+
+// RemoveCard removes "card" edges to Card entities.
+func (bu *BillingUpdate) RemoveCard(c ...*Card) *BillingUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return bu.RemoveCardIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -104,6 +178,114 @@ func (bu *BillingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if bu.mutation.BookingCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   billing.BookingTable,
+			Columns: billing.BookingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: booking.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.RemovedBookingIDs(); len(nodes) > 0 && !bu.mutation.BookingCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   billing.BookingTable,
+			Columns: billing.BookingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: booking.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.BookingIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   billing.BookingTable,
+			Columns: billing.BookingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: booking.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if bu.mutation.CardCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   billing.CardTable,
+			Columns: []string{billing.CardColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: card.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.RemovedCardIDs(); len(nodes) > 0 && !bu.mutation.CardCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   billing.CardTable,
+			Columns: []string{billing.CardColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: card.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.CardIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   billing.CardTable,
+			Columns: []string{billing.CardColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: card.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, bu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{billing.Label}
@@ -123,9 +305,81 @@ type BillingUpdateOne struct {
 	mutation *BillingMutation
 }
 
+// AddBookingIDs adds the "booking" edge to the Booking entity by IDs.
+func (buo *BillingUpdateOne) AddBookingIDs(ids ...int) *BillingUpdateOne {
+	buo.mutation.AddBookingIDs(ids...)
+	return buo
+}
+
+// AddBooking adds the "booking" edges to the Booking entity.
+func (buo *BillingUpdateOne) AddBooking(b ...*Booking) *BillingUpdateOne {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return buo.AddBookingIDs(ids...)
+}
+
+// AddCardIDs adds the "card" edge to the Card entity by IDs.
+func (buo *BillingUpdateOne) AddCardIDs(ids ...int) *BillingUpdateOne {
+	buo.mutation.AddCardIDs(ids...)
+	return buo
+}
+
+// AddCard adds the "card" edges to the Card entity.
+func (buo *BillingUpdateOne) AddCard(c ...*Card) *BillingUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return buo.AddCardIDs(ids...)
+}
+
 // Mutation returns the BillingMutation object of the builder.
 func (buo *BillingUpdateOne) Mutation() *BillingMutation {
 	return buo.mutation
+}
+
+// ClearBooking clears all "booking" edges to the Booking entity.
+func (buo *BillingUpdateOne) ClearBooking() *BillingUpdateOne {
+	buo.mutation.ClearBooking()
+	return buo
+}
+
+// RemoveBookingIDs removes the "booking" edge to Booking entities by IDs.
+func (buo *BillingUpdateOne) RemoveBookingIDs(ids ...int) *BillingUpdateOne {
+	buo.mutation.RemoveBookingIDs(ids...)
+	return buo
+}
+
+// RemoveBooking removes "booking" edges to Booking entities.
+func (buo *BillingUpdateOne) RemoveBooking(b ...*Booking) *BillingUpdateOne {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return buo.RemoveBookingIDs(ids...)
+}
+
+// ClearCard clears all "card" edges to the Card entity.
+func (buo *BillingUpdateOne) ClearCard() *BillingUpdateOne {
+	buo.mutation.ClearCard()
+	return buo
+}
+
+// RemoveCardIDs removes the "card" edge to Card entities by IDs.
+func (buo *BillingUpdateOne) RemoveCardIDs(ids ...int) *BillingUpdateOne {
+	buo.mutation.RemoveCardIDs(ids...)
+	return buo
+}
+
+// RemoveCard removes "card" edges to Card entities.
+func (buo *BillingUpdateOne) RemoveCard(c ...*Card) *BillingUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return buo.RemoveCardIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -229,6 +483,114 @@ func (buo *BillingUpdateOne) sqlSave(ctx context.Context) (_node *Billing, err e
 				ps[i](selector)
 			}
 		}
+	}
+	if buo.mutation.BookingCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   billing.BookingTable,
+			Columns: billing.BookingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: booking.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.RemovedBookingIDs(); len(nodes) > 0 && !buo.mutation.BookingCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   billing.BookingTable,
+			Columns: billing.BookingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: booking.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.BookingIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   billing.BookingTable,
+			Columns: billing.BookingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: booking.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if buo.mutation.CardCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   billing.CardTable,
+			Columns: []string{billing.CardColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: card.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.RemovedCardIDs(); len(nodes) > 0 && !buo.mutation.CardCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   billing.CardTable,
+			Columns: []string{billing.CardColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: card.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.CardIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   billing.CardTable,
+			Columns: []string{billing.CardColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: card.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Billing{config: buo.config}
 	_spec.Assign = _node.assignValues

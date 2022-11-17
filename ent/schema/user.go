@@ -33,5 +33,6 @@ func (User) Edges() []ent.Edge {
 		edge.To("card", Card.Type).StructTag(`json:"cards"`),
 		edge.To("note_flaws", Flaw.Type).StructTag(`json:"flaws"`),
 		edge.From("account", Account.Type).Ref("user").Required().Unique(),
+		edge.From("booking", Booking.Type).Ref("user"),
 	}
 }

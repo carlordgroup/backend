@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"carlord/ent"
 	"carlord/ent/account"
 	"encoding/base64"
 	jwt "github.com/appleboy/gin-jwt/v2"
@@ -93,6 +94,15 @@ func (s *service) initMiddleware() *jwt.GinJWTMiddleware {
 
 func (s *service) MustLogin() gin.HandlerFunc {
 	return s.auth.MiddlewareFunc()
+}
+func (s *service) MustAdmin() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		if !ctx.MustGet("account").(*ent.Account).IsAdmin {
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "you are not an admin"})
+			return
+		}
+		ctx.Next()
+	}
 }
 
 func (s *service) GetAccountUser() gin.HandlerFunc {

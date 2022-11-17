@@ -7,14 +7,78 @@ const (
 	Label = "car"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldColor holds the string denoting the color field in the database.
+	FieldColor = "color"
+	// FieldBrand holds the string denoting the brand field in the database.
+	FieldBrand = "brand"
+	// FieldModel holds the string denoting the model field in the database.
+	FieldModel = "model"
+	// FieldYear holds the string denoting the year field in the database.
+	FieldYear = "year"
+	// FieldStatus holds the string denoting the status field in the database.
+	FieldStatus = "status"
+	// FieldCarType holds the string denoting the car_type field in the database.
+	FieldCarType = "car_type"
+	// FieldPlateNumber holds the string denoting the plate_number field in the database.
+	FieldPlateNumber = "plate_number"
+	// FieldPlateCountry holds the string denoting the plate_country field in the database.
+	FieldPlateCountry = "plate_country"
+	// FieldUnitPrice holds the string denoting the unit_price field in the database.
+	FieldUnitPrice = "unit_price"
+	// FieldPrice holds the string denoting the price field in the database.
+	FieldPrice = "price"
+	// FieldMileage holds the string denoting the mileage field in the database.
+	FieldMileage = "mileage"
+	// FieldDeposit holds the string denoting the deposit field in the database.
+	FieldDeposit = "deposit"
+	// EdgeLocation holds the string denoting the location edge name in mutations.
+	EdgeLocation = "location"
+	// EdgeBooking holds the string denoting the booking edge name in mutations.
+	EdgeBooking = "booking"
 	// Table holds the table name of the car in the database.
 	Table = "cars"
+	// LocationTable is the table that holds the location relation/edge.
+	LocationTable = "locations"
+	// LocationInverseTable is the table name for the Location entity.
+	// It exists in this package in order to avoid circular dependency with the "location" package.
+	LocationInverseTable = "locations"
+	// LocationColumn is the table column denoting the location relation/edge.
+	LocationColumn = "car_location"
+	// BookingTable is the table that holds the booking relation/edge. The primary key declared below.
+	BookingTable = "booking_car"
+	// BookingInverseTable is the table name for the Booking entity.
+	// It exists in this package in order to avoid circular dependency with the "booking" package.
+	BookingInverseTable = "bookings"
 )
 
 // Columns holds all SQL columns for car fields.
 var Columns = []string{
 	FieldID,
+	FieldColor,
+	FieldBrand,
+	FieldModel,
+	FieldYear,
+	FieldStatus,
+	FieldCarType,
+	FieldPlateNumber,
+	FieldPlateCountry,
+	FieldUnitPrice,
+	FieldPrice,
+	FieldMileage,
+	FieldDeposit,
 }
+
+// ForeignKeys holds the SQL foreign-keys that are owned by the "cars"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"location_cars",
+}
+
+var (
+	// BookingPrimaryKey and BookingColumn2 are the table columns denoting the
+	// primary key for the booking relation (M2M).
+	BookingPrimaryKey = []string{"booking_id", "car_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -23,5 +87,15 @@ func ValidColumn(column string) bool {
 			return true
 		}
 	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
+			return true
+		}
+	}
 	return false
 }
+
+var (
+	// DefaultStatus holds the default value on creation for the "status" field.
+	DefaultStatus string
+)

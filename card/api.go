@@ -25,7 +25,7 @@ func New(client *ent.Client) *service {
 	return &s
 }
 
-func (s *service) RegisterRouter(group gin.IRoutes, auth Authenticate) {
+func (s *service) RegisterRouter(group gin.IRouter, auth Authenticate) {
 	group.Use(auth.MustLogin())
 	group.GET("/", web.W(s.get))
 	group.POST("/:id", web.W(s.post))

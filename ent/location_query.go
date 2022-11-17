@@ -3,9 +3,11 @@
 package ent
 
 import (
+	"carlord/ent/car"
 	"carlord/ent/location"
 	"carlord/ent/predicate"
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -23,6 +25,8 @@ type LocationQuery struct {
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Location
+	withCars   *CarQuery
+	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -57,6 +61,28 @@ func (lq *LocationQuery) Unique(unique bool) *LocationQuery {
 func (lq *LocationQuery) Order(o ...OrderFunc) *LocationQuery {
 	lq.order = append(lq.order, o...)
 	return lq
+}
+
+// QueryCars chains the current query on the "cars" edge.
+func (lq *LocationQuery) QueryCars() *CarQuery {
+	query := &CarQuery{config: lq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := lq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := lq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(location.Table, location.FieldID, selector),
+			sqlgraph.To(car.Table, car.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, location.CarsTable, location.CarsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(lq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first Location entity from the query.
@@ -240,6 +266,7 @@ func (lq *LocationQuery) Clone() *LocationQuery {
 		offset:     lq.offset,
 		order:      append([]OrderFunc{}, lq.order...),
 		predicates: append([]predicate.Location{}, lq.predicates...),
+		withCars:   lq.withCars.Clone(),
 		// clone intermediate query.
 		sql:    lq.sql.Clone(),
 		path:   lq.path,
@@ -247,8 +274,31 @@ func (lq *LocationQuery) Clone() *LocationQuery {
 	}
 }
 
+// WithCars tells the query-builder to eager-load the nodes that are connected to
+// the "cars" edge. The optional arguments are used to configure the query builder of the edge.
+func (lq *LocationQuery) WithCars(opts ...func(*CarQuery)) *LocationQuery {
+	query := &CarQuery{config: lq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	lq.withCars = query
+	return lq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
+//
+// Example:
+//
+//	var v []struct {
+//		Name string `json:"name,omitempty"`
+//		Count int `json:"count,omitempty"`
+//	}
+//
+//	client.Location.Query().
+//		GroupBy(location.FieldName).
+//		Aggregate(ent.Count()).
+//		Scan(ctx, &v)
 func (lq *LocationQuery) GroupBy(field string, fields ...string) *LocationGroupBy {
 	grbuild := &LocationGroupBy{config: lq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -265,6 +315,16 @@ func (lq *LocationQuery) GroupBy(field string, fields ...string) *LocationGroupB
 
 // Select allows the selection one or more fields/columns for the given query,
 // instead of selecting all fields in the entity.
+//
+// Example:
+//
+//	var v []struct {
+//		Name string `json:"name,omitempty"`
+//	}
+//
+//	client.Location.Query().
+//		Select(location.FieldName).
+//		Scan(ctx, &v)
 func (lq *LocationQuery) Select(fields ...string) *LocationSelect {
 	lq.fields = append(lq.fields, fields...)
 	selbuild := &LocationSelect{LocationQuery: lq}
@@ -296,15 +356,23 @@ func (lq *LocationQuery) prepareQuery(ctx context.Context) error {
 
 func (lq *LocationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Location, error) {
 	var (
-		nodes = []*Location{}
-		_spec = lq.querySpec()
+		nodes       = []*Location{}
+		withFKs     = lq.withFKs
+		_spec       = lq.querySpec()
+		loadedTypes = [1]bool{
+			lq.withCars != nil,
+		}
 	)
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, location.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Location).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &Location{config: lq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -316,7 +384,46 @@ func (lq *LocationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Loc
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := lq.withCars; query != nil {
+		if err := lq.loadCars(ctx, query, nodes,
+			func(n *Location) { n.Edges.Cars = []*Car{} },
+			func(n *Location, e *Car) { n.Edges.Cars = append(n.Edges.Cars, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (lq *LocationQuery) loadCars(ctx context.Context, query *CarQuery, nodes []*Location, init func(*Location), assign func(*Location, *Car)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Location)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.InValues(location.CarsColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.location_cars
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "location_cars" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "location_cars" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
 }
 
 func (lq *LocationQuery) sqlCount(ctx context.Context) (int, error) {

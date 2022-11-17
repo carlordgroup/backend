@@ -363,6 +363,38 @@ func (c *BillingClient) GetX(ctx context.Context, id int) *Billing {
 	return obj
 }
 
+// QueryBooking queries the booking edge of a Billing.
+func (c *BillingClient) QueryBooking(b *Billing) *BookingQuery {
+	query := &BookingQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := b.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(billing.Table, billing.FieldID, id),
+			sqlgraph.To(booking.Table, booking.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, billing.BookingTable, billing.BookingPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCard queries the card edge of a Billing.
+func (c *BillingClient) QueryCard(b *Billing) *CardQuery {
+	query := &CardQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := b.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(billing.Table, billing.FieldID, id),
+			sqlgraph.To(card.Table, card.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, billing.CardTable, billing.CardColumn),
+		)
+		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *BillingClient) Hooks() []Hook {
 	return c.hooks.Billing
@@ -453,6 +485,54 @@ func (c *BookingClient) GetX(ctx context.Context, id int) *Booking {
 	return obj
 }
 
+// QueryUser queries the user edge of a Booking.
+func (c *BookingClient) QueryUser(b *Booking) *UserQuery {
+	query := &UserQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := b.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(booking.Table, booking.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, booking.UserTable, booking.UserPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCar queries the car edge of a Booking.
+func (c *BookingClient) QueryCar(b *Booking) *CarQuery {
+	query := &CarQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := b.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(booking.Table, booking.FieldID, id),
+			sqlgraph.To(car.Table, car.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, booking.CarTable, booking.CarPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryBilling queries the billing edge of a Booking.
+func (c *BookingClient) QueryBilling(b *Booking) *BillingQuery {
+	query := &BillingQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := b.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(booking.Table, booking.FieldID, id),
+			sqlgraph.To(billing.Table, billing.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, booking.BillingTable, booking.BillingPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *BookingClient) Hooks() []Hook {
 	return c.hooks.Booking
@@ -541,6 +621,38 @@ func (c *CarClient) GetX(ctx context.Context, id int) *Car {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryLocation queries the location edge of a Car.
+func (c *CarClient) QueryLocation(ca *Car) *LocationQuery {
+	query := &LocationQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ca.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(car.Table, car.FieldID, id),
+			sqlgraph.To(location.Table, location.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, car.LocationTable, car.LocationColumn),
+		)
+		fromV = sqlgraph.Neighbors(ca.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryBooking queries the booking edge of a Car.
+func (c *CarClient) QueryBooking(ca *Car) *BookingQuery {
+	query := &BookingQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ca.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(car.Table, car.FieldID, id),
+			sqlgraph.To(booking.Table, booking.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, car.BookingTable, car.BookingPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(ca.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.
@@ -829,6 +941,22 @@ func (c *LocationClient) GetX(ctx context.Context, id int) *Location {
 	return obj
 }
 
+// QueryCars queries the cars edge of a Location.
+func (c *LocationClient) QueryCars(l *Location) *CarQuery {
+	query := &CarQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := l.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(location.Table, location.FieldID, id),
+			sqlgraph.To(car.Table, car.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, location.CarsTable, location.CarsColumn),
+		)
+		fromV = sqlgraph.Neighbors(l.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *LocationClient) Hooks() []Hook {
 	return c.hooks.Location
@@ -960,6 +1088,22 @@ func (c *UserClient) QueryAccount(u *User) *AccountQuery {
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(account.Table, account.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, true, user.AccountTable, user.AccountColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryBooking queries the booking edge of a User.
+func (c *UserClient) QueryBooking(u *User) *BookingQuery {
+	query := &BookingQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(booking.Table, booking.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, user.BookingTable, user.BookingPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil
