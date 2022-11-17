@@ -1,8 +1,12 @@
 package web
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"net/http"
+)
 
 type ResultFiner func(ctx *gin.Context) (int, any)
+type IDResultFiner func(ctx *gin.Context, id int) (int, any)
 
 func W(finer ResultFiner) gin.HandlerFunc {
 	return func(context *gin.Context) {
@@ -15,4 +19,19 @@ func W(finer ResultFiner) gin.HandlerFunc {
 			context.JSON(code, result)
 		}
 	}
+}
+
+type id struct {
+	ID int `json:"id" binding:"required,number"`
+}
+
+func ID(finer IDResultFiner) gin.HandlerFunc {
+	return W(func(ctx *gin.Context) (int, any) {
+		var i id
+		err := ctx.ShouldBindJSON(&i)
+		if err != nil {
+			return http.StatusBadRequest, err
+		}
+		return finer(ctx, i.ID)
+	})
 }

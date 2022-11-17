@@ -829,6 +829,22 @@ func (c *LocationClient) GetX(ctx context.Context, id int) *Location {
 	return obj
 }
 
+// QueryCars queries the cars edge of a Location.
+func (c *LocationClient) QueryCars(l *Location) *CarQuery {
+	query := &CarQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := l.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(location.Table, location.FieldID, id),
+			sqlgraph.To(car.Table, car.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, location.CarsTable, location.CarsColumn),
+		)
+		fromV = sqlgraph.Neighbors(l.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *LocationClient) Hooks() []Hook {
 	return c.hooks.Location

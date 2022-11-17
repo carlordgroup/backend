@@ -44,12 +44,21 @@ var (
 	// CarsColumns holds the columns for the "cars" table.
 	CarsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "location_cars", Type: field.TypeInt, Nullable: true},
 	}
 	// CarsTable holds the schema information for the "cars" table.
 	CarsTable = &schema.Table{
 		Name:       "cars",
 		Columns:    CarsColumns,
 		PrimaryKey: []*schema.Column{CarsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "cars_locations_cars",
+				Columns:    []*schema.Column{CarsColumns[1]},
+				RefColumns: []*schema.Column{LocationsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// CardsColumns holds the columns for the "cards" table.
 	CardsColumns = []*schema.Column{
@@ -95,6 +104,9 @@ var (
 	// LocationsColumns holds the columns for the "locations" table.
 	LocationsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "latitude", Type: field.TypeFloat32},
+		{Name: "longitude", Type: field.TypeFloat32},
 	}
 	// LocationsTable holds the schema information for the "locations" table.
 	LocationsTable = &schema.Table{
@@ -143,6 +155,7 @@ var (
 )
 
 func init() {
+	CarsTable.ForeignKeys[0].RefTable = LocationsTable
 	CardsTable.ForeignKeys[0].RefTable = UsersTable
 	FlawsTable.ForeignKeys[0].RefTable = UsersTable
 	UsersTable.ForeignKeys[0].RefTable = AccountsTable

@@ -12,9 +12,36 @@ import (
 
 // Location is the model entity for the Location schema.
 type Location struct {
-	config
+	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
+	// Name holds the value of the "name" field.
+	Name string `json:"name,omitempty"`
+	// Latitude holds the value of the "latitude" field.
+	Latitude float32 `json:"latitude,omitempty"`
+	// Longitude holds the value of the "longitude" field.
+	Longitude float32 `json:"longitude,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the LocationQuery when eager-loading is set.
+	Edges LocationEdges `json:"edges"`
+}
+
+// LocationEdges holds the relations/edges for other nodes in the graph.
+type LocationEdges struct {
+	// Cars holds the value of the cars edge.
+	Cars []*Car `json:"cars,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// CarsOrErr returns the Cars value or an error if the edge
+// was not loaded in eager-loading.
+func (e LocationEdges) CarsOrErr() ([]*Car, error) {
+	if e.loadedTypes[0] {
+		return e.Cars, nil
+	}
+	return nil, &NotLoadedError{edge: "cars"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -22,8 +49,12 @@ func (*Location) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case location.FieldLatitude, location.FieldLongitude:
+			values[i] = new(sql.NullFloat64)
 		case location.FieldID:
 			values[i] = new(sql.NullInt64)
+		case location.FieldName:
+			values[i] = new(sql.NullString)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Location", columns[i])
 		}
@@ -45,9 +76,32 @@ func (l *Location) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			l.ID = int(value.Int64)
+		case location.FieldName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field name", values[i])
+			} else if value.Valid {
+				l.Name = value.String
+			}
+		case location.FieldLatitude:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field latitude", values[i])
+			} else if value.Valid {
+				l.Latitude = float32(value.Float64)
+			}
+		case location.FieldLongitude:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field longitude", values[i])
+			} else if value.Valid {
+				l.Longitude = float32(value.Float64)
+			}
 		}
 	}
 	return nil
+}
+
+// QueryCars queries the "cars" edge of the Location entity.
+func (l *Location) QueryCars() *CarQuery {
+	return (&LocationClient{config: l.config}).QueryCars(l)
 }
 
 // Update returns a builder for updating this Location.
@@ -72,7 +126,15 @@ func (l *Location) Unwrap() *Location {
 func (l *Location) String() string {
 	var builder strings.Builder
 	builder.WriteString("Location(")
-	builder.WriteString(fmt.Sprintf("id=%v", l.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", l.ID))
+	builder.WriteString("name=")
+	builder.WriteString(l.Name)
+	builder.WriteString(", ")
+	builder.WriteString("latitude=")
+	builder.WriteString(fmt.Sprintf("%v", l.Latitude))
+	builder.WriteString(", ")
+	builder.WriteString("longitude=")
+	builder.WriteString(fmt.Sprintf("%v", l.Longitude))
 	builder.WriteByte(')')
 	return builder.String()
 }

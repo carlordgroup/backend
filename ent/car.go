@@ -14,7 +14,8 @@ import (
 type Car struct {
 	config
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID            int `json:"id,omitempty"`
+	location_cars *int
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -23,6 +24,8 @@ func (*Car) scanValues(columns []string) ([]any, error) {
 	for i := range columns {
 		switch columns[i] {
 		case car.FieldID:
+			values[i] = new(sql.NullInt64)
+		case car.ForeignKeys[0]: // location_cars
 			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Car", columns[i])
@@ -45,6 +48,13 @@ func (c *Car) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			c.ID = int(value.Int64)
+		case car.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field location_cars", value)
+			} else if value.Valid {
+				c.location_cars = new(int)
+				*c.location_cars = int(value.Int64)
+			}
 		}
 	}
 	return nil
