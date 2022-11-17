@@ -5,6 +5,7 @@ import (
 	"carlord/card"
 	"carlord/docs"
 	"carlord/ent"
+	"carlord/management"
 	"carlord/user"
 	"context"
 	"github.com/gin-gonic/gin"
@@ -37,6 +38,9 @@ func main() {
 
 	g = r.Group("card/")
 	card.New(client).RegisterRouter(g, authService)
+
+	g = r.Group("management/")
+	management.New(client).RegisterRouter(g, authService)
 
 	docs.SwaggerInfo.BasePath = "/"
 	r.GET("/api/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
