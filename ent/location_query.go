@@ -26,6 +26,7 @@ type LocationQuery struct {
 	fields     []string
 	predicates []predicate.Location
 	withCars   *CarQuery
+	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -356,11 +357,15 @@ func (lq *LocationQuery) prepareQuery(ctx context.Context) error {
 func (lq *LocationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Location, error) {
 	var (
 		nodes       = []*Location{}
+		withFKs     = lq.withFKs
 		_spec       = lq.querySpec()
 		loadedTypes = [1]bool{
 			lq.withCars != nil,
 		}
 	)
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, location.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Location).scanValues(nil, columns)
 	}

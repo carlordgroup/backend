@@ -4,8 +4,11 @@ package ent
 
 import (
 	"carlord/ent/billing"
+	"carlord/ent/booking"
+	"carlord/ent/card"
 	"carlord/ent/predicate"
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -17,12 +20,14 @@ import (
 // BillingQuery is the builder for querying Billing entities.
 type BillingQuery struct {
 	config
-	limit      *int
-	offset     *int
-	unique     *bool
-	order      []OrderFunc
-	fields     []string
-	predicates []predicate.Billing
+	limit       *int
+	offset      *int
+	unique      *bool
+	order       []OrderFunc
+	fields      []string
+	predicates  []predicate.Billing
+	withBooking *BookingQuery
+	withCard    *CardQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -57,6 +62,50 @@ func (bq *BillingQuery) Unique(unique bool) *BillingQuery {
 func (bq *BillingQuery) Order(o ...OrderFunc) *BillingQuery {
 	bq.order = append(bq.order, o...)
 	return bq
+}
+
+// QueryBooking chains the current query on the "booking" edge.
+func (bq *BillingQuery) QueryBooking() *BookingQuery {
+	query := &BookingQuery{config: bq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := bq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := bq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(billing.Table, billing.FieldID, selector),
+			sqlgraph.To(booking.Table, booking.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, billing.BookingTable, billing.BookingPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryCard chains the current query on the "card" edge.
+func (bq *BillingQuery) QueryCard() *CardQuery {
+	query := &CardQuery{config: bq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := bq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := bq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(billing.Table, billing.FieldID, selector),
+			sqlgraph.To(card.Table, card.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, billing.CardTable, billing.CardColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first Billing entity from the query.
@@ -235,16 +284,40 @@ func (bq *BillingQuery) Clone() *BillingQuery {
 		return nil
 	}
 	return &BillingQuery{
-		config:     bq.config,
-		limit:      bq.limit,
-		offset:     bq.offset,
-		order:      append([]OrderFunc{}, bq.order...),
-		predicates: append([]predicate.Billing{}, bq.predicates...),
+		config:      bq.config,
+		limit:       bq.limit,
+		offset:      bq.offset,
+		order:       append([]OrderFunc{}, bq.order...),
+		predicates:  append([]predicate.Billing{}, bq.predicates...),
+		withBooking: bq.withBooking.Clone(),
+		withCard:    bq.withCard.Clone(),
 		// clone intermediate query.
 		sql:    bq.sql.Clone(),
 		path:   bq.path,
 		unique: bq.unique,
 	}
+}
+
+// WithBooking tells the query-builder to eager-load the nodes that are connected to
+// the "booking" edge. The optional arguments are used to configure the query builder of the edge.
+func (bq *BillingQuery) WithBooking(opts ...func(*BookingQuery)) *BillingQuery {
+	query := &BookingQuery{config: bq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	bq.withBooking = query
+	return bq
+}
+
+// WithCard tells the query-builder to eager-load the nodes that are connected to
+// the "card" edge. The optional arguments are used to configure the query builder of the edge.
+func (bq *BillingQuery) WithCard(opts ...func(*CardQuery)) *BillingQuery {
+	query := &CardQuery{config: bq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	bq.withCard = query
+	return bq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -296,8 +369,12 @@ func (bq *BillingQuery) prepareQuery(ctx context.Context) error {
 
 func (bq *BillingQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Billing, error) {
 	var (
-		nodes = []*Billing{}
-		_spec = bq.querySpec()
+		nodes       = []*Billing{}
+		_spec       = bq.querySpec()
+		loadedTypes = [2]bool{
+			bq.withBooking != nil,
+			bq.withCard != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Billing).scanValues(nil, columns)
@@ -305,6 +382,7 @@ func (bq *BillingQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Bill
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &Billing{config: bq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -316,7 +394,111 @@ func (bq *BillingQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Bill
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := bq.withBooking; query != nil {
+		if err := bq.loadBooking(ctx, query, nodes,
+			func(n *Billing) { n.Edges.Booking = []*Booking{} },
+			func(n *Billing, e *Booking) { n.Edges.Booking = append(n.Edges.Booking, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := bq.withCard; query != nil {
+		if err := bq.loadCard(ctx, query, nodes,
+			func(n *Billing) { n.Edges.Card = []*Card{} },
+			func(n *Billing, e *Card) { n.Edges.Card = append(n.Edges.Card, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (bq *BillingQuery) loadBooking(ctx context.Context, query *BookingQuery, nodes []*Billing, init func(*Billing), assign func(*Billing, *Booking)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Billing)
+	nids := make(map[int]map[*Billing]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(billing.BookingTable)
+		s.Join(joinT).On(s.C(booking.FieldID), joinT.C(billing.BookingPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(billing.BookingPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(billing.BookingPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+		assign := spec.Assign
+		values := spec.ScanValues
+		spec.ScanValues = func(columns []string) ([]any, error) {
+			values, err := values(columns[1:])
+			if err != nil {
+				return nil, err
+			}
+			return append([]any{new(sql.NullInt64)}, values...), nil
+		}
+		spec.Assign = func(columns []string, values []any) error {
+			outValue := int(values[0].(*sql.NullInt64).Int64)
+			inValue := int(values[1].(*sql.NullInt64).Int64)
+			if nids[inValue] == nil {
+				nids[inValue] = map[*Billing]struct{}{byID[outValue]: {}}
+				return assign(columns[1:], values[1:])
+			}
+			nids[inValue][byID[outValue]] = struct{}{}
+			return nil
+		}
+	})
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "booking" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (bq *BillingQuery) loadCard(ctx context.Context, query *CardQuery, nodes []*Billing, init func(*Billing), assign func(*Billing, *Card)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Billing)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Card(func(s *sql.Selector) {
+		s.Where(sql.InValues(billing.CardColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.billing_card
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "billing_card" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "billing_card" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
 }
 
 func (bq *BillingQuery) sqlCount(ctx context.Context) (int, error) {

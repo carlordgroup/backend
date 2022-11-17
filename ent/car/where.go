@@ -6,6 +6,7 @@ import (
 	"carlord/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // ID filters vertices based on their ID field.
@@ -76,6 +77,1159 @@ func IDLT(id int) predicate.Car {
 func IDLTE(id int) predicate.Car {
 	return predicate.Car(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldID), id))
+	})
+}
+
+// Color applies equality check predicate on the "color" field. It's identical to ColorEQ.
+func Color(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldColor), v))
+	})
+}
+
+// Brand applies equality check predicate on the "brand" field. It's identical to BrandEQ.
+func Brand(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldBrand), v))
+	})
+}
+
+// Model applies equality check predicate on the "model" field. It's identical to ModelEQ.
+func Model(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldModel), v))
+	})
+}
+
+// Year applies equality check predicate on the "year" field. It's identical to YearEQ.
+func Year(v int) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldYear), v))
+	})
+}
+
+// Status applies equality check predicate on the "status" field. It's identical to StatusEQ.
+func Status(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldStatus), v))
+	})
+}
+
+// CarType applies equality check predicate on the "car_type" field. It's identical to CarTypeEQ.
+func CarType(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldCarType), v))
+	})
+}
+
+// PlateNumber applies equality check predicate on the "plate_number" field. It's identical to PlateNumberEQ.
+func PlateNumber(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldPlateNumber), v))
+	})
+}
+
+// PlateCountry applies equality check predicate on the "plate_country" field. It's identical to PlateCountryEQ.
+func PlateCountry(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldPlateCountry), v))
+	})
+}
+
+// UnitPrice applies equality check predicate on the "unit_price" field. It's identical to UnitPriceEQ.
+func UnitPrice(v float32) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldUnitPrice), v))
+	})
+}
+
+// Price applies equality check predicate on the "price" field. It's identical to PriceEQ.
+func Price(v float32) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldPrice), v))
+	})
+}
+
+// Mileage applies equality check predicate on the "mileage" field. It's identical to MileageEQ.
+func Mileage(v int) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldMileage), v))
+	})
+}
+
+// Deposit applies equality check predicate on the "deposit" field. It's identical to DepositEQ.
+func Deposit(v float32) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldDeposit), v))
+	})
+}
+
+// ColorEQ applies the EQ predicate on the "color" field.
+func ColorEQ(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldColor), v))
+	})
+}
+
+// ColorNEQ applies the NEQ predicate on the "color" field.
+func ColorNEQ(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldColor), v))
+	})
+}
+
+// ColorIn applies the In predicate on the "color" field.
+func ColorIn(vs ...string) predicate.Car {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldColor), v...))
+	})
+}
+
+// ColorNotIn applies the NotIn predicate on the "color" field.
+func ColorNotIn(vs ...string) predicate.Car {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldColor), v...))
+	})
+}
+
+// ColorGT applies the GT predicate on the "color" field.
+func ColorGT(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldColor), v))
+	})
+}
+
+// ColorGTE applies the GTE predicate on the "color" field.
+func ColorGTE(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldColor), v))
+	})
+}
+
+// ColorLT applies the LT predicate on the "color" field.
+func ColorLT(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldColor), v))
+	})
+}
+
+// ColorLTE applies the LTE predicate on the "color" field.
+func ColorLTE(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldColor), v))
+	})
+}
+
+// ColorContains applies the Contains predicate on the "color" field.
+func ColorContains(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldColor), v))
+	})
+}
+
+// ColorHasPrefix applies the HasPrefix predicate on the "color" field.
+func ColorHasPrefix(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldColor), v))
+	})
+}
+
+// ColorHasSuffix applies the HasSuffix predicate on the "color" field.
+func ColorHasSuffix(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldColor), v))
+	})
+}
+
+// ColorEqualFold applies the EqualFold predicate on the "color" field.
+func ColorEqualFold(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldColor), v))
+	})
+}
+
+// ColorContainsFold applies the ContainsFold predicate on the "color" field.
+func ColorContainsFold(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldColor), v))
+	})
+}
+
+// BrandEQ applies the EQ predicate on the "brand" field.
+func BrandEQ(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldBrand), v))
+	})
+}
+
+// BrandNEQ applies the NEQ predicate on the "brand" field.
+func BrandNEQ(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldBrand), v))
+	})
+}
+
+// BrandIn applies the In predicate on the "brand" field.
+func BrandIn(vs ...string) predicate.Car {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldBrand), v...))
+	})
+}
+
+// BrandNotIn applies the NotIn predicate on the "brand" field.
+func BrandNotIn(vs ...string) predicate.Car {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldBrand), v...))
+	})
+}
+
+// BrandGT applies the GT predicate on the "brand" field.
+func BrandGT(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldBrand), v))
+	})
+}
+
+// BrandGTE applies the GTE predicate on the "brand" field.
+func BrandGTE(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldBrand), v))
+	})
+}
+
+// BrandLT applies the LT predicate on the "brand" field.
+func BrandLT(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldBrand), v))
+	})
+}
+
+// BrandLTE applies the LTE predicate on the "brand" field.
+func BrandLTE(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldBrand), v))
+	})
+}
+
+// BrandContains applies the Contains predicate on the "brand" field.
+func BrandContains(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldBrand), v))
+	})
+}
+
+// BrandHasPrefix applies the HasPrefix predicate on the "brand" field.
+func BrandHasPrefix(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldBrand), v))
+	})
+}
+
+// BrandHasSuffix applies the HasSuffix predicate on the "brand" field.
+func BrandHasSuffix(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldBrand), v))
+	})
+}
+
+// BrandEqualFold applies the EqualFold predicate on the "brand" field.
+func BrandEqualFold(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldBrand), v))
+	})
+}
+
+// BrandContainsFold applies the ContainsFold predicate on the "brand" field.
+func BrandContainsFold(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldBrand), v))
+	})
+}
+
+// ModelEQ applies the EQ predicate on the "model" field.
+func ModelEQ(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldModel), v))
+	})
+}
+
+// ModelNEQ applies the NEQ predicate on the "model" field.
+func ModelNEQ(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldModel), v))
+	})
+}
+
+// ModelIn applies the In predicate on the "model" field.
+func ModelIn(vs ...string) predicate.Car {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldModel), v...))
+	})
+}
+
+// ModelNotIn applies the NotIn predicate on the "model" field.
+func ModelNotIn(vs ...string) predicate.Car {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldModel), v...))
+	})
+}
+
+// ModelGT applies the GT predicate on the "model" field.
+func ModelGT(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldModel), v))
+	})
+}
+
+// ModelGTE applies the GTE predicate on the "model" field.
+func ModelGTE(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldModel), v))
+	})
+}
+
+// ModelLT applies the LT predicate on the "model" field.
+func ModelLT(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldModel), v))
+	})
+}
+
+// ModelLTE applies the LTE predicate on the "model" field.
+func ModelLTE(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldModel), v))
+	})
+}
+
+// ModelContains applies the Contains predicate on the "model" field.
+func ModelContains(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldModel), v))
+	})
+}
+
+// ModelHasPrefix applies the HasPrefix predicate on the "model" field.
+func ModelHasPrefix(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldModel), v))
+	})
+}
+
+// ModelHasSuffix applies the HasSuffix predicate on the "model" field.
+func ModelHasSuffix(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldModel), v))
+	})
+}
+
+// ModelEqualFold applies the EqualFold predicate on the "model" field.
+func ModelEqualFold(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldModel), v))
+	})
+}
+
+// ModelContainsFold applies the ContainsFold predicate on the "model" field.
+func ModelContainsFold(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldModel), v))
+	})
+}
+
+// YearEQ applies the EQ predicate on the "year" field.
+func YearEQ(v int) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldYear), v))
+	})
+}
+
+// YearNEQ applies the NEQ predicate on the "year" field.
+func YearNEQ(v int) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldYear), v))
+	})
+}
+
+// YearIn applies the In predicate on the "year" field.
+func YearIn(vs ...int) predicate.Car {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldYear), v...))
+	})
+}
+
+// YearNotIn applies the NotIn predicate on the "year" field.
+func YearNotIn(vs ...int) predicate.Car {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldYear), v...))
+	})
+}
+
+// YearGT applies the GT predicate on the "year" field.
+func YearGT(v int) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldYear), v))
+	})
+}
+
+// YearGTE applies the GTE predicate on the "year" field.
+func YearGTE(v int) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldYear), v))
+	})
+}
+
+// YearLT applies the LT predicate on the "year" field.
+func YearLT(v int) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldYear), v))
+	})
+}
+
+// YearLTE applies the LTE predicate on the "year" field.
+func YearLTE(v int) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldYear), v))
+	})
+}
+
+// StatusEQ applies the EQ predicate on the "status" field.
+func StatusEQ(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldStatus), v))
+	})
+}
+
+// StatusNEQ applies the NEQ predicate on the "status" field.
+func StatusNEQ(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldStatus), v))
+	})
+}
+
+// StatusIn applies the In predicate on the "status" field.
+func StatusIn(vs ...string) predicate.Car {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldStatus), v...))
+	})
+}
+
+// StatusNotIn applies the NotIn predicate on the "status" field.
+func StatusNotIn(vs ...string) predicate.Car {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldStatus), v...))
+	})
+}
+
+// StatusGT applies the GT predicate on the "status" field.
+func StatusGT(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldStatus), v))
+	})
+}
+
+// StatusGTE applies the GTE predicate on the "status" field.
+func StatusGTE(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldStatus), v))
+	})
+}
+
+// StatusLT applies the LT predicate on the "status" field.
+func StatusLT(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldStatus), v))
+	})
+}
+
+// StatusLTE applies the LTE predicate on the "status" field.
+func StatusLTE(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldStatus), v))
+	})
+}
+
+// StatusContains applies the Contains predicate on the "status" field.
+func StatusContains(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldStatus), v))
+	})
+}
+
+// StatusHasPrefix applies the HasPrefix predicate on the "status" field.
+func StatusHasPrefix(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldStatus), v))
+	})
+}
+
+// StatusHasSuffix applies the HasSuffix predicate on the "status" field.
+func StatusHasSuffix(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldStatus), v))
+	})
+}
+
+// StatusEqualFold applies the EqualFold predicate on the "status" field.
+func StatusEqualFold(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldStatus), v))
+	})
+}
+
+// StatusContainsFold applies the ContainsFold predicate on the "status" field.
+func StatusContainsFold(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldStatus), v))
+	})
+}
+
+// CarTypeEQ applies the EQ predicate on the "car_type" field.
+func CarTypeEQ(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldCarType), v))
+	})
+}
+
+// CarTypeNEQ applies the NEQ predicate on the "car_type" field.
+func CarTypeNEQ(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldCarType), v))
+	})
+}
+
+// CarTypeIn applies the In predicate on the "car_type" field.
+func CarTypeIn(vs ...string) predicate.Car {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldCarType), v...))
+	})
+}
+
+// CarTypeNotIn applies the NotIn predicate on the "car_type" field.
+func CarTypeNotIn(vs ...string) predicate.Car {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldCarType), v...))
+	})
+}
+
+// CarTypeGT applies the GT predicate on the "car_type" field.
+func CarTypeGT(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldCarType), v))
+	})
+}
+
+// CarTypeGTE applies the GTE predicate on the "car_type" field.
+func CarTypeGTE(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldCarType), v))
+	})
+}
+
+// CarTypeLT applies the LT predicate on the "car_type" field.
+func CarTypeLT(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldCarType), v))
+	})
+}
+
+// CarTypeLTE applies the LTE predicate on the "car_type" field.
+func CarTypeLTE(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldCarType), v))
+	})
+}
+
+// CarTypeContains applies the Contains predicate on the "car_type" field.
+func CarTypeContains(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldCarType), v))
+	})
+}
+
+// CarTypeHasPrefix applies the HasPrefix predicate on the "car_type" field.
+func CarTypeHasPrefix(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldCarType), v))
+	})
+}
+
+// CarTypeHasSuffix applies the HasSuffix predicate on the "car_type" field.
+func CarTypeHasSuffix(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldCarType), v))
+	})
+}
+
+// CarTypeEqualFold applies the EqualFold predicate on the "car_type" field.
+func CarTypeEqualFold(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldCarType), v))
+	})
+}
+
+// CarTypeContainsFold applies the ContainsFold predicate on the "car_type" field.
+func CarTypeContainsFold(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldCarType), v))
+	})
+}
+
+// PlateNumberEQ applies the EQ predicate on the "plate_number" field.
+func PlateNumberEQ(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldPlateNumber), v))
+	})
+}
+
+// PlateNumberNEQ applies the NEQ predicate on the "plate_number" field.
+func PlateNumberNEQ(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldPlateNumber), v))
+	})
+}
+
+// PlateNumberIn applies the In predicate on the "plate_number" field.
+func PlateNumberIn(vs ...string) predicate.Car {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldPlateNumber), v...))
+	})
+}
+
+// PlateNumberNotIn applies the NotIn predicate on the "plate_number" field.
+func PlateNumberNotIn(vs ...string) predicate.Car {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldPlateNumber), v...))
+	})
+}
+
+// PlateNumberGT applies the GT predicate on the "plate_number" field.
+func PlateNumberGT(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldPlateNumber), v))
+	})
+}
+
+// PlateNumberGTE applies the GTE predicate on the "plate_number" field.
+func PlateNumberGTE(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldPlateNumber), v))
+	})
+}
+
+// PlateNumberLT applies the LT predicate on the "plate_number" field.
+func PlateNumberLT(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldPlateNumber), v))
+	})
+}
+
+// PlateNumberLTE applies the LTE predicate on the "plate_number" field.
+func PlateNumberLTE(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldPlateNumber), v))
+	})
+}
+
+// PlateNumberContains applies the Contains predicate on the "plate_number" field.
+func PlateNumberContains(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldPlateNumber), v))
+	})
+}
+
+// PlateNumberHasPrefix applies the HasPrefix predicate on the "plate_number" field.
+func PlateNumberHasPrefix(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldPlateNumber), v))
+	})
+}
+
+// PlateNumberHasSuffix applies the HasSuffix predicate on the "plate_number" field.
+func PlateNumberHasSuffix(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldPlateNumber), v))
+	})
+}
+
+// PlateNumberEqualFold applies the EqualFold predicate on the "plate_number" field.
+func PlateNumberEqualFold(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldPlateNumber), v))
+	})
+}
+
+// PlateNumberContainsFold applies the ContainsFold predicate on the "plate_number" field.
+func PlateNumberContainsFold(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldPlateNumber), v))
+	})
+}
+
+// PlateCountryEQ applies the EQ predicate on the "plate_country" field.
+func PlateCountryEQ(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldPlateCountry), v))
+	})
+}
+
+// PlateCountryNEQ applies the NEQ predicate on the "plate_country" field.
+func PlateCountryNEQ(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldPlateCountry), v))
+	})
+}
+
+// PlateCountryIn applies the In predicate on the "plate_country" field.
+func PlateCountryIn(vs ...string) predicate.Car {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldPlateCountry), v...))
+	})
+}
+
+// PlateCountryNotIn applies the NotIn predicate on the "plate_country" field.
+func PlateCountryNotIn(vs ...string) predicate.Car {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldPlateCountry), v...))
+	})
+}
+
+// PlateCountryGT applies the GT predicate on the "plate_country" field.
+func PlateCountryGT(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldPlateCountry), v))
+	})
+}
+
+// PlateCountryGTE applies the GTE predicate on the "plate_country" field.
+func PlateCountryGTE(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldPlateCountry), v))
+	})
+}
+
+// PlateCountryLT applies the LT predicate on the "plate_country" field.
+func PlateCountryLT(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldPlateCountry), v))
+	})
+}
+
+// PlateCountryLTE applies the LTE predicate on the "plate_country" field.
+func PlateCountryLTE(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldPlateCountry), v))
+	})
+}
+
+// PlateCountryContains applies the Contains predicate on the "plate_country" field.
+func PlateCountryContains(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldPlateCountry), v))
+	})
+}
+
+// PlateCountryHasPrefix applies the HasPrefix predicate on the "plate_country" field.
+func PlateCountryHasPrefix(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldPlateCountry), v))
+	})
+}
+
+// PlateCountryHasSuffix applies the HasSuffix predicate on the "plate_country" field.
+func PlateCountryHasSuffix(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldPlateCountry), v))
+	})
+}
+
+// PlateCountryEqualFold applies the EqualFold predicate on the "plate_country" field.
+func PlateCountryEqualFold(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldPlateCountry), v))
+	})
+}
+
+// PlateCountryContainsFold applies the ContainsFold predicate on the "plate_country" field.
+func PlateCountryContainsFold(v string) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldPlateCountry), v))
+	})
+}
+
+// UnitPriceEQ applies the EQ predicate on the "unit_price" field.
+func UnitPriceEQ(v float32) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldUnitPrice), v))
+	})
+}
+
+// UnitPriceNEQ applies the NEQ predicate on the "unit_price" field.
+func UnitPriceNEQ(v float32) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldUnitPrice), v))
+	})
+}
+
+// UnitPriceIn applies the In predicate on the "unit_price" field.
+func UnitPriceIn(vs ...float32) predicate.Car {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldUnitPrice), v...))
+	})
+}
+
+// UnitPriceNotIn applies the NotIn predicate on the "unit_price" field.
+func UnitPriceNotIn(vs ...float32) predicate.Car {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldUnitPrice), v...))
+	})
+}
+
+// UnitPriceGT applies the GT predicate on the "unit_price" field.
+func UnitPriceGT(v float32) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldUnitPrice), v))
+	})
+}
+
+// UnitPriceGTE applies the GTE predicate on the "unit_price" field.
+func UnitPriceGTE(v float32) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldUnitPrice), v))
+	})
+}
+
+// UnitPriceLT applies the LT predicate on the "unit_price" field.
+func UnitPriceLT(v float32) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldUnitPrice), v))
+	})
+}
+
+// UnitPriceLTE applies the LTE predicate on the "unit_price" field.
+func UnitPriceLTE(v float32) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldUnitPrice), v))
+	})
+}
+
+// PriceEQ applies the EQ predicate on the "price" field.
+func PriceEQ(v float32) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldPrice), v))
+	})
+}
+
+// PriceNEQ applies the NEQ predicate on the "price" field.
+func PriceNEQ(v float32) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldPrice), v))
+	})
+}
+
+// PriceIn applies the In predicate on the "price" field.
+func PriceIn(vs ...float32) predicate.Car {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldPrice), v...))
+	})
+}
+
+// PriceNotIn applies the NotIn predicate on the "price" field.
+func PriceNotIn(vs ...float32) predicate.Car {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldPrice), v...))
+	})
+}
+
+// PriceGT applies the GT predicate on the "price" field.
+func PriceGT(v float32) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldPrice), v))
+	})
+}
+
+// PriceGTE applies the GTE predicate on the "price" field.
+func PriceGTE(v float32) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldPrice), v))
+	})
+}
+
+// PriceLT applies the LT predicate on the "price" field.
+func PriceLT(v float32) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldPrice), v))
+	})
+}
+
+// PriceLTE applies the LTE predicate on the "price" field.
+func PriceLTE(v float32) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldPrice), v))
+	})
+}
+
+// MileageEQ applies the EQ predicate on the "mileage" field.
+func MileageEQ(v int) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldMileage), v))
+	})
+}
+
+// MileageNEQ applies the NEQ predicate on the "mileage" field.
+func MileageNEQ(v int) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldMileage), v))
+	})
+}
+
+// MileageIn applies the In predicate on the "mileage" field.
+func MileageIn(vs ...int) predicate.Car {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldMileage), v...))
+	})
+}
+
+// MileageNotIn applies the NotIn predicate on the "mileage" field.
+func MileageNotIn(vs ...int) predicate.Car {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldMileage), v...))
+	})
+}
+
+// MileageGT applies the GT predicate on the "mileage" field.
+func MileageGT(v int) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldMileage), v))
+	})
+}
+
+// MileageGTE applies the GTE predicate on the "mileage" field.
+func MileageGTE(v int) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldMileage), v))
+	})
+}
+
+// MileageLT applies the LT predicate on the "mileage" field.
+func MileageLT(v int) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldMileage), v))
+	})
+}
+
+// MileageLTE applies the LTE predicate on the "mileage" field.
+func MileageLTE(v int) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldMileage), v))
+	})
+}
+
+// DepositEQ applies the EQ predicate on the "deposit" field.
+func DepositEQ(v float32) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldDeposit), v))
+	})
+}
+
+// DepositNEQ applies the NEQ predicate on the "deposit" field.
+func DepositNEQ(v float32) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldDeposit), v))
+	})
+}
+
+// DepositIn applies the In predicate on the "deposit" field.
+func DepositIn(vs ...float32) predicate.Car {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldDeposit), v...))
+	})
+}
+
+// DepositNotIn applies the NotIn predicate on the "deposit" field.
+func DepositNotIn(vs ...float32) predicate.Car {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldDeposit), v...))
+	})
+}
+
+// DepositGT applies the GT predicate on the "deposit" field.
+func DepositGT(v float32) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldDeposit), v))
+	})
+}
+
+// DepositGTE applies the GTE predicate on the "deposit" field.
+func DepositGTE(v float32) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldDeposit), v))
+	})
+}
+
+// DepositLT applies the LT predicate on the "deposit" field.
+func DepositLT(v float32) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldDeposit), v))
+	})
+}
+
+// DepositLTE applies the LTE predicate on the "deposit" field.
+func DepositLTE(v float32) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldDeposit), v))
+	})
+}
+
+// HasLocation applies the HasEdge predicate on the "location" edge.
+func HasLocation() predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(LocationTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, LocationTable, LocationColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasLocationWith applies the HasEdge predicate on the "location" edge with a given conditions (other predicates).
+func HasLocationWith(preds ...predicate.Location) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(LocationInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, LocationTable, LocationColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasBooking applies the HasEdge predicate on the "booking" edge.
+func HasBooking() predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BookingTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, BookingTable, BookingPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasBookingWith applies the HasEdge predicate on the "booking" edge with a given conditions (other predicates).
+func HasBookingWith(preds ...predicate.Booking) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BookingInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, BookingTable, BookingPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
 	})
 }
 

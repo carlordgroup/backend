@@ -34,6 +34,14 @@ var (
 	// BookingsColumns holds the columns for the "bookings" table.
 	BookingsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "start_at", Type: field.TypeTime},
+		{Name: "end_at", Type: field.TypeTime},
+		{Name: "return_car_at", Type: field.TypeTime},
+		{Name: "fuel_level_at_begin", Type: field.TypeFloat32},
+		{Name: "fuel_level_at_end", Type: field.TypeFloat32},
+		{Name: "mileage_begin", Type: field.TypeInt},
+		{Name: "mileage_end", Type: field.TypeInt},
+		{Name: "booking_status", Type: field.TypeString},
 	}
 	// BookingsTable holds the schema information for the "bookings" table.
 	BookingsTable = &schema.Table{
@@ -44,6 +52,18 @@ var (
 	// CarsColumns holds the columns for the "cars" table.
 	CarsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "color", Type: field.TypeString},
+		{Name: "brand", Type: field.TypeString},
+		{Name: "model", Type: field.TypeString},
+		{Name: "year", Type: field.TypeInt},
+		{Name: "status", Type: field.TypeString, Default: "ready"},
+		{Name: "car_type", Type: field.TypeString},
+		{Name: "plate_number", Type: field.TypeString},
+		{Name: "plate_country", Type: field.TypeString},
+		{Name: "unit_price", Type: field.TypeFloat32},
+		{Name: "price", Type: field.TypeFloat32},
+		{Name: "mileage", Type: field.TypeInt},
+		{Name: "deposit", Type: field.TypeFloat32},
 		{Name: "location_cars", Type: field.TypeInt, Nullable: true},
 	}
 	// CarsTable holds the schema information for the "cars" table.
@@ -54,7 +74,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "cars_locations_cars",
-				Columns:    []*schema.Column{CarsColumns[1]},
+				Columns:    []*schema.Column{CarsColumns[13]},
 				RefColumns: []*schema.Column{LocationsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -66,6 +86,7 @@ var (
 		{Name: "number", Type: field.TypeString},
 		{Name: "cardholder_name", Type: field.TypeString},
 		{Name: "valid_until", Type: field.TypeString},
+		{Name: "billing_card", Type: field.TypeInt, Nullable: true},
 		{Name: "user_card", Type: field.TypeInt, Nullable: true},
 	}
 	// CardsTable holds the schema information for the "cards" table.
@@ -75,8 +96,14 @@ var (
 		PrimaryKey: []*schema.Column{CardsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "cards_users_card",
+				Symbol:     "cards_billings_card",
 				Columns:    []*schema.Column{CardsColumns[4]},
+				RefColumns: []*schema.Column{BillingsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "cards_users_card",
+				Columns:    []*schema.Column{CardsColumns[5]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -107,12 +134,21 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "latitude", Type: field.TypeFloat32},
 		{Name: "longitude", Type: field.TypeFloat32},
+		{Name: "car_location", Type: field.TypeInt, Nullable: true},
 	}
 	// LocationsTable holds the schema information for the "locations" table.
 	LocationsTable = &schema.Table{
 		Name:       "locations",
 		Columns:    LocationsColumns,
 		PrimaryKey: []*schema.Column{LocationsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "locations_cars_location",
+				Columns:    []*schema.Column{LocationsColumns[4]},
+				RefColumns: []*schema.Column{CarsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
@@ -141,6 +177,81 @@ var (
 			},
 		},
 	}
+	// BillingBookingColumns holds the columns for the "billing_booking" table.
+	BillingBookingColumns = []*schema.Column{
+		{Name: "billing_id", Type: field.TypeInt},
+		{Name: "booking_id", Type: field.TypeInt},
+	}
+	// BillingBookingTable holds the schema information for the "billing_booking" table.
+	BillingBookingTable = &schema.Table{
+		Name:       "billing_booking",
+		Columns:    BillingBookingColumns,
+		PrimaryKey: []*schema.Column{BillingBookingColumns[0], BillingBookingColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "billing_booking_billing_id",
+				Columns:    []*schema.Column{BillingBookingColumns[0]},
+				RefColumns: []*schema.Column{BillingsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "billing_booking_booking_id",
+				Columns:    []*schema.Column{BillingBookingColumns[1]},
+				RefColumns: []*schema.Column{BookingsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// BookingUserColumns holds the columns for the "booking_user" table.
+	BookingUserColumns = []*schema.Column{
+		{Name: "booking_id", Type: field.TypeInt},
+		{Name: "user_id", Type: field.TypeInt},
+	}
+	// BookingUserTable holds the schema information for the "booking_user" table.
+	BookingUserTable = &schema.Table{
+		Name:       "booking_user",
+		Columns:    BookingUserColumns,
+		PrimaryKey: []*schema.Column{BookingUserColumns[0], BookingUserColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "booking_user_booking_id",
+				Columns:    []*schema.Column{BookingUserColumns[0]},
+				RefColumns: []*schema.Column{BookingsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "booking_user_user_id",
+				Columns:    []*schema.Column{BookingUserColumns[1]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// BookingCarColumns holds the columns for the "booking_car" table.
+	BookingCarColumns = []*schema.Column{
+		{Name: "booking_id", Type: field.TypeInt},
+		{Name: "car_id", Type: field.TypeInt},
+	}
+	// BookingCarTable holds the schema information for the "booking_car" table.
+	BookingCarTable = &schema.Table{
+		Name:       "booking_car",
+		Columns:    BookingCarColumns,
+		PrimaryKey: []*schema.Column{BookingCarColumns[0], BookingCarColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "booking_car_booking_id",
+				Columns:    []*schema.Column{BookingCarColumns[0]},
+				RefColumns: []*schema.Column{BookingsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "booking_car_car_id",
+				Columns:    []*schema.Column{BookingCarColumns[1]},
+				RefColumns: []*schema.Column{CarsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AccountsTable,
@@ -151,12 +262,23 @@ var (
 		FlawsTable,
 		LocationsTable,
 		UsersTable,
+		BillingBookingTable,
+		BookingUserTable,
+		BookingCarTable,
 	}
 )
 
 func init() {
 	CarsTable.ForeignKeys[0].RefTable = LocationsTable
-	CardsTable.ForeignKeys[0].RefTable = UsersTable
+	CardsTable.ForeignKeys[0].RefTable = BillingsTable
+	CardsTable.ForeignKeys[1].RefTable = UsersTable
 	FlawsTable.ForeignKeys[0].RefTable = UsersTable
+	LocationsTable.ForeignKeys[0].RefTable = CarsTable
 	UsersTable.ForeignKeys[0].RefTable = AccountsTable
+	BillingBookingTable.ForeignKeys[0].RefTable = BillingsTable
+	BillingBookingTable.ForeignKeys[1].RefTable = BookingsTable
+	BookingUserTable.ForeignKeys[0].RefTable = BookingsTable
+	BookingUserTable.ForeignKeys[1].RefTable = UsersTable
+	BookingCarTable.ForeignKeys[0].RefTable = BookingsTable
+	BookingCarTable.ForeignKeys[1].RefTable = CarsTable
 }

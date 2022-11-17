@@ -7,14 +7,36 @@ const (
 	Label = "billing"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// EdgeBooking holds the string denoting the booking edge name in mutations.
+	EdgeBooking = "booking"
+	// EdgeCard holds the string denoting the card edge name in mutations.
+	EdgeCard = "card"
 	// Table holds the table name of the billing in the database.
 	Table = "billings"
+	// BookingTable is the table that holds the booking relation/edge. The primary key declared below.
+	BookingTable = "billing_booking"
+	// BookingInverseTable is the table name for the Booking entity.
+	// It exists in this package in order to avoid circular dependency with the "booking" package.
+	BookingInverseTable = "bookings"
+	// CardTable is the table that holds the card relation/edge.
+	CardTable = "cards"
+	// CardInverseTable is the table name for the Card entity.
+	// It exists in this package in order to avoid circular dependency with the "card" package.
+	CardInverseTable = "cards"
+	// CardColumn is the table column denoting the card relation/edge.
+	CardColumn = "billing_card"
 )
 
 // Columns holds all SQL columns for billing fields.
 var Columns = []string{
 	FieldID,
 }
+
+var (
+	// BookingPrimaryKey and BookingColumn2 are the table columns denoting the
+	// primary key for the booking relation (M2M).
+	BookingPrimaryKey = []string{"billing_id", "booking_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

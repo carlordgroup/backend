@@ -4,6 +4,7 @@ package ent
 
 import (
 	"carlord/ent/account"
+	"carlord/ent/booking"
 	"carlord/ent/card"
 	"carlord/ent/flaw"
 	"carlord/ent/user"
@@ -180,6 +181,21 @@ func (uc *UserCreate) SetAccountID(id int) *UserCreate {
 // SetAccount sets the "account" edge to the Account entity.
 func (uc *UserCreate) SetAccount(a *Account) *UserCreate {
 	return uc.SetAccountID(a.ID)
+}
+
+// AddBookingIDs adds the "booking" edge to the Booking entity by IDs.
+func (uc *UserCreate) AddBookingIDs(ids ...int) *UserCreate {
+	uc.mutation.AddBookingIDs(ids...)
+	return uc
+}
+
+// AddBooking adds the "booking" edges to the Booking entity.
+func (uc *UserCreate) AddBooking(b ...*Booking) *UserCreate {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return uc.AddBookingIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -443,6 +459,25 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.account_user = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.BookingIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.BookingTable,
+			Columns: user.BookingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: booking.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

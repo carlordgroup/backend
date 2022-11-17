@@ -1,6 +1,9 @@
 package schema
 
-import "entgo.io/ent"
+import (
+	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
+)
 
 // Billing holds the schema definition for the Billing entity.
 type Billing struct {
@@ -9,10 +12,13 @@ type Billing struct {
 
 // Fields of the Billing.
 func (Billing) Fields() []ent.Field {
-	return nil
+	return []ent.Field{}
 }
 
 // Edges of the Billing.
 func (Billing) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.To("booking", Booking.Type).Required(),
+		edge.To("card", Card.Type),
+	}
 }

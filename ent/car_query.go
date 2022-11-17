@@ -3,9 +3,12 @@
 package ent
 
 import (
+	"carlord/ent/booking"
 	"carlord/ent/car"
+	"carlord/ent/location"
 	"carlord/ent/predicate"
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -17,13 +20,15 @@ import (
 // CarQuery is the builder for querying Car entities.
 type CarQuery struct {
 	config
-	limit      *int
-	offset     *int
-	unique     *bool
-	order      []OrderFunc
-	fields     []string
-	predicates []predicate.Car
-	withFKs    bool
+	limit        *int
+	offset       *int
+	unique       *bool
+	order        []OrderFunc
+	fields       []string
+	predicates   []predicate.Car
+	withLocation *LocationQuery
+	withBooking  *BookingQuery
+	withFKs      bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -58,6 +63,50 @@ func (cq *CarQuery) Unique(unique bool) *CarQuery {
 func (cq *CarQuery) Order(o ...OrderFunc) *CarQuery {
 	cq.order = append(cq.order, o...)
 	return cq
+}
+
+// QueryLocation chains the current query on the "location" edge.
+func (cq *CarQuery) QueryLocation() *LocationQuery {
+	query := &LocationQuery{config: cq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := cq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := cq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(car.Table, car.FieldID, selector),
+			sqlgraph.To(location.Table, location.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, car.LocationTable, car.LocationColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryBooking chains the current query on the "booking" edge.
+func (cq *CarQuery) QueryBooking() *BookingQuery {
+	query := &BookingQuery{config: cq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := cq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := cq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(car.Table, car.FieldID, selector),
+			sqlgraph.To(booking.Table, booking.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, car.BookingTable, car.BookingPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first Car entity from the query.
@@ -236,11 +285,13 @@ func (cq *CarQuery) Clone() *CarQuery {
 		return nil
 	}
 	return &CarQuery{
-		config:     cq.config,
-		limit:      cq.limit,
-		offset:     cq.offset,
-		order:      append([]OrderFunc{}, cq.order...),
-		predicates: append([]predicate.Car{}, cq.predicates...),
+		config:       cq.config,
+		limit:        cq.limit,
+		offset:       cq.offset,
+		order:        append([]OrderFunc{}, cq.order...),
+		predicates:   append([]predicate.Car{}, cq.predicates...),
+		withLocation: cq.withLocation.Clone(),
+		withBooking:  cq.withBooking.Clone(),
 		// clone intermediate query.
 		sql:    cq.sql.Clone(),
 		path:   cq.path,
@@ -248,8 +299,42 @@ func (cq *CarQuery) Clone() *CarQuery {
 	}
 }
 
+// WithLocation tells the query-builder to eager-load the nodes that are connected to
+// the "location" edge. The optional arguments are used to configure the query builder of the edge.
+func (cq *CarQuery) WithLocation(opts ...func(*LocationQuery)) *CarQuery {
+	query := &LocationQuery{config: cq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	cq.withLocation = query
+	return cq
+}
+
+// WithBooking tells the query-builder to eager-load the nodes that are connected to
+// the "booking" edge. The optional arguments are used to configure the query builder of the edge.
+func (cq *CarQuery) WithBooking(opts ...func(*BookingQuery)) *CarQuery {
+	query := &BookingQuery{config: cq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	cq.withBooking = query
+	return cq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
+//
+// Example:
+//
+//	var v []struct {
+//		Color string `json:"color,omitempty"`
+//		Count int `json:"count,omitempty"`
+//	}
+//
+//	client.Car.Query().
+//		GroupBy(car.FieldColor).
+//		Aggregate(ent.Count()).
+//		Scan(ctx, &v)
 func (cq *CarQuery) GroupBy(field string, fields ...string) *CarGroupBy {
 	grbuild := &CarGroupBy{config: cq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -266,6 +351,16 @@ func (cq *CarQuery) GroupBy(field string, fields ...string) *CarGroupBy {
 
 // Select allows the selection one or more fields/columns for the given query,
 // instead of selecting all fields in the entity.
+//
+// Example:
+//
+//	var v []struct {
+//		Color string `json:"color,omitempty"`
+//	}
+//
+//	client.Car.Query().
+//		Select(car.FieldColor).
+//		Scan(ctx, &v)
 func (cq *CarQuery) Select(fields ...string) *CarSelect {
 	cq.fields = append(cq.fields, fields...)
 	selbuild := &CarSelect{CarQuery: cq}
@@ -297,9 +392,13 @@ func (cq *CarQuery) prepareQuery(ctx context.Context) error {
 
 func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, error) {
 	var (
-		nodes   = []*Car{}
-		withFKs = cq.withFKs
-		_spec   = cq.querySpec()
+		nodes       = []*Car{}
+		withFKs     = cq.withFKs
+		_spec       = cq.querySpec()
+		loadedTypes = [2]bool{
+			cq.withLocation != nil,
+			cq.withBooking != nil,
+		}
 	)
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, car.ForeignKeys...)
@@ -310,6 +409,7 @@ func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, err
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &Car{config: cq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -321,7 +421,111 @@ func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, err
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := cq.withLocation; query != nil {
+		if err := cq.loadLocation(ctx, query, nodes,
+			func(n *Car) { n.Edges.Location = []*Location{} },
+			func(n *Car, e *Location) { n.Edges.Location = append(n.Edges.Location, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := cq.withBooking; query != nil {
+		if err := cq.loadBooking(ctx, query, nodes,
+			func(n *Car) { n.Edges.Booking = []*Booking{} },
+			func(n *Car, e *Booking) { n.Edges.Booking = append(n.Edges.Booking, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (cq *CarQuery) loadLocation(ctx context.Context, query *LocationQuery, nodes []*Car, init func(*Car), assign func(*Car, *Location)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Car)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.InValues(car.LocationColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.car_location
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "car_location" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "car_location" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (cq *CarQuery) loadBooking(ctx context.Context, query *BookingQuery, nodes []*Car, init func(*Car), assign func(*Car, *Booking)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Car)
+	nids := make(map[int]map[*Car]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(car.BookingTable)
+		s.Join(joinT).On(s.C(booking.FieldID), joinT.C(car.BookingPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(car.BookingPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(car.BookingPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+		assign := spec.Assign
+		values := spec.ScanValues
+		spec.ScanValues = func(columns []string) ([]any, error) {
+			values, err := values(columns[1:])
+			if err != nil {
+				return nil, err
+			}
+			return append([]any{new(sql.NullInt64)}, values...), nil
+		}
+		spec.Assign = func(columns []string, values []any) error {
+			outValue := int(values[0].(*sql.NullInt64).Int64)
+			inValue := int(values[1].(*sql.NullInt64).Int64)
+			if nids[inValue] == nil {
+				nids[inValue] = map[*Car]struct{}{byID[outValue]: {}}
+				return assign(columns[1:], values[1:])
+			}
+			nids[inValue][byID[outValue]] = struct{}{}
+			return nil
+		}
+	})
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "booking" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
 }
 
 func (cq *CarQuery) sqlCount(ctx context.Context) (int, error) {

@@ -4,6 +4,7 @@ package ent
 
 import (
 	"carlord/ent/account"
+	"carlord/ent/booking"
 	"carlord/ent/card"
 	"carlord/ent/flaw"
 	"carlord/ent/predicate"
@@ -184,6 +185,21 @@ func (uu *UserUpdate) SetAccount(a *Account) *UserUpdate {
 	return uu.SetAccountID(a.ID)
 }
 
+// AddBookingIDs adds the "booking" edge to the Booking entity by IDs.
+func (uu *UserUpdate) AddBookingIDs(ids ...int) *UserUpdate {
+	uu.mutation.AddBookingIDs(ids...)
+	return uu
+}
+
+// AddBooking adds the "booking" edges to the Booking entity.
+func (uu *UserUpdate) AddBooking(b ...*Booking) *UserUpdate {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return uu.AddBookingIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
@@ -235,6 +251,27 @@ func (uu *UserUpdate) RemoveNoteFlaws(f ...*Flaw) *UserUpdate {
 func (uu *UserUpdate) ClearAccount() *UserUpdate {
 	uu.mutation.ClearAccount()
 	return uu
+}
+
+// ClearBooking clears all "booking" edges to the Booking entity.
+func (uu *UserUpdate) ClearBooking() *UserUpdate {
+	uu.mutation.ClearBooking()
+	return uu
+}
+
+// RemoveBookingIDs removes the "booking" edge to Booking entities by IDs.
+func (uu *UserUpdate) RemoveBookingIDs(ids ...int) *UserUpdate {
+	uu.mutation.RemoveBookingIDs(ids...)
+	return uu
+}
+
+// RemoveBooking removes "booking" edges to Booking entities.
+func (uu *UserUpdate) RemoveBooking(b ...*Booking) *UserUpdate {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return uu.RemoveBookingIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -490,6 +527,60 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if uu.mutation.BookingCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.BookingTable,
+			Columns: user.BookingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: booking.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedBookingIDs(); len(nodes) > 0 && !uu.mutation.BookingCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.BookingTable,
+			Columns: user.BookingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: booking.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.BookingIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.BookingTable,
+			Columns: user.BookingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: booking.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -662,6 +753,21 @@ func (uuo *UserUpdateOne) SetAccount(a *Account) *UserUpdateOne {
 	return uuo.SetAccountID(a.ID)
 }
 
+// AddBookingIDs adds the "booking" edge to the Booking entity by IDs.
+func (uuo *UserUpdateOne) AddBookingIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.AddBookingIDs(ids...)
+	return uuo
+}
+
+// AddBooking adds the "booking" edges to the Booking entity.
+func (uuo *UserUpdateOne) AddBooking(b ...*Booking) *UserUpdateOne {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return uuo.AddBookingIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
@@ -713,6 +819,27 @@ func (uuo *UserUpdateOne) RemoveNoteFlaws(f ...*Flaw) *UserUpdateOne {
 func (uuo *UserUpdateOne) ClearAccount() *UserUpdateOne {
 	uuo.mutation.ClearAccount()
 	return uuo
+}
+
+// ClearBooking clears all "booking" edges to the Booking entity.
+func (uuo *UserUpdateOne) ClearBooking() *UserUpdateOne {
+	uuo.mutation.ClearBooking()
+	return uuo
+}
+
+// RemoveBookingIDs removes the "booking" edge to Booking entities by IDs.
+func (uuo *UserUpdateOne) RemoveBookingIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.RemoveBookingIDs(ids...)
+	return uuo
+}
+
+// RemoveBooking removes "booking" edges to Booking entities.
+func (uuo *UserUpdateOne) RemoveBooking(b ...*Booking) *UserUpdateOne {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return uuo.RemoveBookingIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -990,6 +1117,60 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: account.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.BookingCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.BookingTable,
+			Columns: user.BookingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: booking.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedBookingIDs(); len(nodes) > 0 && !uuo.mutation.BookingCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.BookingTable,
+			Columns: user.BookingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: booking.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.BookingIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.BookingTable,
+			Columns: user.BookingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: booking.FieldID,
 				},
 			},
 		}

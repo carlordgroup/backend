@@ -3,11 +3,15 @@
 package ent
 
 import (
+	"carlord/ent/billing"
 	"carlord/ent/booking"
+	"carlord/ent/car"
 	"carlord/ent/predicate"
+	"carlord/ent/user"
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -27,9 +31,193 @@ func (bu *BookingUpdate) Where(ps ...predicate.Booking) *BookingUpdate {
 	return bu
 }
 
+// SetStartAt sets the "start_at" field.
+func (bu *BookingUpdate) SetStartAt(t time.Time) *BookingUpdate {
+	bu.mutation.SetStartAt(t)
+	return bu
+}
+
+// SetEndAt sets the "end_at" field.
+func (bu *BookingUpdate) SetEndAt(t time.Time) *BookingUpdate {
+	bu.mutation.SetEndAt(t)
+	return bu
+}
+
+// SetReturnCarAt sets the "return_car_at" field.
+func (bu *BookingUpdate) SetReturnCarAt(t time.Time) *BookingUpdate {
+	bu.mutation.SetReturnCarAt(t)
+	return bu
+}
+
+// SetFuelLevelAtBegin sets the "fuel_level_at_begin" field.
+func (bu *BookingUpdate) SetFuelLevelAtBegin(f float32) *BookingUpdate {
+	bu.mutation.ResetFuelLevelAtBegin()
+	bu.mutation.SetFuelLevelAtBegin(f)
+	return bu
+}
+
+// AddFuelLevelAtBegin adds f to the "fuel_level_at_begin" field.
+func (bu *BookingUpdate) AddFuelLevelAtBegin(f float32) *BookingUpdate {
+	bu.mutation.AddFuelLevelAtBegin(f)
+	return bu
+}
+
+// SetFuelLevelAtEnd sets the "fuel_level_at_end" field.
+func (bu *BookingUpdate) SetFuelLevelAtEnd(f float32) *BookingUpdate {
+	bu.mutation.ResetFuelLevelAtEnd()
+	bu.mutation.SetFuelLevelAtEnd(f)
+	return bu
+}
+
+// AddFuelLevelAtEnd adds f to the "fuel_level_at_end" field.
+func (bu *BookingUpdate) AddFuelLevelAtEnd(f float32) *BookingUpdate {
+	bu.mutation.AddFuelLevelAtEnd(f)
+	return bu
+}
+
+// SetMileageBegin sets the "mileage_begin" field.
+func (bu *BookingUpdate) SetMileageBegin(i int) *BookingUpdate {
+	bu.mutation.ResetMileageBegin()
+	bu.mutation.SetMileageBegin(i)
+	return bu
+}
+
+// AddMileageBegin adds i to the "mileage_begin" field.
+func (bu *BookingUpdate) AddMileageBegin(i int) *BookingUpdate {
+	bu.mutation.AddMileageBegin(i)
+	return bu
+}
+
+// SetMileageEnd sets the "mileage_end" field.
+func (bu *BookingUpdate) SetMileageEnd(i int) *BookingUpdate {
+	bu.mutation.ResetMileageEnd()
+	bu.mutation.SetMileageEnd(i)
+	return bu
+}
+
+// AddMileageEnd adds i to the "mileage_end" field.
+func (bu *BookingUpdate) AddMileageEnd(i int) *BookingUpdate {
+	bu.mutation.AddMileageEnd(i)
+	return bu
+}
+
+// SetBookingStatus sets the "booking_status" field.
+func (bu *BookingUpdate) SetBookingStatus(s string) *BookingUpdate {
+	bu.mutation.SetBookingStatus(s)
+	return bu
+}
+
+// AddUserIDs adds the "user" edge to the User entity by IDs.
+func (bu *BookingUpdate) AddUserIDs(ids ...int) *BookingUpdate {
+	bu.mutation.AddUserIDs(ids...)
+	return bu
+}
+
+// AddUser adds the "user" edges to the User entity.
+func (bu *BookingUpdate) AddUser(u ...*User) *BookingUpdate {
+	ids := make([]int, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return bu.AddUserIDs(ids...)
+}
+
+// AddCarIDs adds the "car" edge to the Car entity by IDs.
+func (bu *BookingUpdate) AddCarIDs(ids ...int) *BookingUpdate {
+	bu.mutation.AddCarIDs(ids...)
+	return bu
+}
+
+// AddCar adds the "car" edges to the Car entity.
+func (bu *BookingUpdate) AddCar(c ...*Car) *BookingUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return bu.AddCarIDs(ids...)
+}
+
+// AddBillingIDs adds the "billing" edge to the Billing entity by IDs.
+func (bu *BookingUpdate) AddBillingIDs(ids ...int) *BookingUpdate {
+	bu.mutation.AddBillingIDs(ids...)
+	return bu
+}
+
+// AddBilling adds the "billing" edges to the Billing entity.
+func (bu *BookingUpdate) AddBilling(b ...*Billing) *BookingUpdate {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return bu.AddBillingIDs(ids...)
+}
+
 // Mutation returns the BookingMutation object of the builder.
 func (bu *BookingUpdate) Mutation() *BookingMutation {
 	return bu.mutation
+}
+
+// ClearUser clears all "user" edges to the User entity.
+func (bu *BookingUpdate) ClearUser() *BookingUpdate {
+	bu.mutation.ClearUser()
+	return bu
+}
+
+// RemoveUserIDs removes the "user" edge to User entities by IDs.
+func (bu *BookingUpdate) RemoveUserIDs(ids ...int) *BookingUpdate {
+	bu.mutation.RemoveUserIDs(ids...)
+	return bu
+}
+
+// RemoveUser removes "user" edges to User entities.
+func (bu *BookingUpdate) RemoveUser(u ...*User) *BookingUpdate {
+	ids := make([]int, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return bu.RemoveUserIDs(ids...)
+}
+
+// ClearCar clears all "car" edges to the Car entity.
+func (bu *BookingUpdate) ClearCar() *BookingUpdate {
+	bu.mutation.ClearCar()
+	return bu
+}
+
+// RemoveCarIDs removes the "car" edge to Car entities by IDs.
+func (bu *BookingUpdate) RemoveCarIDs(ids ...int) *BookingUpdate {
+	bu.mutation.RemoveCarIDs(ids...)
+	return bu
+}
+
+// RemoveCar removes "car" edges to Car entities.
+func (bu *BookingUpdate) RemoveCar(c ...*Car) *BookingUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return bu.RemoveCarIDs(ids...)
+}
+
+// ClearBilling clears all "billing" edges to the Billing entity.
+func (bu *BookingUpdate) ClearBilling() *BookingUpdate {
+	bu.mutation.ClearBilling()
+	return bu
+}
+
+// RemoveBillingIDs removes the "billing" edge to Billing entities by IDs.
+func (bu *BookingUpdate) RemoveBillingIDs(ids ...int) *BookingUpdate {
+	bu.mutation.RemoveBillingIDs(ids...)
+	return bu
+}
+
+// RemoveBilling removes "billing" edges to Billing entities.
+func (bu *BookingUpdate) RemoveBilling(b ...*Billing) *BookingUpdate {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return bu.RemoveBillingIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -104,6 +292,204 @@ func (bu *BookingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := bu.mutation.StartAt(); ok {
+		_spec.SetField(booking.FieldStartAt, field.TypeTime, value)
+	}
+	if value, ok := bu.mutation.EndAt(); ok {
+		_spec.SetField(booking.FieldEndAt, field.TypeTime, value)
+	}
+	if value, ok := bu.mutation.ReturnCarAt(); ok {
+		_spec.SetField(booking.FieldReturnCarAt, field.TypeTime, value)
+	}
+	if value, ok := bu.mutation.FuelLevelAtBegin(); ok {
+		_spec.SetField(booking.FieldFuelLevelAtBegin, field.TypeFloat32, value)
+	}
+	if value, ok := bu.mutation.AddedFuelLevelAtBegin(); ok {
+		_spec.AddField(booking.FieldFuelLevelAtBegin, field.TypeFloat32, value)
+	}
+	if value, ok := bu.mutation.FuelLevelAtEnd(); ok {
+		_spec.SetField(booking.FieldFuelLevelAtEnd, field.TypeFloat32, value)
+	}
+	if value, ok := bu.mutation.AddedFuelLevelAtEnd(); ok {
+		_spec.AddField(booking.FieldFuelLevelAtEnd, field.TypeFloat32, value)
+	}
+	if value, ok := bu.mutation.MileageBegin(); ok {
+		_spec.SetField(booking.FieldMileageBegin, field.TypeInt, value)
+	}
+	if value, ok := bu.mutation.AddedMileageBegin(); ok {
+		_spec.AddField(booking.FieldMileageBegin, field.TypeInt, value)
+	}
+	if value, ok := bu.mutation.MileageEnd(); ok {
+		_spec.SetField(booking.FieldMileageEnd, field.TypeInt, value)
+	}
+	if value, ok := bu.mutation.AddedMileageEnd(); ok {
+		_spec.AddField(booking.FieldMileageEnd, field.TypeInt, value)
+	}
+	if value, ok := bu.mutation.BookingStatus(); ok {
+		_spec.SetField(booking.FieldBookingStatus, field.TypeString, value)
+	}
+	if bu.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   booking.UserTable,
+			Columns: booking.UserPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: user.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.RemovedUserIDs(); len(nodes) > 0 && !bu.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   booking.UserTable,
+			Columns: booking.UserPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   booking.UserTable,
+			Columns: booking.UserPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if bu.mutation.CarCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   booking.CarTable,
+			Columns: booking.CarPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: car.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.RemovedCarIDs(); len(nodes) > 0 && !bu.mutation.CarCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   booking.CarTable,
+			Columns: booking.CarPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: car.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.CarIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   booking.CarTable,
+			Columns: booking.CarPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: car.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if bu.mutation.BillingCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   booking.BillingTable,
+			Columns: booking.BillingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: billing.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.RemovedBillingIDs(); len(nodes) > 0 && !bu.mutation.BillingCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   booking.BillingTable,
+			Columns: booking.BillingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: billing.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.BillingIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   booking.BillingTable,
+			Columns: booking.BillingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: billing.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, bu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{booking.Label}
@@ -123,9 +509,193 @@ type BookingUpdateOne struct {
 	mutation *BookingMutation
 }
 
+// SetStartAt sets the "start_at" field.
+func (buo *BookingUpdateOne) SetStartAt(t time.Time) *BookingUpdateOne {
+	buo.mutation.SetStartAt(t)
+	return buo
+}
+
+// SetEndAt sets the "end_at" field.
+func (buo *BookingUpdateOne) SetEndAt(t time.Time) *BookingUpdateOne {
+	buo.mutation.SetEndAt(t)
+	return buo
+}
+
+// SetReturnCarAt sets the "return_car_at" field.
+func (buo *BookingUpdateOne) SetReturnCarAt(t time.Time) *BookingUpdateOne {
+	buo.mutation.SetReturnCarAt(t)
+	return buo
+}
+
+// SetFuelLevelAtBegin sets the "fuel_level_at_begin" field.
+func (buo *BookingUpdateOne) SetFuelLevelAtBegin(f float32) *BookingUpdateOne {
+	buo.mutation.ResetFuelLevelAtBegin()
+	buo.mutation.SetFuelLevelAtBegin(f)
+	return buo
+}
+
+// AddFuelLevelAtBegin adds f to the "fuel_level_at_begin" field.
+func (buo *BookingUpdateOne) AddFuelLevelAtBegin(f float32) *BookingUpdateOne {
+	buo.mutation.AddFuelLevelAtBegin(f)
+	return buo
+}
+
+// SetFuelLevelAtEnd sets the "fuel_level_at_end" field.
+func (buo *BookingUpdateOne) SetFuelLevelAtEnd(f float32) *BookingUpdateOne {
+	buo.mutation.ResetFuelLevelAtEnd()
+	buo.mutation.SetFuelLevelAtEnd(f)
+	return buo
+}
+
+// AddFuelLevelAtEnd adds f to the "fuel_level_at_end" field.
+func (buo *BookingUpdateOne) AddFuelLevelAtEnd(f float32) *BookingUpdateOne {
+	buo.mutation.AddFuelLevelAtEnd(f)
+	return buo
+}
+
+// SetMileageBegin sets the "mileage_begin" field.
+func (buo *BookingUpdateOne) SetMileageBegin(i int) *BookingUpdateOne {
+	buo.mutation.ResetMileageBegin()
+	buo.mutation.SetMileageBegin(i)
+	return buo
+}
+
+// AddMileageBegin adds i to the "mileage_begin" field.
+func (buo *BookingUpdateOne) AddMileageBegin(i int) *BookingUpdateOne {
+	buo.mutation.AddMileageBegin(i)
+	return buo
+}
+
+// SetMileageEnd sets the "mileage_end" field.
+func (buo *BookingUpdateOne) SetMileageEnd(i int) *BookingUpdateOne {
+	buo.mutation.ResetMileageEnd()
+	buo.mutation.SetMileageEnd(i)
+	return buo
+}
+
+// AddMileageEnd adds i to the "mileage_end" field.
+func (buo *BookingUpdateOne) AddMileageEnd(i int) *BookingUpdateOne {
+	buo.mutation.AddMileageEnd(i)
+	return buo
+}
+
+// SetBookingStatus sets the "booking_status" field.
+func (buo *BookingUpdateOne) SetBookingStatus(s string) *BookingUpdateOne {
+	buo.mutation.SetBookingStatus(s)
+	return buo
+}
+
+// AddUserIDs adds the "user" edge to the User entity by IDs.
+func (buo *BookingUpdateOne) AddUserIDs(ids ...int) *BookingUpdateOne {
+	buo.mutation.AddUserIDs(ids...)
+	return buo
+}
+
+// AddUser adds the "user" edges to the User entity.
+func (buo *BookingUpdateOne) AddUser(u ...*User) *BookingUpdateOne {
+	ids := make([]int, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return buo.AddUserIDs(ids...)
+}
+
+// AddCarIDs adds the "car" edge to the Car entity by IDs.
+func (buo *BookingUpdateOne) AddCarIDs(ids ...int) *BookingUpdateOne {
+	buo.mutation.AddCarIDs(ids...)
+	return buo
+}
+
+// AddCar adds the "car" edges to the Car entity.
+func (buo *BookingUpdateOne) AddCar(c ...*Car) *BookingUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return buo.AddCarIDs(ids...)
+}
+
+// AddBillingIDs adds the "billing" edge to the Billing entity by IDs.
+func (buo *BookingUpdateOne) AddBillingIDs(ids ...int) *BookingUpdateOne {
+	buo.mutation.AddBillingIDs(ids...)
+	return buo
+}
+
+// AddBilling adds the "billing" edges to the Billing entity.
+func (buo *BookingUpdateOne) AddBilling(b ...*Billing) *BookingUpdateOne {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return buo.AddBillingIDs(ids...)
+}
+
 // Mutation returns the BookingMutation object of the builder.
 func (buo *BookingUpdateOne) Mutation() *BookingMutation {
 	return buo.mutation
+}
+
+// ClearUser clears all "user" edges to the User entity.
+func (buo *BookingUpdateOne) ClearUser() *BookingUpdateOne {
+	buo.mutation.ClearUser()
+	return buo
+}
+
+// RemoveUserIDs removes the "user" edge to User entities by IDs.
+func (buo *BookingUpdateOne) RemoveUserIDs(ids ...int) *BookingUpdateOne {
+	buo.mutation.RemoveUserIDs(ids...)
+	return buo
+}
+
+// RemoveUser removes "user" edges to User entities.
+func (buo *BookingUpdateOne) RemoveUser(u ...*User) *BookingUpdateOne {
+	ids := make([]int, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return buo.RemoveUserIDs(ids...)
+}
+
+// ClearCar clears all "car" edges to the Car entity.
+func (buo *BookingUpdateOne) ClearCar() *BookingUpdateOne {
+	buo.mutation.ClearCar()
+	return buo
+}
+
+// RemoveCarIDs removes the "car" edge to Car entities by IDs.
+func (buo *BookingUpdateOne) RemoveCarIDs(ids ...int) *BookingUpdateOne {
+	buo.mutation.RemoveCarIDs(ids...)
+	return buo
+}
+
+// RemoveCar removes "car" edges to Car entities.
+func (buo *BookingUpdateOne) RemoveCar(c ...*Car) *BookingUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return buo.RemoveCarIDs(ids...)
+}
+
+// ClearBilling clears all "billing" edges to the Billing entity.
+func (buo *BookingUpdateOne) ClearBilling() *BookingUpdateOne {
+	buo.mutation.ClearBilling()
+	return buo
+}
+
+// RemoveBillingIDs removes the "billing" edge to Billing entities by IDs.
+func (buo *BookingUpdateOne) RemoveBillingIDs(ids ...int) *BookingUpdateOne {
+	buo.mutation.RemoveBillingIDs(ids...)
+	return buo
+}
+
+// RemoveBilling removes "billing" edges to Billing entities.
+func (buo *BookingUpdateOne) RemoveBilling(b ...*Billing) *BookingUpdateOne {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return buo.RemoveBillingIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -229,6 +799,204 @@ func (buo *BookingUpdateOne) sqlSave(ctx context.Context) (_node *Booking, err e
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := buo.mutation.StartAt(); ok {
+		_spec.SetField(booking.FieldStartAt, field.TypeTime, value)
+	}
+	if value, ok := buo.mutation.EndAt(); ok {
+		_spec.SetField(booking.FieldEndAt, field.TypeTime, value)
+	}
+	if value, ok := buo.mutation.ReturnCarAt(); ok {
+		_spec.SetField(booking.FieldReturnCarAt, field.TypeTime, value)
+	}
+	if value, ok := buo.mutation.FuelLevelAtBegin(); ok {
+		_spec.SetField(booking.FieldFuelLevelAtBegin, field.TypeFloat32, value)
+	}
+	if value, ok := buo.mutation.AddedFuelLevelAtBegin(); ok {
+		_spec.AddField(booking.FieldFuelLevelAtBegin, field.TypeFloat32, value)
+	}
+	if value, ok := buo.mutation.FuelLevelAtEnd(); ok {
+		_spec.SetField(booking.FieldFuelLevelAtEnd, field.TypeFloat32, value)
+	}
+	if value, ok := buo.mutation.AddedFuelLevelAtEnd(); ok {
+		_spec.AddField(booking.FieldFuelLevelAtEnd, field.TypeFloat32, value)
+	}
+	if value, ok := buo.mutation.MileageBegin(); ok {
+		_spec.SetField(booking.FieldMileageBegin, field.TypeInt, value)
+	}
+	if value, ok := buo.mutation.AddedMileageBegin(); ok {
+		_spec.AddField(booking.FieldMileageBegin, field.TypeInt, value)
+	}
+	if value, ok := buo.mutation.MileageEnd(); ok {
+		_spec.SetField(booking.FieldMileageEnd, field.TypeInt, value)
+	}
+	if value, ok := buo.mutation.AddedMileageEnd(); ok {
+		_spec.AddField(booking.FieldMileageEnd, field.TypeInt, value)
+	}
+	if value, ok := buo.mutation.BookingStatus(); ok {
+		_spec.SetField(booking.FieldBookingStatus, field.TypeString, value)
+	}
+	if buo.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   booking.UserTable,
+			Columns: booking.UserPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: user.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.RemovedUserIDs(); len(nodes) > 0 && !buo.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   booking.UserTable,
+			Columns: booking.UserPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   booking.UserTable,
+			Columns: booking.UserPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if buo.mutation.CarCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   booking.CarTable,
+			Columns: booking.CarPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: car.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.RemovedCarIDs(); len(nodes) > 0 && !buo.mutation.CarCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   booking.CarTable,
+			Columns: booking.CarPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: car.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.CarIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   booking.CarTable,
+			Columns: booking.CarPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: car.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if buo.mutation.BillingCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   booking.BillingTable,
+			Columns: booking.BillingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: billing.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.RemovedBillingIDs(); len(nodes) > 0 && !buo.mutation.BillingCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   booking.BillingTable,
+			Columns: booking.BillingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: billing.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.BillingIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   booking.BillingTable,
+			Columns: booking.BillingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: billing.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Booking{config: buo.config}
 	_spec.Assign = _node.assignValues

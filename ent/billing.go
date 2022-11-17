@@ -15,6 +15,38 @@ type Billing struct {
 	config
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the BillingQuery when eager-loading is set.
+	Edges BillingEdges `json:"edges"`
+}
+
+// BillingEdges holds the relations/edges for other nodes in the graph.
+type BillingEdges struct {
+	// Booking holds the value of the booking edge.
+	Booking []*Booking `json:"booking,omitempty"`
+	// Card holds the value of the card edge.
+	Card []*Card `json:"card,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [2]bool
+}
+
+// BookingOrErr returns the Booking value or an error if the edge
+// was not loaded in eager-loading.
+func (e BillingEdges) BookingOrErr() ([]*Booking, error) {
+	if e.loadedTypes[0] {
+		return e.Booking, nil
+	}
+	return nil, &NotLoadedError{edge: "booking"}
+}
+
+// CardOrErr returns the Card value or an error if the edge
+// was not loaded in eager-loading.
+func (e BillingEdges) CardOrErr() ([]*Card, error) {
+	if e.loadedTypes[1] {
+		return e.Card, nil
+	}
+	return nil, &NotLoadedError{edge: "card"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -48,6 +80,16 @@ func (b *Billing) assignValues(columns []string, values []any) error {
 		}
 	}
 	return nil
+}
+
+// QueryBooking queries the "booking" edge of the Billing entity.
+func (b *Billing) QueryBooking() *BookingQuery {
+	return (&BillingClient{config: b.config}).QueryBooking(b)
+}
+
+// QueryCard queries the "card" edge of the Billing entity.
+func (b *Billing) QueryCard() *CardQuery {
+	return (&BillingClient{config: b.config}).QueryCard(b)
 }
 
 // Update returns a builder for updating this Billing.

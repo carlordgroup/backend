@@ -3,8 +3,11 @@
 package ent
 
 import (
+	"carlord/ent/booking"
 	"carlord/ent/car"
+	"carlord/ent/location"
 	"context"
+	"errors"
 	"fmt"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -18,6 +21,116 @@ type CarCreate struct {
 	hooks    []Hook
 }
 
+// SetColor sets the "color" field.
+func (cc *CarCreate) SetColor(s string) *CarCreate {
+	cc.mutation.SetColor(s)
+	return cc
+}
+
+// SetBrand sets the "brand" field.
+func (cc *CarCreate) SetBrand(s string) *CarCreate {
+	cc.mutation.SetBrand(s)
+	return cc
+}
+
+// SetModel sets the "model" field.
+func (cc *CarCreate) SetModel(s string) *CarCreate {
+	cc.mutation.SetModel(s)
+	return cc
+}
+
+// SetYear sets the "year" field.
+func (cc *CarCreate) SetYear(i int) *CarCreate {
+	cc.mutation.SetYear(i)
+	return cc
+}
+
+// SetStatus sets the "status" field.
+func (cc *CarCreate) SetStatus(s string) *CarCreate {
+	cc.mutation.SetStatus(s)
+	return cc
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (cc *CarCreate) SetNillableStatus(s *string) *CarCreate {
+	if s != nil {
+		cc.SetStatus(*s)
+	}
+	return cc
+}
+
+// SetCarType sets the "car_type" field.
+func (cc *CarCreate) SetCarType(s string) *CarCreate {
+	cc.mutation.SetCarType(s)
+	return cc
+}
+
+// SetPlateNumber sets the "plate_number" field.
+func (cc *CarCreate) SetPlateNumber(s string) *CarCreate {
+	cc.mutation.SetPlateNumber(s)
+	return cc
+}
+
+// SetPlateCountry sets the "plate_country" field.
+func (cc *CarCreate) SetPlateCountry(s string) *CarCreate {
+	cc.mutation.SetPlateCountry(s)
+	return cc
+}
+
+// SetUnitPrice sets the "unit_price" field.
+func (cc *CarCreate) SetUnitPrice(f float32) *CarCreate {
+	cc.mutation.SetUnitPrice(f)
+	return cc
+}
+
+// SetPrice sets the "price" field.
+func (cc *CarCreate) SetPrice(f float32) *CarCreate {
+	cc.mutation.SetPrice(f)
+	return cc
+}
+
+// SetMileage sets the "mileage" field.
+func (cc *CarCreate) SetMileage(i int) *CarCreate {
+	cc.mutation.SetMileage(i)
+	return cc
+}
+
+// SetDeposit sets the "deposit" field.
+func (cc *CarCreate) SetDeposit(f float32) *CarCreate {
+	cc.mutation.SetDeposit(f)
+	return cc
+}
+
+// AddLocationIDs adds the "location" edge to the Location entity by IDs.
+func (cc *CarCreate) AddLocationIDs(ids ...int) *CarCreate {
+	cc.mutation.AddLocationIDs(ids...)
+	return cc
+}
+
+// AddLocation adds the "location" edges to the Location entity.
+func (cc *CarCreate) AddLocation(l ...*Location) *CarCreate {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return cc.AddLocationIDs(ids...)
+}
+
+// AddBookingIDs adds the "booking" edge to the Booking entity by IDs.
+func (cc *CarCreate) AddBookingIDs(ids ...int) *CarCreate {
+	cc.mutation.AddBookingIDs(ids...)
+	return cc
+}
+
+// AddBooking adds the "booking" edges to the Booking entity.
+func (cc *CarCreate) AddBooking(b ...*Booking) *CarCreate {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return cc.AddBookingIDs(ids...)
+}
+
 // Mutation returns the CarMutation object of the builder.
 func (cc *CarCreate) Mutation() *CarMutation {
 	return cc.mutation
@@ -29,6 +142,7 @@ func (cc *CarCreate) Save(ctx context.Context) (*Car, error) {
 		err  error
 		node *Car
 	)
+	cc.defaults()
 	if len(cc.hooks) == 0 {
 		if err = cc.check(); err != nil {
 			return nil, err
@@ -92,8 +206,52 @@ func (cc *CarCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (cc *CarCreate) defaults() {
+	if _, ok := cc.mutation.Status(); !ok {
+		v := car.DefaultStatus
+		cc.mutation.SetStatus(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (cc *CarCreate) check() error {
+	if _, ok := cc.mutation.Color(); !ok {
+		return &ValidationError{Name: "color", err: errors.New(`ent: missing required field "Car.color"`)}
+	}
+	if _, ok := cc.mutation.Brand(); !ok {
+		return &ValidationError{Name: "brand", err: errors.New(`ent: missing required field "Car.brand"`)}
+	}
+	if _, ok := cc.mutation.Model(); !ok {
+		return &ValidationError{Name: "model", err: errors.New(`ent: missing required field "Car.model"`)}
+	}
+	if _, ok := cc.mutation.Year(); !ok {
+		return &ValidationError{Name: "year", err: errors.New(`ent: missing required field "Car.year"`)}
+	}
+	if _, ok := cc.mutation.Status(); !ok {
+		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Car.status"`)}
+	}
+	if _, ok := cc.mutation.CarType(); !ok {
+		return &ValidationError{Name: "car_type", err: errors.New(`ent: missing required field "Car.car_type"`)}
+	}
+	if _, ok := cc.mutation.PlateNumber(); !ok {
+		return &ValidationError{Name: "plate_number", err: errors.New(`ent: missing required field "Car.plate_number"`)}
+	}
+	if _, ok := cc.mutation.PlateCountry(); !ok {
+		return &ValidationError{Name: "plate_country", err: errors.New(`ent: missing required field "Car.plate_country"`)}
+	}
+	if _, ok := cc.mutation.UnitPrice(); !ok {
+		return &ValidationError{Name: "unit_price", err: errors.New(`ent: missing required field "Car.unit_price"`)}
+	}
+	if _, ok := cc.mutation.Price(); !ok {
+		return &ValidationError{Name: "price", err: errors.New(`ent: missing required field "Car.price"`)}
+	}
+	if _, ok := cc.mutation.Mileage(); !ok {
+		return &ValidationError{Name: "mileage", err: errors.New(`ent: missing required field "Car.mileage"`)}
+	}
+	if _, ok := cc.mutation.Deposit(); !ok {
+		return &ValidationError{Name: "deposit", err: errors.New(`ent: missing required field "Car.deposit"`)}
+	}
 	return nil
 }
 
@@ -121,6 +279,92 @@ func (cc *CarCreate) createSpec() (*Car, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	if value, ok := cc.mutation.Color(); ok {
+		_spec.SetField(car.FieldColor, field.TypeString, value)
+		_node.Color = value
+	}
+	if value, ok := cc.mutation.Brand(); ok {
+		_spec.SetField(car.FieldBrand, field.TypeString, value)
+		_node.Brand = value
+	}
+	if value, ok := cc.mutation.Model(); ok {
+		_spec.SetField(car.FieldModel, field.TypeString, value)
+		_node.Model = value
+	}
+	if value, ok := cc.mutation.Year(); ok {
+		_spec.SetField(car.FieldYear, field.TypeInt, value)
+		_node.Year = value
+	}
+	if value, ok := cc.mutation.Status(); ok {
+		_spec.SetField(car.FieldStatus, field.TypeString, value)
+		_node.Status = value
+	}
+	if value, ok := cc.mutation.CarType(); ok {
+		_spec.SetField(car.FieldCarType, field.TypeString, value)
+		_node.CarType = value
+	}
+	if value, ok := cc.mutation.PlateNumber(); ok {
+		_spec.SetField(car.FieldPlateNumber, field.TypeString, value)
+		_node.PlateNumber = value
+	}
+	if value, ok := cc.mutation.PlateCountry(); ok {
+		_spec.SetField(car.FieldPlateCountry, field.TypeString, value)
+		_node.PlateCountry = value
+	}
+	if value, ok := cc.mutation.UnitPrice(); ok {
+		_spec.SetField(car.FieldUnitPrice, field.TypeFloat32, value)
+		_node.UnitPrice = value
+	}
+	if value, ok := cc.mutation.Price(); ok {
+		_spec.SetField(car.FieldPrice, field.TypeFloat32, value)
+		_node.Price = value
+	}
+	if value, ok := cc.mutation.Mileage(); ok {
+		_spec.SetField(car.FieldMileage, field.TypeInt, value)
+		_node.Mileage = value
+	}
+	if value, ok := cc.mutation.Deposit(); ok {
+		_spec.SetField(car.FieldDeposit, field.TypeFloat32, value)
+		_node.Deposit = value
+	}
+	if nodes := cc.mutation.LocationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.LocationTable,
+			Columns: []string{car.LocationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: location.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := cc.mutation.BookingIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   car.BookingTable,
+			Columns: car.BookingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: booking.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
@@ -138,6 +382,7 @@ func (ccb *CarCreateBulk) Save(ctx context.Context) ([]*Car, error) {
 	for i := range ccb.builders {
 		func(i int, root context.Context) {
 			builder := ccb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*CarMutation)
 				if !ok {

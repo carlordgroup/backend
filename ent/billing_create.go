@@ -4,7 +4,10 @@ package ent
 
 import (
 	"carlord/ent/billing"
+	"carlord/ent/booking"
+	"carlord/ent/card"
 	"context"
+	"errors"
 	"fmt"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -16,6 +19,36 @@ type BillingCreate struct {
 	config
 	mutation *BillingMutation
 	hooks    []Hook
+}
+
+// AddBookingIDs adds the "booking" edge to the Booking entity by IDs.
+func (bc *BillingCreate) AddBookingIDs(ids ...int) *BillingCreate {
+	bc.mutation.AddBookingIDs(ids...)
+	return bc
+}
+
+// AddBooking adds the "booking" edges to the Booking entity.
+func (bc *BillingCreate) AddBooking(b ...*Booking) *BillingCreate {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return bc.AddBookingIDs(ids...)
+}
+
+// AddCardIDs adds the "card" edge to the Card entity by IDs.
+func (bc *BillingCreate) AddCardIDs(ids ...int) *BillingCreate {
+	bc.mutation.AddCardIDs(ids...)
+	return bc
+}
+
+// AddCard adds the "card" edges to the Card entity.
+func (bc *BillingCreate) AddCard(c ...*Card) *BillingCreate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return bc.AddCardIDs(ids...)
 }
 
 // Mutation returns the BillingMutation object of the builder.
@@ -94,6 +127,9 @@ func (bc *BillingCreate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (bc *BillingCreate) check() error {
+	if len(bc.mutation.BookingIDs()) == 0 {
+		return &ValidationError{Name: "booking", err: errors.New(`ent: missing required edge "Billing.booking"`)}
+	}
 	return nil
 }
 
@@ -121,6 +157,44 @@ func (bc *BillingCreate) createSpec() (*Billing, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	if nodes := bc.mutation.BookingIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   billing.BookingTable,
+			Columns: billing.BookingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: booking.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := bc.mutation.CardIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   billing.CardTable,
+			Columns: []string{billing.CardColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: card.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 

@@ -4,6 +4,7 @@ package ent
 
 import (
 	"carlord/ent/account"
+	"carlord/ent/booking"
 	"carlord/ent/card"
 	"carlord/ent/flaw"
 	"carlord/ent/predicate"
@@ -30,6 +31,7 @@ type UserQuery struct {
 	withCard      *CardQuery
 	withNoteFlaws *FlawQuery
 	withAccount   *AccountQuery
+	withBooking   *BookingQuery
 	withFKs       bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -126,6 +128,28 @@ func (uq *UserQuery) QueryAccount() *AccountQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(account.Table, account.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, true, user.AccountTable, user.AccountColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryBooking chains the current query on the "booking" edge.
+func (uq *UserQuery) QueryBooking() *BookingQuery {
+	query := &BookingQuery{config: uq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(booking.Table, booking.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, user.BookingTable, user.BookingPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -317,6 +341,7 @@ func (uq *UserQuery) Clone() *UserQuery {
 		withCard:      uq.withCard.Clone(),
 		withNoteFlaws: uq.withNoteFlaws.Clone(),
 		withAccount:   uq.withAccount.Clone(),
+		withBooking:   uq.withBooking.Clone(),
 		// clone intermediate query.
 		sql:    uq.sql.Clone(),
 		path:   uq.path,
@@ -354,6 +379,17 @@ func (uq *UserQuery) WithAccount(opts ...func(*AccountQuery)) *UserQuery {
 		opt(query)
 	}
 	uq.withAccount = query
+	return uq
+}
+
+// WithBooking tells the query-builder to eager-load the nodes that are connected to
+// the "booking" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithBooking(opts ...func(*BookingQuery)) *UserQuery {
+	query := &BookingQuery{config: uq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withBooking = query
 	return uq
 }
 
@@ -431,10 +467,11 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		nodes       = []*User{}
 		withFKs     = uq.withFKs
 		_spec       = uq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			uq.withCard != nil,
 			uq.withNoteFlaws != nil,
 			uq.withAccount != nil,
+			uq.withBooking != nil,
 		}
 	)
 	if uq.withAccount != nil {
@@ -478,6 +515,13 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	if query := uq.withAccount; query != nil {
 		if err := uq.loadAccount(ctx, query, nodes, nil,
 			func(n *User, e *Account) { n.Edges.Account = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := uq.withBooking; query != nil {
+		if err := uq.loadBooking(ctx, query, nodes,
+			func(n *User) { n.Edges.Booking = []*Booking{} },
+			func(n *User, e *Booking) { n.Edges.Booking = append(n.Edges.Booking, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -571,6 +615,64 @@ func (uq *UserQuery) loadAccount(ctx context.Context, query *AccountQuery, nodes
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (uq *UserQuery) loadBooking(ctx context.Context, query *BookingQuery, nodes []*User, init func(*User), assign func(*User, *Booking)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*User)
+	nids := make(map[int]map[*User]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(user.BookingTable)
+		s.Join(joinT).On(s.C(booking.FieldID), joinT.C(user.BookingPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(user.BookingPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(user.BookingPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+		assign := spec.Assign
+		values := spec.ScanValues
+		spec.ScanValues = func(columns []string) ([]any, error) {
+			values, err := values(columns[1:])
+			if err != nil {
+				return nil, err
+			}
+			return append([]any{new(sql.NullInt64)}, values...), nil
+		}
+		spec.Assign = func(columns []string, values []any) error {
+			outValue := int(values[0].(*sql.NullInt64).Int64)
+			inValue := int(values[1].(*sql.NullInt64).Int64)
+			if nids[inValue] == nil {
+				nids[inValue] = map[*User]struct{}{byID[outValue]: {}}
+				return assign(columns[1:], values[1:])
+			}
+			nids[inValue][byID[outValue]] = struct{}{}
+			return nil
+		}
+	})
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "booking" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
 		}
 	}
 	return nil

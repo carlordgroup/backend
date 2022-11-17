@@ -7,14 +7,71 @@ const (
 	Label = "booking"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldStartAt holds the string denoting the start_at field in the database.
+	FieldStartAt = "start_at"
+	// FieldEndAt holds the string denoting the end_at field in the database.
+	FieldEndAt = "end_at"
+	// FieldReturnCarAt holds the string denoting the return_car_at field in the database.
+	FieldReturnCarAt = "return_car_at"
+	// FieldFuelLevelAtBegin holds the string denoting the fuel_level_at_begin field in the database.
+	FieldFuelLevelAtBegin = "fuel_level_at_begin"
+	// FieldFuelLevelAtEnd holds the string denoting the fuel_level_at_end field in the database.
+	FieldFuelLevelAtEnd = "fuel_level_at_end"
+	// FieldMileageBegin holds the string denoting the mileage_begin field in the database.
+	FieldMileageBegin = "mileage_begin"
+	// FieldMileageEnd holds the string denoting the mileage_end field in the database.
+	FieldMileageEnd = "mileage_end"
+	// FieldBookingStatus holds the string denoting the booking_status field in the database.
+	FieldBookingStatus = "booking_status"
+	// EdgeUser holds the string denoting the user edge name in mutations.
+	EdgeUser = "user"
+	// EdgeCar holds the string denoting the car edge name in mutations.
+	EdgeCar = "car"
+	// EdgeBilling holds the string denoting the billing edge name in mutations.
+	EdgeBilling = "billing"
 	// Table holds the table name of the booking in the database.
 	Table = "bookings"
+	// UserTable is the table that holds the user relation/edge. The primary key declared below.
+	UserTable = "booking_user"
+	// UserInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	UserInverseTable = "users"
+	// CarTable is the table that holds the car relation/edge. The primary key declared below.
+	CarTable = "booking_car"
+	// CarInverseTable is the table name for the Car entity.
+	// It exists in this package in order to avoid circular dependency with the "car" package.
+	CarInverseTable = "cars"
+	// BillingTable is the table that holds the billing relation/edge. The primary key declared below.
+	BillingTable = "billing_booking"
+	// BillingInverseTable is the table name for the Billing entity.
+	// It exists in this package in order to avoid circular dependency with the "billing" package.
+	BillingInverseTable = "billings"
 )
 
 // Columns holds all SQL columns for booking fields.
 var Columns = []string{
 	FieldID,
+	FieldStartAt,
+	FieldEndAt,
+	FieldReturnCarAt,
+	FieldFuelLevelAtBegin,
+	FieldFuelLevelAtEnd,
+	FieldMileageBegin,
+	FieldMileageEnd,
+	FieldBookingStatus,
 }
+
+var (
+	// UserPrimaryKey and UserColumn2 are the table columns denoting the
+	// primary key for the user relation (M2M).
+	UserPrimaryKey = []string{"booking_id", "user_id"}
+	// CarPrimaryKey and CarColumn2 are the table columns denoting the
+	// primary key for the car relation (M2M).
+	CarPrimaryKey = []string{"booking_id", "car_id"}
+	// BillingPrimaryKey and BillingColumn2 are the table columns denoting the
+	// primary key for the billing relation (M2M).
+	BillingPrimaryKey = []string{"billing_id", "booking_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

@@ -4,6 +4,9 @@ package ent
 
 import (
 	"carlord/ent/account"
+	"carlord/ent/billing"
+	"carlord/ent/booking"
+	"carlord/ent/car"
 	"carlord/ent/card"
 	"carlord/ent/location"
 	"carlord/ent/predicate"
@@ -525,13 +528,19 @@ func (m *AccountMutation) ResetEdge(name string) error {
 // BillingMutation represents an operation that mutates the Billing nodes in the graph.
 type BillingMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*Billing, error)
-	predicates    []predicate.Billing
+	op             Op
+	typ            string
+	id             *int
+	clearedFields  map[string]struct{}
+	booking        map[int]struct{}
+	removedbooking map[int]struct{}
+	clearedbooking bool
+	card           map[int]struct{}
+	removedcard    map[int]struct{}
+	clearedcard    bool
+	done           bool
+	oldValue       func(context.Context) (*Billing, error)
+	predicates     []predicate.Billing
 }
 
 var _ ent.Mutation = (*BillingMutation)(nil)
@@ -632,6 +641,114 @@ func (m *BillingMutation) IDs(ctx context.Context) ([]int, error) {
 	}
 }
 
+// AddBookingIDs adds the "booking" edge to the Booking entity by ids.
+func (m *BillingMutation) AddBookingIDs(ids ...int) {
+	if m.booking == nil {
+		m.booking = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.booking[ids[i]] = struct{}{}
+	}
+}
+
+// ClearBooking clears the "booking" edge to the Booking entity.
+func (m *BillingMutation) ClearBooking() {
+	m.clearedbooking = true
+}
+
+// BookingCleared reports if the "booking" edge to the Booking entity was cleared.
+func (m *BillingMutation) BookingCleared() bool {
+	return m.clearedbooking
+}
+
+// RemoveBookingIDs removes the "booking" edge to the Booking entity by IDs.
+func (m *BillingMutation) RemoveBookingIDs(ids ...int) {
+	if m.removedbooking == nil {
+		m.removedbooking = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.booking, ids[i])
+		m.removedbooking[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedBooking returns the removed IDs of the "booking" edge to the Booking entity.
+func (m *BillingMutation) RemovedBookingIDs() (ids []int) {
+	for id := range m.removedbooking {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// BookingIDs returns the "booking" edge IDs in the mutation.
+func (m *BillingMutation) BookingIDs() (ids []int) {
+	for id := range m.booking {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetBooking resets all changes to the "booking" edge.
+func (m *BillingMutation) ResetBooking() {
+	m.booking = nil
+	m.clearedbooking = false
+	m.removedbooking = nil
+}
+
+// AddCardIDs adds the "card" edge to the Card entity by ids.
+func (m *BillingMutation) AddCardIDs(ids ...int) {
+	if m.card == nil {
+		m.card = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.card[ids[i]] = struct{}{}
+	}
+}
+
+// ClearCard clears the "card" edge to the Card entity.
+func (m *BillingMutation) ClearCard() {
+	m.clearedcard = true
+}
+
+// CardCleared reports if the "card" edge to the Card entity was cleared.
+func (m *BillingMutation) CardCleared() bool {
+	return m.clearedcard
+}
+
+// RemoveCardIDs removes the "card" edge to the Card entity by IDs.
+func (m *BillingMutation) RemoveCardIDs(ids ...int) {
+	if m.removedcard == nil {
+		m.removedcard = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.card, ids[i])
+		m.removedcard[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedCard returns the removed IDs of the "card" edge to the Card entity.
+func (m *BillingMutation) RemovedCardIDs() (ids []int) {
+	for id := range m.removedcard {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// CardIDs returns the "card" edge IDs in the mutation.
+func (m *BillingMutation) CardIDs() (ids []int) {
+	for id := range m.card {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetCard resets all changes to the "card" edge.
+func (m *BillingMutation) ResetCard() {
+	m.card = nil
+	m.clearedcard = false
+	m.removedcard = nil
+}
+
 // Where appends a list predicates to the BillingMutation builder.
 func (m *BillingMutation) Where(ps ...predicate.Billing) {
 	m.predicates = append(m.predicates, ps...)
@@ -725,62 +842,145 @@ func (m *BillingMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *BillingMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 2)
+	if m.booking != nil {
+		edges = append(edges, billing.EdgeBooking)
+	}
+	if m.card != nil {
+		edges = append(edges, billing.EdgeCard)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *BillingMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case billing.EdgeBooking:
+		ids := make([]ent.Value, 0, len(m.booking))
+		for id := range m.booking {
+			ids = append(ids, id)
+		}
+		return ids
+	case billing.EdgeCard:
+		ids := make([]ent.Value, 0, len(m.card))
+		for id := range m.card {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *BillingMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 2)
+	if m.removedbooking != nil {
+		edges = append(edges, billing.EdgeBooking)
+	}
+	if m.removedcard != nil {
+		edges = append(edges, billing.EdgeCard)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *BillingMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case billing.EdgeBooking:
+		ids := make([]ent.Value, 0, len(m.removedbooking))
+		for id := range m.removedbooking {
+			ids = append(ids, id)
+		}
+		return ids
+	case billing.EdgeCard:
+		ids := make([]ent.Value, 0, len(m.removedcard))
+		for id := range m.removedcard {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *BillingMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 2)
+	if m.clearedbooking {
+		edges = append(edges, billing.EdgeBooking)
+	}
+	if m.clearedcard {
+		edges = append(edges, billing.EdgeCard)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *BillingMutation) EdgeCleared(name string) bool {
+	switch name {
+	case billing.EdgeBooking:
+		return m.clearedbooking
+	case billing.EdgeCard:
+		return m.clearedcard
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *BillingMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown Billing unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *BillingMutation) ResetEdge(name string) error {
+	switch name {
+	case billing.EdgeBooking:
+		m.ResetBooking()
+		return nil
+	case billing.EdgeCard:
+		m.ResetCard()
+		return nil
+	}
 	return fmt.Errorf("unknown Billing edge %s", name)
 }
 
 // BookingMutation represents an operation that mutates the Booking nodes in the graph.
 type BookingMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*Booking, error)
-	predicates    []predicate.Booking
+	op                     Op
+	typ                    string
+	id                     *int
+	start_at               *time.Time
+	end_at                 *time.Time
+	return_car_at          *time.Time
+	fuel_level_at_begin    *float32
+	addfuel_level_at_begin *float32
+	fuel_level_at_end      *float32
+	addfuel_level_at_end   *float32
+	mileage_begin          *int
+	addmileage_begin       *int
+	mileage_end            *int
+	addmileage_end         *int
+	booking_status         *string
+	clearedFields          map[string]struct{}
+	user                   map[int]struct{}
+	removeduser            map[int]struct{}
+	cleareduser            bool
+	car                    map[int]struct{}
+	removedcar             map[int]struct{}
+	clearedcar             bool
+	billing                map[int]struct{}
+	removedbilling         map[int]struct{}
+	clearedbilling         bool
+	done                   bool
+	oldValue               func(context.Context) (*Booking, error)
+	predicates             []predicate.Booking
 }
 
 var _ ent.Mutation = (*BookingMutation)(nil)
@@ -881,6 +1081,536 @@ func (m *BookingMutation) IDs(ctx context.Context) ([]int, error) {
 	}
 }
 
+// SetStartAt sets the "start_at" field.
+func (m *BookingMutation) SetStartAt(t time.Time) {
+	m.start_at = &t
+}
+
+// StartAt returns the value of the "start_at" field in the mutation.
+func (m *BookingMutation) StartAt() (r time.Time, exists bool) {
+	v := m.start_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStartAt returns the old "start_at" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldStartAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStartAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStartAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStartAt: %w", err)
+	}
+	return oldValue.StartAt, nil
+}
+
+// ResetStartAt resets all changes to the "start_at" field.
+func (m *BookingMutation) ResetStartAt() {
+	m.start_at = nil
+}
+
+// SetEndAt sets the "end_at" field.
+func (m *BookingMutation) SetEndAt(t time.Time) {
+	m.end_at = &t
+}
+
+// EndAt returns the value of the "end_at" field in the mutation.
+func (m *BookingMutation) EndAt() (r time.Time, exists bool) {
+	v := m.end_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEndAt returns the old "end_at" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldEndAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEndAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEndAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEndAt: %w", err)
+	}
+	return oldValue.EndAt, nil
+}
+
+// ResetEndAt resets all changes to the "end_at" field.
+func (m *BookingMutation) ResetEndAt() {
+	m.end_at = nil
+}
+
+// SetReturnCarAt sets the "return_car_at" field.
+func (m *BookingMutation) SetReturnCarAt(t time.Time) {
+	m.return_car_at = &t
+}
+
+// ReturnCarAt returns the value of the "return_car_at" field in the mutation.
+func (m *BookingMutation) ReturnCarAt() (r time.Time, exists bool) {
+	v := m.return_car_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldReturnCarAt returns the old "return_car_at" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldReturnCarAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldReturnCarAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldReturnCarAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldReturnCarAt: %w", err)
+	}
+	return oldValue.ReturnCarAt, nil
+}
+
+// ResetReturnCarAt resets all changes to the "return_car_at" field.
+func (m *BookingMutation) ResetReturnCarAt() {
+	m.return_car_at = nil
+}
+
+// SetFuelLevelAtBegin sets the "fuel_level_at_begin" field.
+func (m *BookingMutation) SetFuelLevelAtBegin(f float32) {
+	m.fuel_level_at_begin = &f
+	m.addfuel_level_at_begin = nil
+}
+
+// FuelLevelAtBegin returns the value of the "fuel_level_at_begin" field in the mutation.
+func (m *BookingMutation) FuelLevelAtBegin() (r float32, exists bool) {
+	v := m.fuel_level_at_begin
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFuelLevelAtBegin returns the old "fuel_level_at_begin" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldFuelLevelAtBegin(ctx context.Context) (v float32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFuelLevelAtBegin is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFuelLevelAtBegin requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFuelLevelAtBegin: %w", err)
+	}
+	return oldValue.FuelLevelAtBegin, nil
+}
+
+// AddFuelLevelAtBegin adds f to the "fuel_level_at_begin" field.
+func (m *BookingMutation) AddFuelLevelAtBegin(f float32) {
+	if m.addfuel_level_at_begin != nil {
+		*m.addfuel_level_at_begin += f
+	} else {
+		m.addfuel_level_at_begin = &f
+	}
+}
+
+// AddedFuelLevelAtBegin returns the value that was added to the "fuel_level_at_begin" field in this mutation.
+func (m *BookingMutation) AddedFuelLevelAtBegin() (r float32, exists bool) {
+	v := m.addfuel_level_at_begin
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetFuelLevelAtBegin resets all changes to the "fuel_level_at_begin" field.
+func (m *BookingMutation) ResetFuelLevelAtBegin() {
+	m.fuel_level_at_begin = nil
+	m.addfuel_level_at_begin = nil
+}
+
+// SetFuelLevelAtEnd sets the "fuel_level_at_end" field.
+func (m *BookingMutation) SetFuelLevelAtEnd(f float32) {
+	m.fuel_level_at_end = &f
+	m.addfuel_level_at_end = nil
+}
+
+// FuelLevelAtEnd returns the value of the "fuel_level_at_end" field in the mutation.
+func (m *BookingMutation) FuelLevelAtEnd() (r float32, exists bool) {
+	v := m.fuel_level_at_end
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFuelLevelAtEnd returns the old "fuel_level_at_end" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldFuelLevelAtEnd(ctx context.Context) (v float32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFuelLevelAtEnd is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFuelLevelAtEnd requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFuelLevelAtEnd: %w", err)
+	}
+	return oldValue.FuelLevelAtEnd, nil
+}
+
+// AddFuelLevelAtEnd adds f to the "fuel_level_at_end" field.
+func (m *BookingMutation) AddFuelLevelAtEnd(f float32) {
+	if m.addfuel_level_at_end != nil {
+		*m.addfuel_level_at_end += f
+	} else {
+		m.addfuel_level_at_end = &f
+	}
+}
+
+// AddedFuelLevelAtEnd returns the value that was added to the "fuel_level_at_end" field in this mutation.
+func (m *BookingMutation) AddedFuelLevelAtEnd() (r float32, exists bool) {
+	v := m.addfuel_level_at_end
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetFuelLevelAtEnd resets all changes to the "fuel_level_at_end" field.
+func (m *BookingMutation) ResetFuelLevelAtEnd() {
+	m.fuel_level_at_end = nil
+	m.addfuel_level_at_end = nil
+}
+
+// SetMileageBegin sets the "mileage_begin" field.
+func (m *BookingMutation) SetMileageBegin(i int) {
+	m.mileage_begin = &i
+	m.addmileage_begin = nil
+}
+
+// MileageBegin returns the value of the "mileage_begin" field in the mutation.
+func (m *BookingMutation) MileageBegin() (r int, exists bool) {
+	v := m.mileage_begin
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMileageBegin returns the old "mileage_begin" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldMileageBegin(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMileageBegin is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMileageBegin requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMileageBegin: %w", err)
+	}
+	return oldValue.MileageBegin, nil
+}
+
+// AddMileageBegin adds i to the "mileage_begin" field.
+func (m *BookingMutation) AddMileageBegin(i int) {
+	if m.addmileage_begin != nil {
+		*m.addmileage_begin += i
+	} else {
+		m.addmileage_begin = &i
+	}
+}
+
+// AddedMileageBegin returns the value that was added to the "mileage_begin" field in this mutation.
+func (m *BookingMutation) AddedMileageBegin() (r int, exists bool) {
+	v := m.addmileage_begin
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetMileageBegin resets all changes to the "mileage_begin" field.
+func (m *BookingMutation) ResetMileageBegin() {
+	m.mileage_begin = nil
+	m.addmileage_begin = nil
+}
+
+// SetMileageEnd sets the "mileage_end" field.
+func (m *BookingMutation) SetMileageEnd(i int) {
+	m.mileage_end = &i
+	m.addmileage_end = nil
+}
+
+// MileageEnd returns the value of the "mileage_end" field in the mutation.
+func (m *BookingMutation) MileageEnd() (r int, exists bool) {
+	v := m.mileage_end
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMileageEnd returns the old "mileage_end" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldMileageEnd(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMileageEnd is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMileageEnd requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMileageEnd: %w", err)
+	}
+	return oldValue.MileageEnd, nil
+}
+
+// AddMileageEnd adds i to the "mileage_end" field.
+func (m *BookingMutation) AddMileageEnd(i int) {
+	if m.addmileage_end != nil {
+		*m.addmileage_end += i
+	} else {
+		m.addmileage_end = &i
+	}
+}
+
+// AddedMileageEnd returns the value that was added to the "mileage_end" field in this mutation.
+func (m *BookingMutation) AddedMileageEnd() (r int, exists bool) {
+	v := m.addmileage_end
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetMileageEnd resets all changes to the "mileage_end" field.
+func (m *BookingMutation) ResetMileageEnd() {
+	m.mileage_end = nil
+	m.addmileage_end = nil
+}
+
+// SetBookingStatus sets the "booking_status" field.
+func (m *BookingMutation) SetBookingStatus(s string) {
+	m.booking_status = &s
+}
+
+// BookingStatus returns the value of the "booking_status" field in the mutation.
+func (m *BookingMutation) BookingStatus() (r string, exists bool) {
+	v := m.booking_status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBookingStatus returns the old "booking_status" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldBookingStatus(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBookingStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBookingStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBookingStatus: %w", err)
+	}
+	return oldValue.BookingStatus, nil
+}
+
+// ResetBookingStatus resets all changes to the "booking_status" field.
+func (m *BookingMutation) ResetBookingStatus() {
+	m.booking_status = nil
+}
+
+// AddUserIDs adds the "user" edge to the User entity by ids.
+func (m *BookingMutation) AddUserIDs(ids ...int) {
+	if m.user == nil {
+		m.user = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.user[ids[i]] = struct{}{}
+	}
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *BookingMutation) ClearUser() {
+	m.cleareduser = true
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *BookingMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// RemoveUserIDs removes the "user" edge to the User entity by IDs.
+func (m *BookingMutation) RemoveUserIDs(ids ...int) {
+	if m.removeduser == nil {
+		m.removeduser = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.user, ids[i])
+		m.removeduser[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedUser returns the removed IDs of the "user" edge to the User entity.
+func (m *BookingMutation) RemovedUserIDs() (ids []int) {
+	for id := range m.removeduser {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+func (m *BookingMutation) UserIDs() (ids []int) {
+	for id := range m.user {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *BookingMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+	m.removeduser = nil
+}
+
+// AddCarIDs adds the "car" edge to the Car entity by ids.
+func (m *BookingMutation) AddCarIDs(ids ...int) {
+	if m.car == nil {
+		m.car = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.car[ids[i]] = struct{}{}
+	}
+}
+
+// ClearCar clears the "car" edge to the Car entity.
+func (m *BookingMutation) ClearCar() {
+	m.clearedcar = true
+}
+
+// CarCleared reports if the "car" edge to the Car entity was cleared.
+func (m *BookingMutation) CarCleared() bool {
+	return m.clearedcar
+}
+
+// RemoveCarIDs removes the "car" edge to the Car entity by IDs.
+func (m *BookingMutation) RemoveCarIDs(ids ...int) {
+	if m.removedcar == nil {
+		m.removedcar = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.car, ids[i])
+		m.removedcar[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedCar returns the removed IDs of the "car" edge to the Car entity.
+func (m *BookingMutation) RemovedCarIDs() (ids []int) {
+	for id := range m.removedcar {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// CarIDs returns the "car" edge IDs in the mutation.
+func (m *BookingMutation) CarIDs() (ids []int) {
+	for id := range m.car {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetCar resets all changes to the "car" edge.
+func (m *BookingMutation) ResetCar() {
+	m.car = nil
+	m.clearedcar = false
+	m.removedcar = nil
+}
+
+// AddBillingIDs adds the "billing" edge to the Billing entity by ids.
+func (m *BookingMutation) AddBillingIDs(ids ...int) {
+	if m.billing == nil {
+		m.billing = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.billing[ids[i]] = struct{}{}
+	}
+}
+
+// ClearBilling clears the "billing" edge to the Billing entity.
+func (m *BookingMutation) ClearBilling() {
+	m.clearedbilling = true
+}
+
+// BillingCleared reports if the "billing" edge to the Billing entity was cleared.
+func (m *BookingMutation) BillingCleared() bool {
+	return m.clearedbilling
+}
+
+// RemoveBillingIDs removes the "billing" edge to the Billing entity by IDs.
+func (m *BookingMutation) RemoveBillingIDs(ids ...int) {
+	if m.removedbilling == nil {
+		m.removedbilling = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.billing, ids[i])
+		m.removedbilling[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedBilling returns the removed IDs of the "billing" edge to the Billing entity.
+func (m *BookingMutation) RemovedBillingIDs() (ids []int) {
+	for id := range m.removedbilling {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// BillingIDs returns the "billing" edge IDs in the mutation.
+func (m *BookingMutation) BillingIDs() (ids []int) {
+	for id := range m.billing {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetBilling resets all changes to the "billing" edge.
+func (m *BookingMutation) ResetBilling() {
+	m.billing = nil
+	m.clearedbilling = false
+	m.removedbilling = nil
+}
+
 // Where appends a list predicates to the BookingMutation builder.
 func (m *BookingMutation) Where(ps ...predicate.Booking) {
 	m.predicates = append(m.predicates, ps...)
@@ -900,7 +1630,31 @@ func (m *BookingMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *BookingMutation) Fields() []string {
-	fields := make([]string, 0, 0)
+	fields := make([]string, 0, 8)
+	if m.start_at != nil {
+		fields = append(fields, booking.FieldStartAt)
+	}
+	if m.end_at != nil {
+		fields = append(fields, booking.FieldEndAt)
+	}
+	if m.return_car_at != nil {
+		fields = append(fields, booking.FieldReturnCarAt)
+	}
+	if m.fuel_level_at_begin != nil {
+		fields = append(fields, booking.FieldFuelLevelAtBegin)
+	}
+	if m.fuel_level_at_end != nil {
+		fields = append(fields, booking.FieldFuelLevelAtEnd)
+	}
+	if m.mileage_begin != nil {
+		fields = append(fields, booking.FieldMileageBegin)
+	}
+	if m.mileage_end != nil {
+		fields = append(fields, booking.FieldMileageEnd)
+	}
+	if m.booking_status != nil {
+		fields = append(fields, booking.FieldBookingStatus)
+	}
 	return fields
 }
 
@@ -908,6 +1662,24 @@ func (m *BookingMutation) Fields() []string {
 // return value indicates that this field was not set, or was not defined in the
 // schema.
 func (m *BookingMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case booking.FieldStartAt:
+		return m.StartAt()
+	case booking.FieldEndAt:
+		return m.EndAt()
+	case booking.FieldReturnCarAt:
+		return m.ReturnCarAt()
+	case booking.FieldFuelLevelAtBegin:
+		return m.FuelLevelAtBegin()
+	case booking.FieldFuelLevelAtEnd:
+		return m.FuelLevelAtEnd()
+	case booking.FieldMileageBegin:
+		return m.MileageBegin()
+	case booking.FieldMileageEnd:
+		return m.MileageEnd()
+	case booking.FieldBookingStatus:
+		return m.BookingStatus()
+	}
 	return nil, false
 }
 
@@ -915,6 +1687,24 @@ func (m *BookingMutation) Field(name string) (ent.Value, bool) {
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
 func (m *BookingMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case booking.FieldStartAt:
+		return m.OldStartAt(ctx)
+	case booking.FieldEndAt:
+		return m.OldEndAt(ctx)
+	case booking.FieldReturnCarAt:
+		return m.OldReturnCarAt(ctx)
+	case booking.FieldFuelLevelAtBegin:
+		return m.OldFuelLevelAtBegin(ctx)
+	case booking.FieldFuelLevelAtEnd:
+		return m.OldFuelLevelAtEnd(ctx)
+	case booking.FieldMileageBegin:
+		return m.OldMileageBegin(ctx)
+	case booking.FieldMileageEnd:
+		return m.OldMileageEnd(ctx)
+	case booking.FieldBookingStatus:
+		return m.OldBookingStatus(ctx)
+	}
 	return nil, fmt.Errorf("unknown Booking field %s", name)
 }
 
@@ -923,6 +1713,62 @@ func (m *BookingMutation) OldField(ctx context.Context, name string) (ent.Value,
 // type.
 func (m *BookingMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case booking.FieldStartAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStartAt(v)
+		return nil
+	case booking.FieldEndAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEndAt(v)
+		return nil
+	case booking.FieldReturnCarAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetReturnCarAt(v)
+		return nil
+	case booking.FieldFuelLevelAtBegin:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFuelLevelAtBegin(v)
+		return nil
+	case booking.FieldFuelLevelAtEnd:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFuelLevelAtEnd(v)
+		return nil
+	case booking.FieldMileageBegin:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMileageBegin(v)
+		return nil
+	case booking.FieldMileageEnd:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMileageEnd(v)
+		return nil
+	case booking.FieldBookingStatus:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBookingStatus(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Booking field %s", name)
 }
@@ -930,13 +1776,36 @@ func (m *BookingMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *BookingMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addfuel_level_at_begin != nil {
+		fields = append(fields, booking.FieldFuelLevelAtBegin)
+	}
+	if m.addfuel_level_at_end != nil {
+		fields = append(fields, booking.FieldFuelLevelAtEnd)
+	}
+	if m.addmileage_begin != nil {
+		fields = append(fields, booking.FieldMileageBegin)
+	}
+	if m.addmileage_end != nil {
+		fields = append(fields, booking.FieldMileageEnd)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *BookingMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case booking.FieldFuelLevelAtBegin:
+		return m.AddedFuelLevelAtBegin()
+	case booking.FieldFuelLevelAtEnd:
+		return m.AddedFuelLevelAtEnd()
+	case booking.FieldMileageBegin:
+		return m.AddedMileageBegin()
+	case booking.FieldMileageEnd:
+		return m.AddedMileageEnd()
+	}
 	return nil, false
 }
 
@@ -944,6 +1813,36 @@ func (m *BookingMutation) AddedField(name string) (ent.Value, bool) {
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
 func (m *BookingMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case booking.FieldFuelLevelAtBegin:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddFuelLevelAtBegin(v)
+		return nil
+	case booking.FieldFuelLevelAtEnd:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddFuelLevelAtEnd(v)
+		return nil
+	case booking.FieldMileageBegin:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddMileageBegin(v)
+		return nil
+	case booking.FieldMileageEnd:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddMileageEnd(v)
+		return nil
+	}
 	return fmt.Errorf("unknown Booking numeric field %s", name)
 }
 
@@ -969,67 +1868,204 @@ func (m *BookingMutation) ClearField(name string) error {
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
 func (m *BookingMutation) ResetField(name string) error {
+	switch name {
+	case booking.FieldStartAt:
+		m.ResetStartAt()
+		return nil
+	case booking.FieldEndAt:
+		m.ResetEndAt()
+		return nil
+	case booking.FieldReturnCarAt:
+		m.ResetReturnCarAt()
+		return nil
+	case booking.FieldFuelLevelAtBegin:
+		m.ResetFuelLevelAtBegin()
+		return nil
+	case booking.FieldFuelLevelAtEnd:
+		m.ResetFuelLevelAtEnd()
+		return nil
+	case booking.FieldMileageBegin:
+		m.ResetMileageBegin()
+		return nil
+	case booking.FieldMileageEnd:
+		m.ResetMileageEnd()
+		return nil
+	case booking.FieldBookingStatus:
+		m.ResetBookingStatus()
+		return nil
+	}
 	return fmt.Errorf("unknown Booking field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *BookingMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 3)
+	if m.user != nil {
+		edges = append(edges, booking.EdgeUser)
+	}
+	if m.car != nil {
+		edges = append(edges, booking.EdgeCar)
+	}
+	if m.billing != nil {
+		edges = append(edges, booking.EdgeBilling)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *BookingMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case booking.EdgeUser:
+		ids := make([]ent.Value, 0, len(m.user))
+		for id := range m.user {
+			ids = append(ids, id)
+		}
+		return ids
+	case booking.EdgeCar:
+		ids := make([]ent.Value, 0, len(m.car))
+		for id := range m.car {
+			ids = append(ids, id)
+		}
+		return ids
+	case booking.EdgeBilling:
+		ids := make([]ent.Value, 0, len(m.billing))
+		for id := range m.billing {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *BookingMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 3)
+	if m.removeduser != nil {
+		edges = append(edges, booking.EdgeUser)
+	}
+	if m.removedcar != nil {
+		edges = append(edges, booking.EdgeCar)
+	}
+	if m.removedbilling != nil {
+		edges = append(edges, booking.EdgeBilling)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *BookingMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case booking.EdgeUser:
+		ids := make([]ent.Value, 0, len(m.removeduser))
+		for id := range m.removeduser {
+			ids = append(ids, id)
+		}
+		return ids
+	case booking.EdgeCar:
+		ids := make([]ent.Value, 0, len(m.removedcar))
+		for id := range m.removedcar {
+			ids = append(ids, id)
+		}
+		return ids
+	case booking.EdgeBilling:
+		ids := make([]ent.Value, 0, len(m.removedbilling))
+		for id := range m.removedbilling {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *BookingMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 3)
+	if m.cleareduser {
+		edges = append(edges, booking.EdgeUser)
+	}
+	if m.clearedcar {
+		edges = append(edges, booking.EdgeCar)
+	}
+	if m.clearedbilling {
+		edges = append(edges, booking.EdgeBilling)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *BookingMutation) EdgeCleared(name string) bool {
+	switch name {
+	case booking.EdgeUser:
+		return m.cleareduser
+	case booking.EdgeCar:
+		return m.clearedcar
+	case booking.EdgeBilling:
+		return m.clearedbilling
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *BookingMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown Booking unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *BookingMutation) ResetEdge(name string) error {
+	switch name {
+	case booking.EdgeUser:
+		m.ResetUser()
+		return nil
+	case booking.EdgeCar:
+		m.ResetCar()
+		return nil
+	case booking.EdgeBilling:
+		m.ResetBilling()
+		return nil
+	}
 	return fmt.Errorf("unknown Booking edge %s", name)
 }
 
 // CarMutation represents an operation that mutates the Car nodes in the graph.
 type CarMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*Car, error)
-	predicates    []predicate.Car
+	op              Op
+	typ             string
+	id              *int
+	color           *string
+	brand           *string
+	model           *string
+	year            *int
+	addyear         *int
+	status          *string
+	car_type        *string
+	plate_number    *string
+	plate_country   *string
+	unit_price      *float32
+	addunit_price   *float32
+	price           *float32
+	addprice        *float32
+	mileage         *int
+	addmileage      *int
+	deposit         *float32
+	adddeposit      *float32
+	clearedFields   map[string]struct{}
+	location        map[int]struct{}
+	removedlocation map[int]struct{}
+	clearedlocation bool
+	booking         map[int]struct{}
+	removedbooking  map[int]struct{}
+	clearedbooking  bool
+	done            bool
+	oldValue        func(context.Context) (*Car, error)
+	predicates      []predicate.Car
 }
 
 var _ ent.Mutation = (*CarMutation)(nil)
@@ -1130,6 +2166,646 @@ func (m *CarMutation) IDs(ctx context.Context) ([]int, error) {
 	}
 }
 
+// SetColor sets the "color" field.
+func (m *CarMutation) SetColor(s string) {
+	m.color = &s
+}
+
+// Color returns the value of the "color" field in the mutation.
+func (m *CarMutation) Color() (r string, exists bool) {
+	v := m.color
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldColor returns the old "color" field's value of the Car entity.
+// If the Car object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CarMutation) OldColor(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldColor is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldColor requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldColor: %w", err)
+	}
+	return oldValue.Color, nil
+}
+
+// ResetColor resets all changes to the "color" field.
+func (m *CarMutation) ResetColor() {
+	m.color = nil
+}
+
+// SetBrand sets the "brand" field.
+func (m *CarMutation) SetBrand(s string) {
+	m.brand = &s
+}
+
+// Brand returns the value of the "brand" field in the mutation.
+func (m *CarMutation) Brand() (r string, exists bool) {
+	v := m.brand
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBrand returns the old "brand" field's value of the Car entity.
+// If the Car object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CarMutation) OldBrand(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBrand is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBrand requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBrand: %w", err)
+	}
+	return oldValue.Brand, nil
+}
+
+// ResetBrand resets all changes to the "brand" field.
+func (m *CarMutation) ResetBrand() {
+	m.brand = nil
+}
+
+// SetModel sets the "model" field.
+func (m *CarMutation) SetModel(s string) {
+	m.model = &s
+}
+
+// Model returns the value of the "model" field in the mutation.
+func (m *CarMutation) Model() (r string, exists bool) {
+	v := m.model
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldModel returns the old "model" field's value of the Car entity.
+// If the Car object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CarMutation) OldModel(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldModel is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldModel requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldModel: %w", err)
+	}
+	return oldValue.Model, nil
+}
+
+// ResetModel resets all changes to the "model" field.
+func (m *CarMutation) ResetModel() {
+	m.model = nil
+}
+
+// SetYear sets the "year" field.
+func (m *CarMutation) SetYear(i int) {
+	m.year = &i
+	m.addyear = nil
+}
+
+// Year returns the value of the "year" field in the mutation.
+func (m *CarMutation) Year() (r int, exists bool) {
+	v := m.year
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldYear returns the old "year" field's value of the Car entity.
+// If the Car object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CarMutation) OldYear(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldYear is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldYear requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldYear: %w", err)
+	}
+	return oldValue.Year, nil
+}
+
+// AddYear adds i to the "year" field.
+func (m *CarMutation) AddYear(i int) {
+	if m.addyear != nil {
+		*m.addyear += i
+	} else {
+		m.addyear = &i
+	}
+}
+
+// AddedYear returns the value that was added to the "year" field in this mutation.
+func (m *CarMutation) AddedYear() (r int, exists bool) {
+	v := m.addyear
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetYear resets all changes to the "year" field.
+func (m *CarMutation) ResetYear() {
+	m.year = nil
+	m.addyear = nil
+}
+
+// SetStatus sets the "status" field.
+func (m *CarMutation) SetStatus(s string) {
+	m.status = &s
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *CarMutation) Status() (r string, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the Car entity.
+// If the Car object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CarMutation) OldStatus(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *CarMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetCarType sets the "car_type" field.
+func (m *CarMutation) SetCarType(s string) {
+	m.car_type = &s
+}
+
+// CarType returns the value of the "car_type" field in the mutation.
+func (m *CarMutation) CarType() (r string, exists bool) {
+	v := m.car_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCarType returns the old "car_type" field's value of the Car entity.
+// If the Car object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CarMutation) OldCarType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCarType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCarType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCarType: %w", err)
+	}
+	return oldValue.CarType, nil
+}
+
+// ResetCarType resets all changes to the "car_type" field.
+func (m *CarMutation) ResetCarType() {
+	m.car_type = nil
+}
+
+// SetPlateNumber sets the "plate_number" field.
+func (m *CarMutation) SetPlateNumber(s string) {
+	m.plate_number = &s
+}
+
+// PlateNumber returns the value of the "plate_number" field in the mutation.
+func (m *CarMutation) PlateNumber() (r string, exists bool) {
+	v := m.plate_number
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPlateNumber returns the old "plate_number" field's value of the Car entity.
+// If the Car object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CarMutation) OldPlateNumber(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPlateNumber is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPlateNumber requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPlateNumber: %w", err)
+	}
+	return oldValue.PlateNumber, nil
+}
+
+// ResetPlateNumber resets all changes to the "plate_number" field.
+func (m *CarMutation) ResetPlateNumber() {
+	m.plate_number = nil
+}
+
+// SetPlateCountry sets the "plate_country" field.
+func (m *CarMutation) SetPlateCountry(s string) {
+	m.plate_country = &s
+}
+
+// PlateCountry returns the value of the "plate_country" field in the mutation.
+func (m *CarMutation) PlateCountry() (r string, exists bool) {
+	v := m.plate_country
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPlateCountry returns the old "plate_country" field's value of the Car entity.
+// If the Car object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CarMutation) OldPlateCountry(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPlateCountry is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPlateCountry requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPlateCountry: %w", err)
+	}
+	return oldValue.PlateCountry, nil
+}
+
+// ResetPlateCountry resets all changes to the "plate_country" field.
+func (m *CarMutation) ResetPlateCountry() {
+	m.plate_country = nil
+}
+
+// SetUnitPrice sets the "unit_price" field.
+func (m *CarMutation) SetUnitPrice(f float32) {
+	m.unit_price = &f
+	m.addunit_price = nil
+}
+
+// UnitPrice returns the value of the "unit_price" field in the mutation.
+func (m *CarMutation) UnitPrice() (r float32, exists bool) {
+	v := m.unit_price
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUnitPrice returns the old "unit_price" field's value of the Car entity.
+// If the Car object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CarMutation) OldUnitPrice(ctx context.Context) (v float32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUnitPrice is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUnitPrice requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUnitPrice: %w", err)
+	}
+	return oldValue.UnitPrice, nil
+}
+
+// AddUnitPrice adds f to the "unit_price" field.
+func (m *CarMutation) AddUnitPrice(f float32) {
+	if m.addunit_price != nil {
+		*m.addunit_price += f
+	} else {
+		m.addunit_price = &f
+	}
+}
+
+// AddedUnitPrice returns the value that was added to the "unit_price" field in this mutation.
+func (m *CarMutation) AddedUnitPrice() (r float32, exists bool) {
+	v := m.addunit_price
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetUnitPrice resets all changes to the "unit_price" field.
+func (m *CarMutation) ResetUnitPrice() {
+	m.unit_price = nil
+	m.addunit_price = nil
+}
+
+// SetPrice sets the "price" field.
+func (m *CarMutation) SetPrice(f float32) {
+	m.price = &f
+	m.addprice = nil
+}
+
+// Price returns the value of the "price" field in the mutation.
+func (m *CarMutation) Price() (r float32, exists bool) {
+	v := m.price
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPrice returns the old "price" field's value of the Car entity.
+// If the Car object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CarMutation) OldPrice(ctx context.Context) (v float32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPrice is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPrice requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPrice: %w", err)
+	}
+	return oldValue.Price, nil
+}
+
+// AddPrice adds f to the "price" field.
+func (m *CarMutation) AddPrice(f float32) {
+	if m.addprice != nil {
+		*m.addprice += f
+	} else {
+		m.addprice = &f
+	}
+}
+
+// AddedPrice returns the value that was added to the "price" field in this mutation.
+func (m *CarMutation) AddedPrice() (r float32, exists bool) {
+	v := m.addprice
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetPrice resets all changes to the "price" field.
+func (m *CarMutation) ResetPrice() {
+	m.price = nil
+	m.addprice = nil
+}
+
+// SetMileage sets the "mileage" field.
+func (m *CarMutation) SetMileage(i int) {
+	m.mileage = &i
+	m.addmileage = nil
+}
+
+// Mileage returns the value of the "mileage" field in the mutation.
+func (m *CarMutation) Mileage() (r int, exists bool) {
+	v := m.mileage
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMileage returns the old "mileage" field's value of the Car entity.
+// If the Car object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CarMutation) OldMileage(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMileage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMileage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMileage: %w", err)
+	}
+	return oldValue.Mileage, nil
+}
+
+// AddMileage adds i to the "mileage" field.
+func (m *CarMutation) AddMileage(i int) {
+	if m.addmileage != nil {
+		*m.addmileage += i
+	} else {
+		m.addmileage = &i
+	}
+}
+
+// AddedMileage returns the value that was added to the "mileage" field in this mutation.
+func (m *CarMutation) AddedMileage() (r int, exists bool) {
+	v := m.addmileage
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetMileage resets all changes to the "mileage" field.
+func (m *CarMutation) ResetMileage() {
+	m.mileage = nil
+	m.addmileage = nil
+}
+
+// SetDeposit sets the "deposit" field.
+func (m *CarMutation) SetDeposit(f float32) {
+	m.deposit = &f
+	m.adddeposit = nil
+}
+
+// Deposit returns the value of the "deposit" field in the mutation.
+func (m *CarMutation) Deposit() (r float32, exists bool) {
+	v := m.deposit
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeposit returns the old "deposit" field's value of the Car entity.
+// If the Car object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CarMutation) OldDeposit(ctx context.Context) (v float32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeposit is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeposit requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeposit: %w", err)
+	}
+	return oldValue.Deposit, nil
+}
+
+// AddDeposit adds f to the "deposit" field.
+func (m *CarMutation) AddDeposit(f float32) {
+	if m.adddeposit != nil {
+		*m.adddeposit += f
+	} else {
+		m.adddeposit = &f
+	}
+}
+
+// AddedDeposit returns the value that was added to the "deposit" field in this mutation.
+func (m *CarMutation) AddedDeposit() (r float32, exists bool) {
+	v := m.adddeposit
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetDeposit resets all changes to the "deposit" field.
+func (m *CarMutation) ResetDeposit() {
+	m.deposit = nil
+	m.adddeposit = nil
+}
+
+// AddLocationIDs adds the "location" edge to the Location entity by ids.
+func (m *CarMutation) AddLocationIDs(ids ...int) {
+	if m.location == nil {
+		m.location = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.location[ids[i]] = struct{}{}
+	}
+}
+
+// ClearLocation clears the "location" edge to the Location entity.
+func (m *CarMutation) ClearLocation() {
+	m.clearedlocation = true
+}
+
+// LocationCleared reports if the "location" edge to the Location entity was cleared.
+func (m *CarMutation) LocationCleared() bool {
+	return m.clearedlocation
+}
+
+// RemoveLocationIDs removes the "location" edge to the Location entity by IDs.
+func (m *CarMutation) RemoveLocationIDs(ids ...int) {
+	if m.removedlocation == nil {
+		m.removedlocation = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.location, ids[i])
+		m.removedlocation[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedLocation returns the removed IDs of the "location" edge to the Location entity.
+func (m *CarMutation) RemovedLocationIDs() (ids []int) {
+	for id := range m.removedlocation {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// LocationIDs returns the "location" edge IDs in the mutation.
+func (m *CarMutation) LocationIDs() (ids []int) {
+	for id := range m.location {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetLocation resets all changes to the "location" edge.
+func (m *CarMutation) ResetLocation() {
+	m.location = nil
+	m.clearedlocation = false
+	m.removedlocation = nil
+}
+
+// AddBookingIDs adds the "booking" edge to the Booking entity by ids.
+func (m *CarMutation) AddBookingIDs(ids ...int) {
+	if m.booking == nil {
+		m.booking = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.booking[ids[i]] = struct{}{}
+	}
+}
+
+// ClearBooking clears the "booking" edge to the Booking entity.
+func (m *CarMutation) ClearBooking() {
+	m.clearedbooking = true
+}
+
+// BookingCleared reports if the "booking" edge to the Booking entity was cleared.
+func (m *CarMutation) BookingCleared() bool {
+	return m.clearedbooking
+}
+
+// RemoveBookingIDs removes the "booking" edge to the Booking entity by IDs.
+func (m *CarMutation) RemoveBookingIDs(ids ...int) {
+	if m.removedbooking == nil {
+		m.removedbooking = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.booking, ids[i])
+		m.removedbooking[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedBooking returns the removed IDs of the "booking" edge to the Booking entity.
+func (m *CarMutation) RemovedBookingIDs() (ids []int) {
+	for id := range m.removedbooking {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// BookingIDs returns the "booking" edge IDs in the mutation.
+func (m *CarMutation) BookingIDs() (ids []int) {
+	for id := range m.booking {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetBooking resets all changes to the "booking" edge.
+func (m *CarMutation) ResetBooking() {
+	m.booking = nil
+	m.clearedbooking = false
+	m.removedbooking = nil
+}
+
 // Where appends a list predicates to the CarMutation builder.
 func (m *CarMutation) Where(ps ...predicate.Car) {
 	m.predicates = append(m.predicates, ps...)
@@ -1149,7 +2825,43 @@ func (m *CarMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *CarMutation) Fields() []string {
-	fields := make([]string, 0, 0)
+	fields := make([]string, 0, 12)
+	if m.color != nil {
+		fields = append(fields, car.FieldColor)
+	}
+	if m.brand != nil {
+		fields = append(fields, car.FieldBrand)
+	}
+	if m.model != nil {
+		fields = append(fields, car.FieldModel)
+	}
+	if m.year != nil {
+		fields = append(fields, car.FieldYear)
+	}
+	if m.status != nil {
+		fields = append(fields, car.FieldStatus)
+	}
+	if m.car_type != nil {
+		fields = append(fields, car.FieldCarType)
+	}
+	if m.plate_number != nil {
+		fields = append(fields, car.FieldPlateNumber)
+	}
+	if m.plate_country != nil {
+		fields = append(fields, car.FieldPlateCountry)
+	}
+	if m.unit_price != nil {
+		fields = append(fields, car.FieldUnitPrice)
+	}
+	if m.price != nil {
+		fields = append(fields, car.FieldPrice)
+	}
+	if m.mileage != nil {
+		fields = append(fields, car.FieldMileage)
+	}
+	if m.deposit != nil {
+		fields = append(fields, car.FieldDeposit)
+	}
 	return fields
 }
 
@@ -1157,6 +2869,32 @@ func (m *CarMutation) Fields() []string {
 // return value indicates that this field was not set, or was not defined in the
 // schema.
 func (m *CarMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case car.FieldColor:
+		return m.Color()
+	case car.FieldBrand:
+		return m.Brand()
+	case car.FieldModel:
+		return m.Model()
+	case car.FieldYear:
+		return m.Year()
+	case car.FieldStatus:
+		return m.Status()
+	case car.FieldCarType:
+		return m.CarType()
+	case car.FieldPlateNumber:
+		return m.PlateNumber()
+	case car.FieldPlateCountry:
+		return m.PlateCountry()
+	case car.FieldUnitPrice:
+		return m.UnitPrice()
+	case car.FieldPrice:
+		return m.Price()
+	case car.FieldMileage:
+		return m.Mileage()
+	case car.FieldDeposit:
+		return m.Deposit()
+	}
 	return nil, false
 }
 
@@ -1164,6 +2902,32 @@ func (m *CarMutation) Field(name string) (ent.Value, bool) {
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
 func (m *CarMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case car.FieldColor:
+		return m.OldColor(ctx)
+	case car.FieldBrand:
+		return m.OldBrand(ctx)
+	case car.FieldModel:
+		return m.OldModel(ctx)
+	case car.FieldYear:
+		return m.OldYear(ctx)
+	case car.FieldStatus:
+		return m.OldStatus(ctx)
+	case car.FieldCarType:
+		return m.OldCarType(ctx)
+	case car.FieldPlateNumber:
+		return m.OldPlateNumber(ctx)
+	case car.FieldPlateCountry:
+		return m.OldPlateCountry(ctx)
+	case car.FieldUnitPrice:
+		return m.OldUnitPrice(ctx)
+	case car.FieldPrice:
+		return m.OldPrice(ctx)
+	case car.FieldMileage:
+		return m.OldMileage(ctx)
+	case car.FieldDeposit:
+		return m.OldDeposit(ctx)
+	}
 	return nil, fmt.Errorf("unknown Car field %s", name)
 }
 
@@ -1172,6 +2936,90 @@ func (m *CarMutation) OldField(ctx context.Context, name string) (ent.Value, err
 // type.
 func (m *CarMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case car.FieldColor:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetColor(v)
+		return nil
+	case car.FieldBrand:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBrand(v)
+		return nil
+	case car.FieldModel:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetModel(v)
+		return nil
+	case car.FieldYear:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetYear(v)
+		return nil
+	case car.FieldStatus:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case car.FieldCarType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCarType(v)
+		return nil
+	case car.FieldPlateNumber:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPlateNumber(v)
+		return nil
+	case car.FieldPlateCountry:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPlateCountry(v)
+		return nil
+	case car.FieldUnitPrice:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUnitPrice(v)
+		return nil
+	case car.FieldPrice:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPrice(v)
+		return nil
+	case car.FieldMileage:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMileage(v)
+		return nil
+	case car.FieldDeposit:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeposit(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Car field %s", name)
 }
@@ -1179,13 +3027,41 @@ func (m *CarMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *CarMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addyear != nil {
+		fields = append(fields, car.FieldYear)
+	}
+	if m.addunit_price != nil {
+		fields = append(fields, car.FieldUnitPrice)
+	}
+	if m.addprice != nil {
+		fields = append(fields, car.FieldPrice)
+	}
+	if m.addmileage != nil {
+		fields = append(fields, car.FieldMileage)
+	}
+	if m.adddeposit != nil {
+		fields = append(fields, car.FieldDeposit)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *CarMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case car.FieldYear:
+		return m.AddedYear()
+	case car.FieldUnitPrice:
+		return m.AddedUnitPrice()
+	case car.FieldPrice:
+		return m.AddedPrice()
+	case car.FieldMileage:
+		return m.AddedMileage()
+	case car.FieldDeposit:
+		return m.AddedDeposit()
+	}
 	return nil, false
 }
 
@@ -1193,6 +3069,43 @@ func (m *CarMutation) AddedField(name string) (ent.Value, bool) {
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
 func (m *CarMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case car.FieldYear:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddYear(v)
+		return nil
+	case car.FieldUnitPrice:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUnitPrice(v)
+		return nil
+	case car.FieldPrice:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddPrice(v)
+		return nil
+	case car.FieldMileage:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddMileage(v)
+		return nil
+	case car.FieldDeposit:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDeposit(v)
+		return nil
+	}
 	return fmt.Errorf("unknown Car numeric field %s", name)
 }
 
@@ -1218,54 +3131,154 @@ func (m *CarMutation) ClearField(name string) error {
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
 func (m *CarMutation) ResetField(name string) error {
+	switch name {
+	case car.FieldColor:
+		m.ResetColor()
+		return nil
+	case car.FieldBrand:
+		m.ResetBrand()
+		return nil
+	case car.FieldModel:
+		m.ResetModel()
+		return nil
+	case car.FieldYear:
+		m.ResetYear()
+		return nil
+	case car.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case car.FieldCarType:
+		m.ResetCarType()
+		return nil
+	case car.FieldPlateNumber:
+		m.ResetPlateNumber()
+		return nil
+	case car.FieldPlateCountry:
+		m.ResetPlateCountry()
+		return nil
+	case car.FieldUnitPrice:
+		m.ResetUnitPrice()
+		return nil
+	case car.FieldPrice:
+		m.ResetPrice()
+		return nil
+	case car.FieldMileage:
+		m.ResetMileage()
+		return nil
+	case car.FieldDeposit:
+		m.ResetDeposit()
+		return nil
+	}
 	return fmt.Errorf("unknown Car field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *CarMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 2)
+	if m.location != nil {
+		edges = append(edges, car.EdgeLocation)
+	}
+	if m.booking != nil {
+		edges = append(edges, car.EdgeBooking)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *CarMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case car.EdgeLocation:
+		ids := make([]ent.Value, 0, len(m.location))
+		for id := range m.location {
+			ids = append(ids, id)
+		}
+		return ids
+	case car.EdgeBooking:
+		ids := make([]ent.Value, 0, len(m.booking))
+		for id := range m.booking {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *CarMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 2)
+	if m.removedlocation != nil {
+		edges = append(edges, car.EdgeLocation)
+	}
+	if m.removedbooking != nil {
+		edges = append(edges, car.EdgeBooking)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *CarMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case car.EdgeLocation:
+		ids := make([]ent.Value, 0, len(m.removedlocation))
+		for id := range m.removedlocation {
+			ids = append(ids, id)
+		}
+		return ids
+	case car.EdgeBooking:
+		ids := make([]ent.Value, 0, len(m.removedbooking))
+		for id := range m.removedbooking {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *CarMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 2)
+	if m.clearedlocation {
+		edges = append(edges, car.EdgeLocation)
+	}
+	if m.clearedbooking {
+		edges = append(edges, car.EdgeBooking)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *CarMutation) EdgeCleared(name string) bool {
+	switch name {
+	case car.EdgeLocation:
+		return m.clearedlocation
+	case car.EdgeBooking:
+		return m.clearedbooking
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *CarMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown Car unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *CarMutation) ResetEdge(name string) error {
+	switch name {
+	case car.EdgeLocation:
+		m.ResetLocation()
+		return nil
+	case car.EdgeBooking:
+		m.ResetBooking()
+		return nil
+	}
 	return fmt.Errorf("unknown Car edge %s", name)
 }
 
@@ -2608,6 +4621,9 @@ type UserMutation struct {
 	clearednote_flaws      bool
 	account                *int
 	clearedaccount         bool
+	booking                map[int]struct{}
+	removedbooking         map[int]struct{}
+	clearedbooking         bool
 	done                   bool
 	oldValue               func(context.Context) (*User, error)
 	predicates             []predicate.User
@@ -3152,6 +5168,60 @@ func (m *UserMutation) ResetAccount() {
 	m.clearedaccount = false
 }
 
+// AddBookingIDs adds the "booking" edge to the Booking entity by ids.
+func (m *UserMutation) AddBookingIDs(ids ...int) {
+	if m.booking == nil {
+		m.booking = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.booking[ids[i]] = struct{}{}
+	}
+}
+
+// ClearBooking clears the "booking" edge to the Booking entity.
+func (m *UserMutation) ClearBooking() {
+	m.clearedbooking = true
+}
+
+// BookingCleared reports if the "booking" edge to the Booking entity was cleared.
+func (m *UserMutation) BookingCleared() bool {
+	return m.clearedbooking
+}
+
+// RemoveBookingIDs removes the "booking" edge to the Booking entity by IDs.
+func (m *UserMutation) RemoveBookingIDs(ids ...int) {
+	if m.removedbooking == nil {
+		m.removedbooking = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.booking, ids[i])
+		m.removedbooking[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedBooking returns the removed IDs of the "booking" edge to the Booking entity.
+func (m *UserMutation) RemovedBookingIDs() (ids []int) {
+	for id := range m.removedbooking {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// BookingIDs returns the "booking" edge IDs in the mutation.
+func (m *UserMutation) BookingIDs() (ids []int) {
+	for id := range m.booking {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetBooking resets all changes to the "booking" edge.
+func (m *UserMutation) ResetBooking() {
+	m.booking = nil
+	m.clearedbooking = false
+	m.removedbooking = nil
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -3389,7 +5459,7 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.card != nil {
 		edges = append(edges, user.EdgeCard)
 	}
@@ -3398,6 +5468,9 @@ func (m *UserMutation) AddedEdges() []string {
 	}
 	if m.account != nil {
 		edges = append(edges, user.EdgeAccount)
+	}
+	if m.booking != nil {
+		edges = append(edges, user.EdgeBooking)
 	}
 	return edges
 }
@@ -3422,18 +5495,27 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 		if id := m.account; id != nil {
 			return []ent.Value{*id}
 		}
+	case user.EdgeBooking:
+		ids := make([]ent.Value, 0, len(m.booking))
+		for id := range m.booking {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedcard != nil {
 		edges = append(edges, user.EdgeCard)
 	}
 	if m.removednote_flaws != nil {
 		edges = append(edges, user.EdgeNoteFlaws)
+	}
+	if m.removedbooking != nil {
+		edges = append(edges, user.EdgeBooking)
 	}
 	return edges
 }
@@ -3454,13 +5536,19 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeBooking:
+		ids := make([]ent.Value, 0, len(m.removedbooking))
+		for id := range m.removedbooking {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedcard {
 		edges = append(edges, user.EdgeCard)
 	}
@@ -3469,6 +5557,9 @@ func (m *UserMutation) ClearedEdges() []string {
 	}
 	if m.clearedaccount {
 		edges = append(edges, user.EdgeAccount)
+	}
+	if m.clearedbooking {
+		edges = append(edges, user.EdgeBooking)
 	}
 	return edges
 }
@@ -3483,6 +5574,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearednote_flaws
 	case user.EdgeAccount:
 		return m.clearedaccount
+	case user.EdgeBooking:
+		return m.clearedbooking
 	}
 	return false
 }
@@ -3510,6 +5603,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	case user.EdgeAccount:
 		m.ResetAccount()
+		return nil
+	case user.EdgeBooking:
+		m.ResetBooking()
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)

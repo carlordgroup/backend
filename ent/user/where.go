@@ -978,6 +978,34 @@ func HasAccountWith(preds ...predicate.Account) predicate.User {
 	})
 }
 
+// HasBooking applies the HasEdge predicate on the "booking" edge.
+func HasBooking() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BookingTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, BookingTable, BookingPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasBookingWith applies the HasEdge predicate on the "booking" edge with a given conditions (other predicates).
+func HasBookingWith(preds ...predicate.Booking) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BookingInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, BookingTable, BookingPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.User) predicate.User {
 	return predicate.User(func(s *sql.Selector) {

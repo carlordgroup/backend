@@ -3,7 +3,9 @@
 package ent
 
 import (
+	"carlord/ent/booking"
 	"carlord/ent/car"
+	"carlord/ent/location"
 	"carlord/ent/predicate"
 	"context"
 	"errors"
@@ -27,9 +29,196 @@ func (cu *CarUpdate) Where(ps ...predicate.Car) *CarUpdate {
 	return cu
 }
 
+// SetColor sets the "color" field.
+func (cu *CarUpdate) SetColor(s string) *CarUpdate {
+	cu.mutation.SetColor(s)
+	return cu
+}
+
+// SetBrand sets the "brand" field.
+func (cu *CarUpdate) SetBrand(s string) *CarUpdate {
+	cu.mutation.SetBrand(s)
+	return cu
+}
+
+// SetModel sets the "model" field.
+func (cu *CarUpdate) SetModel(s string) *CarUpdate {
+	cu.mutation.SetModel(s)
+	return cu
+}
+
+// SetYear sets the "year" field.
+func (cu *CarUpdate) SetYear(i int) *CarUpdate {
+	cu.mutation.ResetYear()
+	cu.mutation.SetYear(i)
+	return cu
+}
+
+// AddYear adds i to the "year" field.
+func (cu *CarUpdate) AddYear(i int) *CarUpdate {
+	cu.mutation.AddYear(i)
+	return cu
+}
+
+// SetStatus sets the "status" field.
+func (cu *CarUpdate) SetStatus(s string) *CarUpdate {
+	cu.mutation.SetStatus(s)
+	return cu
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (cu *CarUpdate) SetNillableStatus(s *string) *CarUpdate {
+	if s != nil {
+		cu.SetStatus(*s)
+	}
+	return cu
+}
+
+// SetCarType sets the "car_type" field.
+func (cu *CarUpdate) SetCarType(s string) *CarUpdate {
+	cu.mutation.SetCarType(s)
+	return cu
+}
+
+// SetPlateNumber sets the "plate_number" field.
+func (cu *CarUpdate) SetPlateNumber(s string) *CarUpdate {
+	cu.mutation.SetPlateNumber(s)
+	return cu
+}
+
+// SetPlateCountry sets the "plate_country" field.
+func (cu *CarUpdate) SetPlateCountry(s string) *CarUpdate {
+	cu.mutation.SetPlateCountry(s)
+	return cu
+}
+
+// SetUnitPrice sets the "unit_price" field.
+func (cu *CarUpdate) SetUnitPrice(f float32) *CarUpdate {
+	cu.mutation.ResetUnitPrice()
+	cu.mutation.SetUnitPrice(f)
+	return cu
+}
+
+// AddUnitPrice adds f to the "unit_price" field.
+func (cu *CarUpdate) AddUnitPrice(f float32) *CarUpdate {
+	cu.mutation.AddUnitPrice(f)
+	return cu
+}
+
+// SetPrice sets the "price" field.
+func (cu *CarUpdate) SetPrice(f float32) *CarUpdate {
+	cu.mutation.ResetPrice()
+	cu.mutation.SetPrice(f)
+	return cu
+}
+
+// AddPrice adds f to the "price" field.
+func (cu *CarUpdate) AddPrice(f float32) *CarUpdate {
+	cu.mutation.AddPrice(f)
+	return cu
+}
+
+// SetMileage sets the "mileage" field.
+func (cu *CarUpdate) SetMileage(i int) *CarUpdate {
+	cu.mutation.ResetMileage()
+	cu.mutation.SetMileage(i)
+	return cu
+}
+
+// AddMileage adds i to the "mileage" field.
+func (cu *CarUpdate) AddMileage(i int) *CarUpdate {
+	cu.mutation.AddMileage(i)
+	return cu
+}
+
+// SetDeposit sets the "deposit" field.
+func (cu *CarUpdate) SetDeposit(f float32) *CarUpdate {
+	cu.mutation.ResetDeposit()
+	cu.mutation.SetDeposit(f)
+	return cu
+}
+
+// AddDeposit adds f to the "deposit" field.
+func (cu *CarUpdate) AddDeposit(f float32) *CarUpdate {
+	cu.mutation.AddDeposit(f)
+	return cu
+}
+
+// AddLocationIDs adds the "location" edge to the Location entity by IDs.
+func (cu *CarUpdate) AddLocationIDs(ids ...int) *CarUpdate {
+	cu.mutation.AddLocationIDs(ids...)
+	return cu
+}
+
+// AddLocation adds the "location" edges to the Location entity.
+func (cu *CarUpdate) AddLocation(l ...*Location) *CarUpdate {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return cu.AddLocationIDs(ids...)
+}
+
+// AddBookingIDs adds the "booking" edge to the Booking entity by IDs.
+func (cu *CarUpdate) AddBookingIDs(ids ...int) *CarUpdate {
+	cu.mutation.AddBookingIDs(ids...)
+	return cu
+}
+
+// AddBooking adds the "booking" edges to the Booking entity.
+func (cu *CarUpdate) AddBooking(b ...*Booking) *CarUpdate {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return cu.AddBookingIDs(ids...)
+}
+
 // Mutation returns the CarMutation object of the builder.
 func (cu *CarUpdate) Mutation() *CarMutation {
 	return cu.mutation
+}
+
+// ClearLocation clears all "location" edges to the Location entity.
+func (cu *CarUpdate) ClearLocation() *CarUpdate {
+	cu.mutation.ClearLocation()
+	return cu
+}
+
+// RemoveLocationIDs removes the "location" edge to Location entities by IDs.
+func (cu *CarUpdate) RemoveLocationIDs(ids ...int) *CarUpdate {
+	cu.mutation.RemoveLocationIDs(ids...)
+	return cu
+}
+
+// RemoveLocation removes "location" edges to Location entities.
+func (cu *CarUpdate) RemoveLocation(l ...*Location) *CarUpdate {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return cu.RemoveLocationIDs(ids...)
+}
+
+// ClearBooking clears all "booking" edges to the Booking entity.
+func (cu *CarUpdate) ClearBooking() *CarUpdate {
+	cu.mutation.ClearBooking()
+	return cu
+}
+
+// RemoveBookingIDs removes the "booking" edge to Booking entities by IDs.
+func (cu *CarUpdate) RemoveBookingIDs(ids ...int) *CarUpdate {
+	cu.mutation.RemoveBookingIDs(ids...)
+	return cu
+}
+
+// RemoveBooking removes "booking" edges to Booking entities.
+func (cu *CarUpdate) RemoveBooking(b ...*Booking) *CarUpdate {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return cu.RemoveBookingIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -104,6 +293,165 @@ func (cu *CarUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := cu.mutation.Color(); ok {
+		_spec.SetField(car.FieldColor, field.TypeString, value)
+	}
+	if value, ok := cu.mutation.Brand(); ok {
+		_spec.SetField(car.FieldBrand, field.TypeString, value)
+	}
+	if value, ok := cu.mutation.Model(); ok {
+		_spec.SetField(car.FieldModel, field.TypeString, value)
+	}
+	if value, ok := cu.mutation.Year(); ok {
+		_spec.SetField(car.FieldYear, field.TypeInt, value)
+	}
+	if value, ok := cu.mutation.AddedYear(); ok {
+		_spec.AddField(car.FieldYear, field.TypeInt, value)
+	}
+	if value, ok := cu.mutation.Status(); ok {
+		_spec.SetField(car.FieldStatus, field.TypeString, value)
+	}
+	if value, ok := cu.mutation.CarType(); ok {
+		_spec.SetField(car.FieldCarType, field.TypeString, value)
+	}
+	if value, ok := cu.mutation.PlateNumber(); ok {
+		_spec.SetField(car.FieldPlateNumber, field.TypeString, value)
+	}
+	if value, ok := cu.mutation.PlateCountry(); ok {
+		_spec.SetField(car.FieldPlateCountry, field.TypeString, value)
+	}
+	if value, ok := cu.mutation.UnitPrice(); ok {
+		_spec.SetField(car.FieldUnitPrice, field.TypeFloat32, value)
+	}
+	if value, ok := cu.mutation.AddedUnitPrice(); ok {
+		_spec.AddField(car.FieldUnitPrice, field.TypeFloat32, value)
+	}
+	if value, ok := cu.mutation.Price(); ok {
+		_spec.SetField(car.FieldPrice, field.TypeFloat32, value)
+	}
+	if value, ok := cu.mutation.AddedPrice(); ok {
+		_spec.AddField(car.FieldPrice, field.TypeFloat32, value)
+	}
+	if value, ok := cu.mutation.Mileage(); ok {
+		_spec.SetField(car.FieldMileage, field.TypeInt, value)
+	}
+	if value, ok := cu.mutation.AddedMileage(); ok {
+		_spec.AddField(car.FieldMileage, field.TypeInt, value)
+	}
+	if value, ok := cu.mutation.Deposit(); ok {
+		_spec.SetField(car.FieldDeposit, field.TypeFloat32, value)
+	}
+	if value, ok := cu.mutation.AddedDeposit(); ok {
+		_spec.AddField(car.FieldDeposit, field.TypeFloat32, value)
+	}
+	if cu.mutation.LocationCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.LocationTable,
+			Columns: []string{car.LocationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: location.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.RemovedLocationIDs(); len(nodes) > 0 && !cu.mutation.LocationCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.LocationTable,
+			Columns: []string{car.LocationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: location.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.LocationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.LocationTable,
+			Columns: []string{car.LocationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: location.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if cu.mutation.BookingCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   car.BookingTable,
+			Columns: car.BookingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: booking.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.RemovedBookingIDs(); len(nodes) > 0 && !cu.mutation.BookingCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   car.BookingTable,
+			Columns: car.BookingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: booking.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.BookingIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   car.BookingTable,
+			Columns: car.BookingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: booking.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, cu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{car.Label}
@@ -123,9 +471,196 @@ type CarUpdateOne struct {
 	mutation *CarMutation
 }
 
+// SetColor sets the "color" field.
+func (cuo *CarUpdateOne) SetColor(s string) *CarUpdateOne {
+	cuo.mutation.SetColor(s)
+	return cuo
+}
+
+// SetBrand sets the "brand" field.
+func (cuo *CarUpdateOne) SetBrand(s string) *CarUpdateOne {
+	cuo.mutation.SetBrand(s)
+	return cuo
+}
+
+// SetModel sets the "model" field.
+func (cuo *CarUpdateOne) SetModel(s string) *CarUpdateOne {
+	cuo.mutation.SetModel(s)
+	return cuo
+}
+
+// SetYear sets the "year" field.
+func (cuo *CarUpdateOne) SetYear(i int) *CarUpdateOne {
+	cuo.mutation.ResetYear()
+	cuo.mutation.SetYear(i)
+	return cuo
+}
+
+// AddYear adds i to the "year" field.
+func (cuo *CarUpdateOne) AddYear(i int) *CarUpdateOne {
+	cuo.mutation.AddYear(i)
+	return cuo
+}
+
+// SetStatus sets the "status" field.
+func (cuo *CarUpdateOne) SetStatus(s string) *CarUpdateOne {
+	cuo.mutation.SetStatus(s)
+	return cuo
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (cuo *CarUpdateOne) SetNillableStatus(s *string) *CarUpdateOne {
+	if s != nil {
+		cuo.SetStatus(*s)
+	}
+	return cuo
+}
+
+// SetCarType sets the "car_type" field.
+func (cuo *CarUpdateOne) SetCarType(s string) *CarUpdateOne {
+	cuo.mutation.SetCarType(s)
+	return cuo
+}
+
+// SetPlateNumber sets the "plate_number" field.
+func (cuo *CarUpdateOne) SetPlateNumber(s string) *CarUpdateOne {
+	cuo.mutation.SetPlateNumber(s)
+	return cuo
+}
+
+// SetPlateCountry sets the "plate_country" field.
+func (cuo *CarUpdateOne) SetPlateCountry(s string) *CarUpdateOne {
+	cuo.mutation.SetPlateCountry(s)
+	return cuo
+}
+
+// SetUnitPrice sets the "unit_price" field.
+func (cuo *CarUpdateOne) SetUnitPrice(f float32) *CarUpdateOne {
+	cuo.mutation.ResetUnitPrice()
+	cuo.mutation.SetUnitPrice(f)
+	return cuo
+}
+
+// AddUnitPrice adds f to the "unit_price" field.
+func (cuo *CarUpdateOne) AddUnitPrice(f float32) *CarUpdateOne {
+	cuo.mutation.AddUnitPrice(f)
+	return cuo
+}
+
+// SetPrice sets the "price" field.
+func (cuo *CarUpdateOne) SetPrice(f float32) *CarUpdateOne {
+	cuo.mutation.ResetPrice()
+	cuo.mutation.SetPrice(f)
+	return cuo
+}
+
+// AddPrice adds f to the "price" field.
+func (cuo *CarUpdateOne) AddPrice(f float32) *CarUpdateOne {
+	cuo.mutation.AddPrice(f)
+	return cuo
+}
+
+// SetMileage sets the "mileage" field.
+func (cuo *CarUpdateOne) SetMileage(i int) *CarUpdateOne {
+	cuo.mutation.ResetMileage()
+	cuo.mutation.SetMileage(i)
+	return cuo
+}
+
+// AddMileage adds i to the "mileage" field.
+func (cuo *CarUpdateOne) AddMileage(i int) *CarUpdateOne {
+	cuo.mutation.AddMileage(i)
+	return cuo
+}
+
+// SetDeposit sets the "deposit" field.
+func (cuo *CarUpdateOne) SetDeposit(f float32) *CarUpdateOne {
+	cuo.mutation.ResetDeposit()
+	cuo.mutation.SetDeposit(f)
+	return cuo
+}
+
+// AddDeposit adds f to the "deposit" field.
+func (cuo *CarUpdateOne) AddDeposit(f float32) *CarUpdateOne {
+	cuo.mutation.AddDeposit(f)
+	return cuo
+}
+
+// AddLocationIDs adds the "location" edge to the Location entity by IDs.
+func (cuo *CarUpdateOne) AddLocationIDs(ids ...int) *CarUpdateOne {
+	cuo.mutation.AddLocationIDs(ids...)
+	return cuo
+}
+
+// AddLocation adds the "location" edges to the Location entity.
+func (cuo *CarUpdateOne) AddLocation(l ...*Location) *CarUpdateOne {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return cuo.AddLocationIDs(ids...)
+}
+
+// AddBookingIDs adds the "booking" edge to the Booking entity by IDs.
+func (cuo *CarUpdateOne) AddBookingIDs(ids ...int) *CarUpdateOne {
+	cuo.mutation.AddBookingIDs(ids...)
+	return cuo
+}
+
+// AddBooking adds the "booking" edges to the Booking entity.
+func (cuo *CarUpdateOne) AddBooking(b ...*Booking) *CarUpdateOne {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return cuo.AddBookingIDs(ids...)
+}
+
 // Mutation returns the CarMutation object of the builder.
 func (cuo *CarUpdateOne) Mutation() *CarMutation {
 	return cuo.mutation
+}
+
+// ClearLocation clears all "location" edges to the Location entity.
+func (cuo *CarUpdateOne) ClearLocation() *CarUpdateOne {
+	cuo.mutation.ClearLocation()
+	return cuo
+}
+
+// RemoveLocationIDs removes the "location" edge to Location entities by IDs.
+func (cuo *CarUpdateOne) RemoveLocationIDs(ids ...int) *CarUpdateOne {
+	cuo.mutation.RemoveLocationIDs(ids...)
+	return cuo
+}
+
+// RemoveLocation removes "location" edges to Location entities.
+func (cuo *CarUpdateOne) RemoveLocation(l ...*Location) *CarUpdateOne {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return cuo.RemoveLocationIDs(ids...)
+}
+
+// ClearBooking clears all "booking" edges to the Booking entity.
+func (cuo *CarUpdateOne) ClearBooking() *CarUpdateOne {
+	cuo.mutation.ClearBooking()
+	return cuo
+}
+
+// RemoveBookingIDs removes the "booking" edge to Booking entities by IDs.
+func (cuo *CarUpdateOne) RemoveBookingIDs(ids ...int) *CarUpdateOne {
+	cuo.mutation.RemoveBookingIDs(ids...)
+	return cuo
+}
+
+// RemoveBooking removes "booking" edges to Booking entities.
+func (cuo *CarUpdateOne) RemoveBooking(b ...*Booking) *CarUpdateOne {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return cuo.RemoveBookingIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -229,6 +764,165 @@ func (cuo *CarUpdateOne) sqlSave(ctx context.Context) (_node *Car, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := cuo.mutation.Color(); ok {
+		_spec.SetField(car.FieldColor, field.TypeString, value)
+	}
+	if value, ok := cuo.mutation.Brand(); ok {
+		_spec.SetField(car.FieldBrand, field.TypeString, value)
+	}
+	if value, ok := cuo.mutation.Model(); ok {
+		_spec.SetField(car.FieldModel, field.TypeString, value)
+	}
+	if value, ok := cuo.mutation.Year(); ok {
+		_spec.SetField(car.FieldYear, field.TypeInt, value)
+	}
+	if value, ok := cuo.mutation.AddedYear(); ok {
+		_spec.AddField(car.FieldYear, field.TypeInt, value)
+	}
+	if value, ok := cuo.mutation.Status(); ok {
+		_spec.SetField(car.FieldStatus, field.TypeString, value)
+	}
+	if value, ok := cuo.mutation.CarType(); ok {
+		_spec.SetField(car.FieldCarType, field.TypeString, value)
+	}
+	if value, ok := cuo.mutation.PlateNumber(); ok {
+		_spec.SetField(car.FieldPlateNumber, field.TypeString, value)
+	}
+	if value, ok := cuo.mutation.PlateCountry(); ok {
+		_spec.SetField(car.FieldPlateCountry, field.TypeString, value)
+	}
+	if value, ok := cuo.mutation.UnitPrice(); ok {
+		_spec.SetField(car.FieldUnitPrice, field.TypeFloat32, value)
+	}
+	if value, ok := cuo.mutation.AddedUnitPrice(); ok {
+		_spec.AddField(car.FieldUnitPrice, field.TypeFloat32, value)
+	}
+	if value, ok := cuo.mutation.Price(); ok {
+		_spec.SetField(car.FieldPrice, field.TypeFloat32, value)
+	}
+	if value, ok := cuo.mutation.AddedPrice(); ok {
+		_spec.AddField(car.FieldPrice, field.TypeFloat32, value)
+	}
+	if value, ok := cuo.mutation.Mileage(); ok {
+		_spec.SetField(car.FieldMileage, field.TypeInt, value)
+	}
+	if value, ok := cuo.mutation.AddedMileage(); ok {
+		_spec.AddField(car.FieldMileage, field.TypeInt, value)
+	}
+	if value, ok := cuo.mutation.Deposit(); ok {
+		_spec.SetField(car.FieldDeposit, field.TypeFloat32, value)
+	}
+	if value, ok := cuo.mutation.AddedDeposit(); ok {
+		_spec.AddField(car.FieldDeposit, field.TypeFloat32, value)
+	}
+	if cuo.mutation.LocationCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.LocationTable,
+			Columns: []string{car.LocationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: location.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.RemovedLocationIDs(); len(nodes) > 0 && !cuo.mutation.LocationCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.LocationTable,
+			Columns: []string{car.LocationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: location.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.LocationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.LocationTable,
+			Columns: []string{car.LocationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: location.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if cuo.mutation.BookingCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   car.BookingTable,
+			Columns: car.BookingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: booking.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.RemovedBookingIDs(); len(nodes) > 0 && !cuo.mutation.BookingCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   car.BookingTable,
+			Columns: car.BookingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: booking.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.BookingIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   car.BookingTable,
+			Columns: car.BookingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: booking.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Car{config: cuo.config}
 	_spec.Assign = _node.assignValues

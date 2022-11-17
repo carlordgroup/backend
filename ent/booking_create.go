@@ -3,9 +3,14 @@
 package ent
 
 import (
+	"carlord/ent/billing"
 	"carlord/ent/booking"
+	"carlord/ent/car"
+	"carlord/ent/user"
 	"context"
+	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -16,6 +21,99 @@ type BookingCreate struct {
 	config
 	mutation *BookingMutation
 	hooks    []Hook
+}
+
+// SetStartAt sets the "start_at" field.
+func (bc *BookingCreate) SetStartAt(t time.Time) *BookingCreate {
+	bc.mutation.SetStartAt(t)
+	return bc
+}
+
+// SetEndAt sets the "end_at" field.
+func (bc *BookingCreate) SetEndAt(t time.Time) *BookingCreate {
+	bc.mutation.SetEndAt(t)
+	return bc
+}
+
+// SetReturnCarAt sets the "return_car_at" field.
+func (bc *BookingCreate) SetReturnCarAt(t time.Time) *BookingCreate {
+	bc.mutation.SetReturnCarAt(t)
+	return bc
+}
+
+// SetFuelLevelAtBegin sets the "fuel_level_at_begin" field.
+func (bc *BookingCreate) SetFuelLevelAtBegin(f float32) *BookingCreate {
+	bc.mutation.SetFuelLevelAtBegin(f)
+	return bc
+}
+
+// SetFuelLevelAtEnd sets the "fuel_level_at_end" field.
+func (bc *BookingCreate) SetFuelLevelAtEnd(f float32) *BookingCreate {
+	bc.mutation.SetFuelLevelAtEnd(f)
+	return bc
+}
+
+// SetMileageBegin sets the "mileage_begin" field.
+func (bc *BookingCreate) SetMileageBegin(i int) *BookingCreate {
+	bc.mutation.SetMileageBegin(i)
+	return bc
+}
+
+// SetMileageEnd sets the "mileage_end" field.
+func (bc *BookingCreate) SetMileageEnd(i int) *BookingCreate {
+	bc.mutation.SetMileageEnd(i)
+	return bc
+}
+
+// SetBookingStatus sets the "booking_status" field.
+func (bc *BookingCreate) SetBookingStatus(s string) *BookingCreate {
+	bc.mutation.SetBookingStatus(s)
+	return bc
+}
+
+// AddUserIDs adds the "user" edge to the User entity by IDs.
+func (bc *BookingCreate) AddUserIDs(ids ...int) *BookingCreate {
+	bc.mutation.AddUserIDs(ids...)
+	return bc
+}
+
+// AddUser adds the "user" edges to the User entity.
+func (bc *BookingCreate) AddUser(u ...*User) *BookingCreate {
+	ids := make([]int, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return bc.AddUserIDs(ids...)
+}
+
+// AddCarIDs adds the "car" edge to the Car entity by IDs.
+func (bc *BookingCreate) AddCarIDs(ids ...int) *BookingCreate {
+	bc.mutation.AddCarIDs(ids...)
+	return bc
+}
+
+// AddCar adds the "car" edges to the Car entity.
+func (bc *BookingCreate) AddCar(c ...*Car) *BookingCreate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return bc.AddCarIDs(ids...)
+}
+
+// AddBillingIDs adds the "billing" edge to the Billing entity by IDs.
+func (bc *BookingCreate) AddBillingIDs(ids ...int) *BookingCreate {
+	bc.mutation.AddBillingIDs(ids...)
+	return bc
+}
+
+// AddBilling adds the "billing" edges to the Billing entity.
+func (bc *BookingCreate) AddBilling(b ...*Billing) *BookingCreate {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return bc.AddBillingIDs(ids...)
 }
 
 // Mutation returns the BookingMutation object of the builder.
@@ -94,6 +192,36 @@ func (bc *BookingCreate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (bc *BookingCreate) check() error {
+	if _, ok := bc.mutation.StartAt(); !ok {
+		return &ValidationError{Name: "start_at", err: errors.New(`ent: missing required field "Booking.start_at"`)}
+	}
+	if _, ok := bc.mutation.EndAt(); !ok {
+		return &ValidationError{Name: "end_at", err: errors.New(`ent: missing required field "Booking.end_at"`)}
+	}
+	if _, ok := bc.mutation.ReturnCarAt(); !ok {
+		return &ValidationError{Name: "return_car_at", err: errors.New(`ent: missing required field "Booking.return_car_at"`)}
+	}
+	if _, ok := bc.mutation.FuelLevelAtBegin(); !ok {
+		return &ValidationError{Name: "fuel_level_at_begin", err: errors.New(`ent: missing required field "Booking.fuel_level_at_begin"`)}
+	}
+	if _, ok := bc.mutation.FuelLevelAtEnd(); !ok {
+		return &ValidationError{Name: "fuel_level_at_end", err: errors.New(`ent: missing required field "Booking.fuel_level_at_end"`)}
+	}
+	if _, ok := bc.mutation.MileageBegin(); !ok {
+		return &ValidationError{Name: "mileage_begin", err: errors.New(`ent: missing required field "Booking.mileage_begin"`)}
+	}
+	if _, ok := bc.mutation.MileageEnd(); !ok {
+		return &ValidationError{Name: "mileage_end", err: errors.New(`ent: missing required field "Booking.mileage_end"`)}
+	}
+	if _, ok := bc.mutation.BookingStatus(); !ok {
+		return &ValidationError{Name: "booking_status", err: errors.New(`ent: missing required field "Booking.booking_status"`)}
+	}
+	if len(bc.mutation.UserIDs()) == 0 {
+		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "Booking.user"`)}
+	}
+	if len(bc.mutation.CarIDs()) == 0 {
+		return &ValidationError{Name: "car", err: errors.New(`ent: missing required edge "Booking.car"`)}
+	}
 	return nil
 }
 
@@ -121,6 +249,95 @@ func (bc *BookingCreate) createSpec() (*Booking, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	if value, ok := bc.mutation.StartAt(); ok {
+		_spec.SetField(booking.FieldStartAt, field.TypeTime, value)
+		_node.StartAt = value
+	}
+	if value, ok := bc.mutation.EndAt(); ok {
+		_spec.SetField(booking.FieldEndAt, field.TypeTime, value)
+		_node.EndAt = value
+	}
+	if value, ok := bc.mutation.ReturnCarAt(); ok {
+		_spec.SetField(booking.FieldReturnCarAt, field.TypeTime, value)
+		_node.ReturnCarAt = value
+	}
+	if value, ok := bc.mutation.FuelLevelAtBegin(); ok {
+		_spec.SetField(booking.FieldFuelLevelAtBegin, field.TypeFloat32, value)
+		_node.FuelLevelAtBegin = value
+	}
+	if value, ok := bc.mutation.FuelLevelAtEnd(); ok {
+		_spec.SetField(booking.FieldFuelLevelAtEnd, field.TypeFloat32, value)
+		_node.FuelLevelAtEnd = value
+	}
+	if value, ok := bc.mutation.MileageBegin(); ok {
+		_spec.SetField(booking.FieldMileageBegin, field.TypeInt, value)
+		_node.MileageBegin = value
+	}
+	if value, ok := bc.mutation.MileageEnd(); ok {
+		_spec.SetField(booking.FieldMileageEnd, field.TypeInt, value)
+		_node.MileageEnd = value
+	}
+	if value, ok := bc.mutation.BookingStatus(); ok {
+		_spec.SetField(booking.FieldBookingStatus, field.TypeString, value)
+		_node.BookingStatus = value
+	}
+	if nodes := bc.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   booking.UserTable,
+			Columns: booking.UserPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := bc.mutation.CarIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   booking.CarTable,
+			Columns: booking.CarPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: car.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := bc.mutation.BillingIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   booking.BillingTable,
+			Columns: booking.BillingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: billing.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
