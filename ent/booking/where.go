@@ -690,7 +690,7 @@ func HasUser() predicate.Booking {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(UserTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, UserTable, UserPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, UserTable, UserColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -702,7 +702,7 @@ func HasUserWith(preds ...predicate.User) predicate.Booking {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(UserInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, UserTable, UserPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, UserTable, UserColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -718,7 +718,7 @@ func HasCar() predicate.Booking {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(CarTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, CarTable, CarPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, CarTable, CarColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -730,7 +730,7 @@ func HasCarWith(preds ...predicate.Car) predicate.Booking {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(CarInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, CarTable, CarPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, CarTable, CarColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -746,7 +746,7 @@ func HasBilling() predicate.Booking {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(BillingTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, BillingTable, BillingPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2O, true, BillingTable, BillingColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -758,7 +758,7 @@ func HasBillingWith(preds ...predicate.Billing) predicate.Booking {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(BillingInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, BillingTable, BillingPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2O, true, BillingTable, BillingColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

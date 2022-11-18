@@ -531,13 +531,14 @@ type BillingMutation struct {
 	op             Op
 	typ            string
 	id             *int
+	status         *string
 	clearedFields  map[string]struct{}
-	booking        map[int]struct{}
-	removedbooking map[int]struct{}
+	booking        *int
 	clearedbooking bool
-	card           map[int]struct{}
-	removedcard    map[int]struct{}
+	card           *int
 	clearedcard    bool
+	user           *int
+	cleareduser    bool
 	done           bool
 	oldValue       func(context.Context) (*Billing, error)
 	predicates     []predicate.Billing
@@ -641,14 +642,45 @@ func (m *BillingMutation) IDs(ctx context.Context) ([]int, error) {
 	}
 }
 
-// AddBookingIDs adds the "booking" edge to the Booking entity by ids.
-func (m *BillingMutation) AddBookingIDs(ids ...int) {
-	if m.booking == nil {
-		m.booking = make(map[int]struct{})
+// SetStatus sets the "status" field.
+func (m *BillingMutation) SetStatus(s string) {
+	m.status = &s
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *BillingMutation) Status() (r string, exists bool) {
+	v := m.status
+	if v == nil {
+		return
 	}
-	for i := range ids {
-		m.booking[ids[i]] = struct{}{}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the Billing entity.
+// If the Billing object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BillingMutation) OldStatus(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
 	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *BillingMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetBookingID sets the "booking" edge to the Booking entity by id.
+func (m *BillingMutation) SetBookingID(id int) {
+	m.booking = &id
 }
 
 // ClearBooking clears the "booking" edge to the Booking entity.
@@ -661,29 +693,20 @@ func (m *BillingMutation) BookingCleared() bool {
 	return m.clearedbooking
 }
 
-// RemoveBookingIDs removes the "booking" edge to the Booking entity by IDs.
-func (m *BillingMutation) RemoveBookingIDs(ids ...int) {
-	if m.removedbooking == nil {
-		m.removedbooking = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.booking, ids[i])
-		m.removedbooking[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedBooking returns the removed IDs of the "booking" edge to the Booking entity.
-func (m *BillingMutation) RemovedBookingIDs() (ids []int) {
-	for id := range m.removedbooking {
-		ids = append(ids, id)
+// BookingID returns the "booking" edge ID in the mutation.
+func (m *BillingMutation) BookingID() (id int, exists bool) {
+	if m.booking != nil {
+		return *m.booking, true
 	}
 	return
 }
 
 // BookingIDs returns the "booking" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// BookingID instead. It exists only for internal usage by the builders.
 func (m *BillingMutation) BookingIDs() (ids []int) {
-	for id := range m.booking {
-		ids = append(ids, id)
+	if id := m.booking; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -692,17 +715,11 @@ func (m *BillingMutation) BookingIDs() (ids []int) {
 func (m *BillingMutation) ResetBooking() {
 	m.booking = nil
 	m.clearedbooking = false
-	m.removedbooking = nil
 }
 
-// AddCardIDs adds the "card" edge to the Card entity by ids.
-func (m *BillingMutation) AddCardIDs(ids ...int) {
-	if m.card == nil {
-		m.card = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.card[ids[i]] = struct{}{}
-	}
+// SetCardID sets the "card" edge to the Card entity by id.
+func (m *BillingMutation) SetCardID(id int) {
+	m.card = &id
 }
 
 // ClearCard clears the "card" edge to the Card entity.
@@ -715,29 +732,20 @@ func (m *BillingMutation) CardCleared() bool {
 	return m.clearedcard
 }
 
-// RemoveCardIDs removes the "card" edge to the Card entity by IDs.
-func (m *BillingMutation) RemoveCardIDs(ids ...int) {
-	if m.removedcard == nil {
-		m.removedcard = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.card, ids[i])
-		m.removedcard[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedCard returns the removed IDs of the "card" edge to the Card entity.
-func (m *BillingMutation) RemovedCardIDs() (ids []int) {
-	for id := range m.removedcard {
-		ids = append(ids, id)
+// CardID returns the "card" edge ID in the mutation.
+func (m *BillingMutation) CardID() (id int, exists bool) {
+	if m.card != nil {
+		return *m.card, true
 	}
 	return
 }
 
 // CardIDs returns the "card" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// CardID instead. It exists only for internal usage by the builders.
 func (m *BillingMutation) CardIDs() (ids []int) {
-	for id := range m.card {
-		ids = append(ids, id)
+	if id := m.card; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -746,7 +754,45 @@ func (m *BillingMutation) CardIDs() (ids []int) {
 func (m *BillingMutation) ResetCard() {
 	m.card = nil
 	m.clearedcard = false
-	m.removedcard = nil
+}
+
+// SetUserID sets the "user" edge to the User entity by id.
+func (m *BillingMutation) SetUserID(id int) {
+	m.user = &id
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *BillingMutation) ClearUser() {
+	m.cleareduser = true
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *BillingMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserID returns the "user" edge ID in the mutation.
+func (m *BillingMutation) UserID() (id int, exists bool) {
+	if m.user != nil {
+		return *m.user, true
+	}
+	return
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *BillingMutation) UserIDs() (ids []int) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *BillingMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
 }
 
 // Where appends a list predicates to the BillingMutation builder.
@@ -768,7 +814,10 @@ func (m *BillingMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *BillingMutation) Fields() []string {
-	fields := make([]string, 0, 0)
+	fields := make([]string, 0, 1)
+	if m.status != nil {
+		fields = append(fields, billing.FieldStatus)
+	}
 	return fields
 }
 
@@ -776,6 +825,10 @@ func (m *BillingMutation) Fields() []string {
 // return value indicates that this field was not set, or was not defined in the
 // schema.
 func (m *BillingMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case billing.FieldStatus:
+		return m.Status()
+	}
 	return nil, false
 }
 
@@ -783,6 +836,10 @@ func (m *BillingMutation) Field(name string) (ent.Value, bool) {
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
 func (m *BillingMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case billing.FieldStatus:
+		return m.OldStatus(ctx)
+	}
 	return nil, fmt.Errorf("unknown Billing field %s", name)
 }
 
@@ -791,6 +848,13 @@ func (m *BillingMutation) OldField(ctx context.Context, name string) (ent.Value,
 // type.
 func (m *BillingMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case billing.FieldStatus:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Billing field %s", name)
 }
@@ -812,6 +876,8 @@ func (m *BillingMutation) AddedField(name string) (ent.Value, bool) {
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
 func (m *BillingMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown Billing numeric field %s", name)
 }
 
@@ -837,17 +903,25 @@ func (m *BillingMutation) ClearField(name string) error {
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
 func (m *BillingMutation) ResetField(name string) error {
+	switch name {
+	case billing.FieldStatus:
+		m.ResetStatus()
+		return nil
+	}
 	return fmt.Errorf("unknown Billing field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *BillingMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.booking != nil {
 		edges = append(edges, billing.EdgeBooking)
 	}
 	if m.card != nil {
 		edges = append(edges, billing.EdgeCard)
+	}
+	if m.user != nil {
+		edges = append(edges, billing.EdgeUser)
 	}
 	return edges
 }
@@ -857,61 +931,44 @@ func (m *BillingMutation) AddedEdges() []string {
 func (m *BillingMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case billing.EdgeBooking:
-		ids := make([]ent.Value, 0, len(m.booking))
-		for id := range m.booking {
-			ids = append(ids, id)
+		if id := m.booking; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case billing.EdgeCard:
-		ids := make([]ent.Value, 0, len(m.card))
-		for id := range m.card {
-			ids = append(ids, id)
+		if id := m.card; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
+	case billing.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *BillingMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.removedbooking != nil {
-		edges = append(edges, billing.EdgeBooking)
-	}
-	if m.removedcard != nil {
-		edges = append(edges, billing.EdgeCard)
-	}
+	edges := make([]string, 0, 3)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *BillingMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case billing.EdgeBooking:
-		ids := make([]ent.Value, 0, len(m.removedbooking))
-		for id := range m.removedbooking {
-			ids = append(ids, id)
-		}
-		return ids
-	case billing.EdgeCard:
-		ids := make([]ent.Value, 0, len(m.removedcard))
-		for id := range m.removedcard {
-			ids = append(ids, id)
-		}
-		return ids
-	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *BillingMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedbooking {
 		edges = append(edges, billing.EdgeBooking)
 	}
 	if m.clearedcard {
 		edges = append(edges, billing.EdgeCard)
+	}
+	if m.cleareduser {
+		edges = append(edges, billing.EdgeUser)
 	}
 	return edges
 }
@@ -924,6 +981,8 @@ func (m *BillingMutation) EdgeCleared(name string) bool {
 		return m.clearedbooking
 	case billing.EdgeCard:
 		return m.clearedcard
+	case billing.EdgeUser:
+		return m.cleareduser
 	}
 	return false
 }
@@ -932,6 +991,15 @@ func (m *BillingMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *BillingMutation) ClearEdge(name string) error {
 	switch name {
+	case billing.EdgeBooking:
+		m.ClearBooking()
+		return nil
+	case billing.EdgeCard:
+		m.ClearCard()
+		return nil
+	case billing.EdgeUser:
+		m.ClearUser()
+		return nil
 	}
 	return fmt.Errorf("unknown Billing unique edge %s", name)
 }
@@ -945,6 +1013,9 @@ func (m *BillingMutation) ResetEdge(name string) error {
 		return nil
 	case billing.EdgeCard:
 		m.ResetCard()
+		return nil
+	case billing.EdgeUser:
+		m.ResetUser()
 		return nil
 	}
 	return fmt.Errorf("unknown Billing edge %s", name)
@@ -969,14 +1040,11 @@ type BookingMutation struct {
 	addmileage_end         *int
 	booking_status         *string
 	clearedFields          map[string]struct{}
-	user                   map[int]struct{}
-	removeduser            map[int]struct{}
+	user                   *int
 	cleareduser            bool
-	car                    map[int]struct{}
-	removedcar             map[int]struct{}
+	car                    *int
 	clearedcar             bool
-	billing                map[int]struct{}
-	removedbilling         map[int]struct{}
+	billing                *int
 	clearedbilling         bool
 	done                   bool
 	oldValue               func(context.Context) (*Booking, error)
@@ -1170,7 +1238,7 @@ func (m *BookingMutation) ReturnCarAt() (r time.Time, exists bool) {
 // OldReturnCarAt returns the old "return_car_at" field's value of the Booking entity.
 // If the Booking object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BookingMutation) OldReturnCarAt(ctx context.Context) (v time.Time, err error) {
+func (m *BookingMutation) OldReturnCarAt(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldReturnCarAt is only allowed on UpdateOne operations")
 	}
@@ -1207,7 +1275,7 @@ func (m *BookingMutation) FuelLevelAtBegin() (r float32, exists bool) {
 // OldFuelLevelAtBegin returns the old "fuel_level_at_begin" field's value of the Booking entity.
 // If the Booking object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BookingMutation) OldFuelLevelAtBegin(ctx context.Context) (v float32, err error) {
+func (m *BookingMutation) OldFuelLevelAtBegin(ctx context.Context) (v *float32, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldFuelLevelAtBegin is only allowed on UpdateOne operations")
 	}
@@ -1263,7 +1331,7 @@ func (m *BookingMutation) FuelLevelAtEnd() (r float32, exists bool) {
 // OldFuelLevelAtEnd returns the old "fuel_level_at_end" field's value of the Booking entity.
 // If the Booking object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BookingMutation) OldFuelLevelAtEnd(ctx context.Context) (v float32, err error) {
+func (m *BookingMutation) OldFuelLevelAtEnd(ctx context.Context) (v *float32, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldFuelLevelAtEnd is only allowed on UpdateOne operations")
 	}
@@ -1319,7 +1387,7 @@ func (m *BookingMutation) MileageBegin() (r int, exists bool) {
 // OldMileageBegin returns the old "mileage_begin" field's value of the Booking entity.
 // If the Booking object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BookingMutation) OldMileageBegin(ctx context.Context) (v int, err error) {
+func (m *BookingMutation) OldMileageBegin(ctx context.Context) (v *int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldMileageBegin is only allowed on UpdateOne operations")
 	}
@@ -1375,7 +1443,7 @@ func (m *BookingMutation) MileageEnd() (r int, exists bool) {
 // OldMileageEnd returns the old "mileage_end" field's value of the Booking entity.
 // If the Booking object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BookingMutation) OldMileageEnd(ctx context.Context) (v int, err error) {
+func (m *BookingMutation) OldMileageEnd(ctx context.Context) (v *int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldMileageEnd is only allowed on UpdateOne operations")
 	}
@@ -1449,14 +1517,9 @@ func (m *BookingMutation) ResetBookingStatus() {
 	m.booking_status = nil
 }
 
-// AddUserIDs adds the "user" edge to the User entity by ids.
-func (m *BookingMutation) AddUserIDs(ids ...int) {
-	if m.user == nil {
-		m.user = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.user[ids[i]] = struct{}{}
-	}
+// SetUserID sets the "user" edge to the User entity by id.
+func (m *BookingMutation) SetUserID(id int) {
+	m.user = &id
 }
 
 // ClearUser clears the "user" edge to the User entity.
@@ -1469,29 +1532,20 @@ func (m *BookingMutation) UserCleared() bool {
 	return m.cleareduser
 }
 
-// RemoveUserIDs removes the "user" edge to the User entity by IDs.
-func (m *BookingMutation) RemoveUserIDs(ids ...int) {
-	if m.removeduser == nil {
-		m.removeduser = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.user, ids[i])
-		m.removeduser[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedUser returns the removed IDs of the "user" edge to the User entity.
-func (m *BookingMutation) RemovedUserIDs() (ids []int) {
-	for id := range m.removeduser {
-		ids = append(ids, id)
+// UserID returns the "user" edge ID in the mutation.
+func (m *BookingMutation) UserID() (id int, exists bool) {
+	if m.user != nil {
+		return *m.user, true
 	}
 	return
 }
 
 // UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
 func (m *BookingMutation) UserIDs() (ids []int) {
-	for id := range m.user {
-		ids = append(ids, id)
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -1500,17 +1554,11 @@ func (m *BookingMutation) UserIDs() (ids []int) {
 func (m *BookingMutation) ResetUser() {
 	m.user = nil
 	m.cleareduser = false
-	m.removeduser = nil
 }
 
-// AddCarIDs adds the "car" edge to the Car entity by ids.
-func (m *BookingMutation) AddCarIDs(ids ...int) {
-	if m.car == nil {
-		m.car = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.car[ids[i]] = struct{}{}
-	}
+// SetCarID sets the "car" edge to the Car entity by id.
+func (m *BookingMutation) SetCarID(id int) {
+	m.car = &id
 }
 
 // ClearCar clears the "car" edge to the Car entity.
@@ -1523,29 +1571,20 @@ func (m *BookingMutation) CarCleared() bool {
 	return m.clearedcar
 }
 
-// RemoveCarIDs removes the "car" edge to the Car entity by IDs.
-func (m *BookingMutation) RemoveCarIDs(ids ...int) {
-	if m.removedcar == nil {
-		m.removedcar = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.car, ids[i])
-		m.removedcar[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedCar returns the removed IDs of the "car" edge to the Car entity.
-func (m *BookingMutation) RemovedCarIDs() (ids []int) {
-	for id := range m.removedcar {
-		ids = append(ids, id)
+// CarID returns the "car" edge ID in the mutation.
+func (m *BookingMutation) CarID() (id int, exists bool) {
+	if m.car != nil {
+		return *m.car, true
 	}
 	return
 }
 
 // CarIDs returns the "car" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// CarID instead. It exists only for internal usage by the builders.
 func (m *BookingMutation) CarIDs() (ids []int) {
-	for id := range m.car {
-		ids = append(ids, id)
+	if id := m.car; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -1554,17 +1593,11 @@ func (m *BookingMutation) CarIDs() (ids []int) {
 func (m *BookingMutation) ResetCar() {
 	m.car = nil
 	m.clearedcar = false
-	m.removedcar = nil
 }
 
-// AddBillingIDs adds the "billing" edge to the Billing entity by ids.
-func (m *BookingMutation) AddBillingIDs(ids ...int) {
-	if m.billing == nil {
-		m.billing = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.billing[ids[i]] = struct{}{}
-	}
+// SetBillingID sets the "billing" edge to the Billing entity by id.
+func (m *BookingMutation) SetBillingID(id int) {
+	m.billing = &id
 }
 
 // ClearBilling clears the "billing" edge to the Billing entity.
@@ -1577,29 +1610,20 @@ func (m *BookingMutation) BillingCleared() bool {
 	return m.clearedbilling
 }
 
-// RemoveBillingIDs removes the "billing" edge to the Billing entity by IDs.
-func (m *BookingMutation) RemoveBillingIDs(ids ...int) {
-	if m.removedbilling == nil {
-		m.removedbilling = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.billing, ids[i])
-		m.removedbilling[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedBilling returns the removed IDs of the "billing" edge to the Billing entity.
-func (m *BookingMutation) RemovedBillingIDs() (ids []int) {
-	for id := range m.removedbilling {
-		ids = append(ids, id)
+// BillingID returns the "billing" edge ID in the mutation.
+func (m *BookingMutation) BillingID() (id int, exists bool) {
+	if m.billing != nil {
+		return *m.billing, true
 	}
 	return
 }
 
 // BillingIDs returns the "billing" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// BillingID instead. It exists only for internal usage by the builders.
 func (m *BookingMutation) BillingIDs() (ids []int) {
-	for id := range m.billing {
-		ids = append(ids, id)
+	if id := m.billing; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -1608,7 +1632,6 @@ func (m *BookingMutation) BillingIDs() (ids []int) {
 func (m *BookingMutation) ResetBilling() {
 	m.billing = nil
 	m.clearedbilling = false
-	m.removedbilling = nil
 }
 
 // Where appends a list predicates to the BookingMutation builder.
@@ -1917,23 +1940,17 @@ func (m *BookingMutation) AddedEdges() []string {
 func (m *BookingMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case booking.EdgeUser:
-		ids := make([]ent.Value, 0, len(m.user))
-		for id := range m.user {
-			ids = append(ids, id)
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case booking.EdgeCar:
-		ids := make([]ent.Value, 0, len(m.car))
-		for id := range m.car {
-			ids = append(ids, id)
+		if id := m.car; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case booking.EdgeBilling:
-		ids := make([]ent.Value, 0, len(m.billing))
-		for id := range m.billing {
-			ids = append(ids, id)
+		if id := m.billing; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	}
 	return nil
 }
@@ -1941,41 +1958,12 @@ func (m *BookingMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *BookingMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 3)
-	if m.removeduser != nil {
-		edges = append(edges, booking.EdgeUser)
-	}
-	if m.removedcar != nil {
-		edges = append(edges, booking.EdgeCar)
-	}
-	if m.removedbilling != nil {
-		edges = append(edges, booking.EdgeBilling)
-	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *BookingMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case booking.EdgeUser:
-		ids := make([]ent.Value, 0, len(m.removeduser))
-		for id := range m.removeduser {
-			ids = append(ids, id)
-		}
-		return ids
-	case booking.EdgeCar:
-		ids := make([]ent.Value, 0, len(m.removedcar))
-		for id := range m.removedcar {
-			ids = append(ids, id)
-		}
-		return ids
-	case booking.EdgeBilling:
-		ids := make([]ent.Value, 0, len(m.removedbilling))
-		for id := range m.removedbilling {
-			ids = append(ids, id)
-		}
-		return ids
-	}
 	return nil
 }
 
@@ -2012,6 +2000,15 @@ func (m *BookingMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *BookingMutation) ClearEdge(name string) error {
 	switch name {
+	case booking.EdgeUser:
+		m.ClearUser()
+		return nil
+	case booking.EdgeCar:
+		m.ClearCar()
+		return nil
+	case booking.EdgeBilling:
+		m.ClearBilling()
+		return nil
 	}
 	return fmt.Errorf("unknown Booking unique edge %s", name)
 }

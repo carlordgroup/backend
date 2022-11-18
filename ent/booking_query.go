@@ -9,7 +9,6 @@ import (
 	"carlord/ent/predicate"
 	"carlord/ent/user"
 	"context"
-	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -30,6 +29,7 @@ type BookingQuery struct {
 	withUser    *UserQuery
 	withCar     *CarQuery
 	withBilling *BillingQuery
+	withFKs     bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -80,7 +80,7 @@ func (bq *BookingQuery) QueryUser() *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(booking.Table, booking.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, booking.UserTable, booking.UserPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, booking.UserTable, booking.UserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
 		return fromU, nil
@@ -102,7 +102,7 @@ func (bq *BookingQuery) QueryCar() *CarQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(booking.Table, booking.FieldID, selector),
 			sqlgraph.To(car.Table, car.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, booking.CarTable, booking.CarPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, booking.CarTable, booking.CarColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
 		return fromU, nil
@@ -124,7 +124,7 @@ func (bq *BookingQuery) QueryBilling() *BillingQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(booking.Table, booking.FieldID, selector),
 			sqlgraph.To(billing.Table, billing.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, booking.BillingTable, booking.BillingPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2O, true, booking.BillingTable, booking.BillingColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
 		return fromU, nil
@@ -428,6 +428,7 @@ func (bq *BookingQuery) prepareQuery(ctx context.Context) error {
 func (bq *BookingQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Booking, error) {
 	var (
 		nodes       = []*Booking{}
+		withFKs     = bq.withFKs
 		_spec       = bq.querySpec()
 		loadedTypes = [3]bool{
 			bq.withUser != nil,
@@ -435,6 +436,12 @@ func (bq *BookingQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Book
 			bq.withBilling != nil,
 		}
 	)
+	if bq.withUser != nil || bq.withCar != nil || bq.withBilling != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, booking.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Booking).scanValues(nil, columns)
 	}
@@ -454,23 +461,20 @@ func (bq *BookingQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Book
 		return nodes, nil
 	}
 	if query := bq.withUser; query != nil {
-		if err := bq.loadUser(ctx, query, nodes,
-			func(n *Booking) { n.Edges.User = []*User{} },
-			func(n *Booking, e *User) { n.Edges.User = append(n.Edges.User, e) }); err != nil {
+		if err := bq.loadUser(ctx, query, nodes, nil,
+			func(n *Booking, e *User) { n.Edges.User = e }); err != nil {
 			return nil, err
 		}
 	}
 	if query := bq.withCar; query != nil {
-		if err := bq.loadCar(ctx, query, nodes,
-			func(n *Booking) { n.Edges.Car = []*Car{} },
-			func(n *Booking, e *Car) { n.Edges.Car = append(n.Edges.Car, e) }); err != nil {
+		if err := bq.loadCar(ctx, query, nodes, nil,
+			func(n *Booking, e *Car) { n.Edges.Car = e }); err != nil {
 			return nil, err
 		}
 	}
 	if query := bq.withBilling; query != nil {
-		if err := bq.loadBilling(ctx, query, nodes,
-			func(n *Booking) { n.Edges.Billing = []*Billing{} },
-			func(n *Booking, e *Billing) { n.Edges.Billing = append(n.Edges.Billing, e) }); err != nil {
+		if err := bq.loadBilling(ctx, query, nodes, nil,
+			func(n *Booking, e *Billing) { n.Edges.Billing = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -478,175 +482,88 @@ func (bq *BookingQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Book
 }
 
 func (bq *BookingQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*Booking, init func(*Booking), assign func(*Booking, *User)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[int]*Booking)
-	nids := make(map[int]map[*Booking]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*Booking)
+	for i := range nodes {
+		if nodes[i].booking_user == nil {
+			continue
 		}
+		fk := *nodes[i].booking_user
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(booking.UserTable)
-		s.Join(joinT).On(s.C(user.FieldID), joinT.C(booking.UserPrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(booking.UserPrimaryKey[0]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(booking.UserPrimaryKey[0]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
-	}
-	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-		assign := spec.Assign
-		values := spec.ScanValues
-		spec.ScanValues = func(columns []string) ([]any, error) {
-			values, err := values(columns[1:])
-			if err != nil {
-				return nil, err
-			}
-			return append([]any{new(sql.NullInt64)}, values...), nil
-		}
-		spec.Assign = func(columns []string, values []any) error {
-			outValue := int(values[0].(*sql.NullInt64).Int64)
-			inValue := int(values[1].(*sql.NullInt64).Int64)
-			if nids[inValue] == nil {
-				nids[inValue] = map[*Booking]struct{}{byID[outValue]: {}}
-				return assign(columns[1:], values[1:])
-			}
-			nids[inValue][byID[outValue]] = struct{}{}
-			return nil
-		}
-	})
+	query.Where(user.IDIn(ids...))
+	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
+		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected "user" node returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "booking_user" returned %v`, n.ID)
 		}
-		for kn := range nodes {
-			assign(kn, n)
+		for i := range nodes {
+			assign(nodes[i], n)
 		}
 	}
 	return nil
 }
 func (bq *BookingQuery) loadCar(ctx context.Context, query *CarQuery, nodes []*Booking, init func(*Booking), assign func(*Booking, *Car)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[int]*Booking)
-	nids := make(map[int]map[*Booking]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*Booking)
+	for i := range nodes {
+		if nodes[i].booking_car == nil {
+			continue
 		}
+		fk := *nodes[i].booking_car
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(booking.CarTable)
-		s.Join(joinT).On(s.C(car.FieldID), joinT.C(booking.CarPrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(booking.CarPrimaryKey[0]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(booking.CarPrimaryKey[0]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
-	}
-	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-		assign := spec.Assign
-		values := spec.ScanValues
-		spec.ScanValues = func(columns []string) ([]any, error) {
-			values, err := values(columns[1:])
-			if err != nil {
-				return nil, err
-			}
-			return append([]any{new(sql.NullInt64)}, values...), nil
-		}
-		spec.Assign = func(columns []string, values []any) error {
-			outValue := int(values[0].(*sql.NullInt64).Int64)
-			inValue := int(values[1].(*sql.NullInt64).Int64)
-			if nids[inValue] == nil {
-				nids[inValue] = map[*Booking]struct{}{byID[outValue]: {}}
-				return assign(columns[1:], values[1:])
-			}
-			nids[inValue][byID[outValue]] = struct{}{}
-			return nil
-		}
-	})
+	query.Where(car.IDIn(ids...))
+	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
+		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected "car" node returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "booking_car" returned %v`, n.ID)
 		}
-		for kn := range nodes {
-			assign(kn, n)
+		for i := range nodes {
+			assign(nodes[i], n)
 		}
 	}
 	return nil
 }
 func (bq *BookingQuery) loadBilling(ctx context.Context, query *BillingQuery, nodes []*Booking, init func(*Booking), assign func(*Booking, *Billing)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[int]*Booking)
-	nids := make(map[int]map[*Booking]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*Booking)
+	for i := range nodes {
+		if nodes[i].billing_booking == nil {
+			continue
 		}
+		fk := *nodes[i].billing_booking
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(booking.BillingTable)
-		s.Join(joinT).On(s.C(billing.FieldID), joinT.C(booking.BillingPrimaryKey[0]))
-		s.Where(sql.InValues(joinT.C(booking.BillingPrimaryKey[1]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(booking.BillingPrimaryKey[1]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
-	}
-	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-		assign := spec.Assign
-		values := spec.ScanValues
-		spec.ScanValues = func(columns []string) ([]any, error) {
-			values, err := values(columns[1:])
-			if err != nil {
-				return nil, err
-			}
-			return append([]any{new(sql.NullInt64)}, values...), nil
-		}
-		spec.Assign = func(columns []string, values []any) error {
-			outValue := int(values[0].(*sql.NullInt64).Int64)
-			inValue := int(values[1].(*sql.NullInt64).Int64)
-			if nids[inValue] == nil {
-				nids[inValue] = map[*Booking]struct{}{byID[outValue]: {}}
-				return assign(columns[1:], values[1:])
-			}
-			nids[inValue][byID[outValue]] = struct{}{}
-			return nil
-		}
-	})
+	query.Where(billing.IDIn(ids...))
+	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
+		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected "billing" node returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "billing_booking" returned %v`, n.ID)
 		}
-		for kn := range nodes {
-			assign(kn, n)
+		for i := range nodes {
+			assign(nodes[i], n)
 		}
 	}
 	return nil

@@ -58,11 +58,13 @@ const (
 	AccountInverseTable = "accounts"
 	// AccountColumn is the table column denoting the account relation/edge.
 	AccountColumn = "account_user"
-	// BookingTable is the table that holds the booking relation/edge. The primary key declared below.
-	BookingTable = "booking_user"
+	// BookingTable is the table that holds the booking relation/edge.
+	BookingTable = "bookings"
 	// BookingInverseTable is the table name for the Booking entity.
 	// It exists in this package in order to avoid circular dependency with the "booking" package.
 	BookingInverseTable = "bookings"
+	// BookingColumn is the table column denoting the booking relation/edge.
+	BookingColumn = "booking_user"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -83,12 +85,6 @@ var Columns = []string{
 var ForeignKeys = []string{
 	"account_user",
 }
-
-var (
-	// BookingPrimaryKey and BookingColumn2 are the table columns denoting the
-	// primary key for the booking relation (M2M).
-	BookingPrimaryKey = []string{"booking_id", "user_id"}
-)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

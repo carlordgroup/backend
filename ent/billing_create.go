@@ -6,6 +6,7 @@ import (
 	"carlord/ent/billing"
 	"carlord/ent/booking"
 	"carlord/ent/card"
+	"carlord/ent/user"
 	"context"
 	"errors"
 	"fmt"
@@ -21,34 +22,67 @@ type BillingCreate struct {
 	hooks    []Hook
 }
 
-// AddBookingIDs adds the "booking" edge to the Booking entity by IDs.
-func (bc *BillingCreate) AddBookingIDs(ids ...int) *BillingCreate {
-	bc.mutation.AddBookingIDs(ids...)
+// SetStatus sets the "status" field.
+func (bc *BillingCreate) SetStatus(s string) *BillingCreate {
+	bc.mutation.SetStatus(s)
 	return bc
 }
 
-// AddBooking adds the "booking" edges to the Booking entity.
-func (bc *BillingCreate) AddBooking(b ...*Booking) *BillingCreate {
-	ids := make([]int, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (bc *BillingCreate) SetNillableStatus(s *string) *BillingCreate {
+	if s != nil {
+		bc.SetStatus(*s)
 	}
-	return bc.AddBookingIDs(ids...)
-}
-
-// AddCardIDs adds the "card" edge to the Card entity by IDs.
-func (bc *BillingCreate) AddCardIDs(ids ...int) *BillingCreate {
-	bc.mutation.AddCardIDs(ids...)
 	return bc
 }
 
-// AddCard adds the "card" edges to the Card entity.
-func (bc *BillingCreate) AddCard(c ...*Card) *BillingCreate {
-	ids := make([]int, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
+// SetBookingID sets the "booking" edge to the Booking entity by ID.
+func (bc *BillingCreate) SetBookingID(id int) *BillingCreate {
+	bc.mutation.SetBookingID(id)
+	return bc
+}
+
+// SetBooking sets the "booking" edge to the Booking entity.
+func (bc *BillingCreate) SetBooking(b *Booking) *BillingCreate {
+	return bc.SetBookingID(b.ID)
+}
+
+// SetCardID sets the "card" edge to the Card entity by ID.
+func (bc *BillingCreate) SetCardID(id int) *BillingCreate {
+	bc.mutation.SetCardID(id)
+	return bc
+}
+
+// SetNillableCardID sets the "card" edge to the Card entity by ID if the given value is not nil.
+func (bc *BillingCreate) SetNillableCardID(id *int) *BillingCreate {
+	if id != nil {
+		bc = bc.SetCardID(*id)
 	}
-	return bc.AddCardIDs(ids...)
+	return bc
+}
+
+// SetCard sets the "card" edge to the Card entity.
+func (bc *BillingCreate) SetCard(c *Card) *BillingCreate {
+	return bc.SetCardID(c.ID)
+}
+
+// SetUserID sets the "user" edge to the User entity by ID.
+func (bc *BillingCreate) SetUserID(id int) *BillingCreate {
+	bc.mutation.SetUserID(id)
+	return bc
+}
+
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (bc *BillingCreate) SetNillableUserID(id *int) *BillingCreate {
+	if id != nil {
+		bc = bc.SetUserID(*id)
+	}
+	return bc
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (bc *BillingCreate) SetUser(u *User) *BillingCreate {
+	return bc.SetUserID(u.ID)
 }
 
 // Mutation returns the BillingMutation object of the builder.
@@ -62,6 +96,7 @@ func (bc *BillingCreate) Save(ctx context.Context) (*Billing, error) {
 		err  error
 		node *Billing
 	)
+	bc.defaults()
 	if len(bc.hooks) == 0 {
 		if err = bc.check(); err != nil {
 			return nil, err
@@ -125,9 +160,20 @@ func (bc *BillingCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (bc *BillingCreate) defaults() {
+	if _, ok := bc.mutation.Status(); !ok {
+		v := billing.DefaultStatus
+		bc.mutation.SetStatus(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (bc *BillingCreate) check() error {
-	if len(bc.mutation.BookingIDs()) == 0 {
+	if _, ok := bc.mutation.Status(); !ok {
+		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Billing.status"`)}
+	}
+	if _, ok := bc.mutation.BookingID(); !ok {
 		return &ValidationError{Name: "booking", err: errors.New(`ent: missing required edge "Billing.booking"`)}
 	}
 	return nil
@@ -157,12 +203,16 @@ func (bc *BillingCreate) createSpec() (*Billing, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	if value, ok := bc.mutation.Status(); ok {
+		_spec.SetField(billing.FieldStatus, field.TypeString, value)
+		_node.Status = value
+	}
 	if nodes := bc.mutation.BookingIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   billing.BookingTable,
-			Columns: billing.BookingPrimaryKey,
+			Columns: []string{billing.BookingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -178,7 +228,7 @@ func (bc *BillingCreate) createSpec() (*Billing, *sqlgraph.CreateSpec) {
 	}
 	if nodes := bc.mutation.CardIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   billing.CardTable,
 			Columns: []string{billing.CardColumn},
@@ -193,6 +243,27 @@ func (bc *BillingCreate) createSpec() (*Billing, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.billing_card = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := bc.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   billing.UserTable,
+			Columns: []string{billing.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.billing_user = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -212,6 +283,7 @@ func (bcb *BillingCreateBulk) Save(ctx context.Context) ([]*Billing, error) {
 	for i := range bcb.builders {
 		func(i int, root context.Context) {
 			builder := bcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*BillingMutation)
 				if !ok {

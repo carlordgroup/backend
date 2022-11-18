@@ -400,10 +400,10 @@ func (cu *CarUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if cu.mutation.BookingCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   car.BookingTable,
-			Columns: car.BookingPrimaryKey,
+			Columns: []string{car.BookingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -416,10 +416,10 @@ func (cu *CarUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := cu.mutation.RemovedBookingIDs(); len(nodes) > 0 && !cu.mutation.BookingCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   car.BookingTable,
-			Columns: car.BookingPrimaryKey,
+			Columns: []string{car.BookingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -435,10 +435,10 @@ func (cu *CarUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := cu.mutation.BookingIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   car.BookingTable,
-			Columns: car.BookingPrimaryKey,
+			Columns: []string{car.BookingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -872,10 +872,10 @@ func (cuo *CarUpdateOne) sqlSave(ctx context.Context) (_node *Car, err error) {
 	}
 	if cuo.mutation.BookingCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   car.BookingTable,
-			Columns: car.BookingPrimaryKey,
+			Columns: []string{car.BookingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -888,10 +888,10 @@ func (cuo *CarUpdateOne) sqlSave(ctx context.Context) (_node *Car, err error) {
 	}
 	if nodes := cuo.mutation.RemovedBookingIDs(); len(nodes) > 0 && !cuo.mutation.BookingCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   car.BookingTable,
-			Columns: car.BookingPrimaryKey,
+			Columns: []string{car.BookingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -907,10 +907,10 @@ func (cuo *CarUpdateOne) sqlSave(ctx context.Context) (_node *Car, err error) {
 	}
 	if nodes := cuo.mutation.BookingIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   car.BookingTable,
-			Columns: car.BookingPrimaryKey,
+			Columns: []string{car.BookingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

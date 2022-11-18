@@ -44,11 +44,13 @@ const (
 	LocationInverseTable = "locations"
 	// LocationColumn is the table column denoting the location relation/edge.
 	LocationColumn = "car_location"
-	// BookingTable is the table that holds the booking relation/edge. The primary key declared below.
-	BookingTable = "booking_car"
+	// BookingTable is the table that holds the booking relation/edge.
+	BookingTable = "bookings"
 	// BookingInverseTable is the table name for the Booking entity.
 	// It exists in this package in order to avoid circular dependency with the "booking" package.
 	BookingInverseTable = "bookings"
+	// BookingColumn is the table column denoting the booking relation/edge.
+	BookingColumn = "booking_car"
 )
 
 // Columns holds all SQL columns for car fields.
@@ -73,12 +75,6 @@ var Columns = []string{
 var ForeignKeys = []string{
 	"location_cars",
 }
-
-var (
-	// BookingPrimaryKey and BookingColumn2 are the table columns denoting the
-	// primary key for the booking relation (M2M).
-	BookingPrimaryKey = []string{"booking_id", "car_id"}
-)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

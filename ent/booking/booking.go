@@ -31,21 +31,27 @@ const (
 	EdgeBilling = "billing"
 	// Table holds the table name of the booking in the database.
 	Table = "bookings"
-	// UserTable is the table that holds the user relation/edge. The primary key declared below.
-	UserTable = "booking_user"
+	// UserTable is the table that holds the user relation/edge.
+	UserTable = "bookings"
 	// UserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
 	UserInverseTable = "users"
-	// CarTable is the table that holds the car relation/edge. The primary key declared below.
-	CarTable = "booking_car"
+	// UserColumn is the table column denoting the user relation/edge.
+	UserColumn = "booking_user"
+	// CarTable is the table that holds the car relation/edge.
+	CarTable = "bookings"
 	// CarInverseTable is the table name for the Car entity.
 	// It exists in this package in order to avoid circular dependency with the "car" package.
 	CarInverseTable = "cars"
-	// BillingTable is the table that holds the billing relation/edge. The primary key declared below.
-	BillingTable = "billing_booking"
+	// CarColumn is the table column denoting the car relation/edge.
+	CarColumn = "booking_car"
+	// BillingTable is the table that holds the billing relation/edge.
+	BillingTable = "bookings"
 	// BillingInverseTable is the table name for the Billing entity.
 	// It exists in this package in order to avoid circular dependency with the "billing" package.
 	BillingInverseTable = "billings"
+	// BillingColumn is the table column denoting the billing relation/edge.
+	BillingColumn = "billing_booking"
 )
 
 // Columns holds all SQL columns for booking fields.
@@ -61,22 +67,23 @@ var Columns = []string{
 	FieldBookingStatus,
 }
 
-var (
-	// UserPrimaryKey and UserColumn2 are the table columns denoting the
-	// primary key for the user relation (M2M).
-	UserPrimaryKey = []string{"booking_id", "user_id"}
-	// CarPrimaryKey and CarColumn2 are the table columns denoting the
-	// primary key for the car relation (M2M).
-	CarPrimaryKey = []string{"booking_id", "car_id"}
-	// BillingPrimaryKey and BillingColumn2 are the table columns denoting the
-	// primary key for the billing relation (M2M).
-	BillingPrimaryKey = []string{"billing_id", "booking_id"}
-)
+// ForeignKeys holds the SQL foreign-keys that are owned by the "bookings"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"billing_booking",
+	"booking_user",
+	"booking_car",
+}
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}

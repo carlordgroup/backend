@@ -371,7 +371,7 @@ func (c *BillingClient) QueryBooking(b *Billing) *BookingQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(billing.Table, billing.FieldID, id),
 			sqlgraph.To(booking.Table, booking.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, billing.BookingTable, billing.BookingPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2O, false, billing.BookingTable, billing.BookingColumn),
 		)
 		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
 		return fromV, nil
@@ -387,7 +387,23 @@ func (c *BillingClient) QueryCard(b *Billing) *CardQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(billing.Table, billing.FieldID, id),
 			sqlgraph.To(card.Table, card.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, billing.CardTable, billing.CardColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, billing.CardTable, billing.CardColumn),
+		)
+		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUser queries the user edge of a Billing.
+func (c *BillingClient) QueryUser(b *Billing) *UserQuery {
+	query := &UserQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := b.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(billing.Table, billing.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, billing.UserTable, billing.UserColumn),
 		)
 		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
 		return fromV, nil
@@ -493,7 +509,7 @@ func (c *BookingClient) QueryUser(b *Booking) *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(booking.Table, booking.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, booking.UserTable, booking.UserPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, booking.UserTable, booking.UserColumn),
 		)
 		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
 		return fromV, nil
@@ -509,7 +525,7 @@ func (c *BookingClient) QueryCar(b *Booking) *CarQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(booking.Table, booking.FieldID, id),
 			sqlgraph.To(car.Table, car.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, booking.CarTable, booking.CarPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, booking.CarTable, booking.CarColumn),
 		)
 		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
 		return fromV, nil
@@ -525,7 +541,7 @@ func (c *BookingClient) QueryBilling(b *Booking) *BillingQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(booking.Table, booking.FieldID, id),
 			sqlgraph.To(billing.Table, billing.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, booking.BillingTable, booking.BillingPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2O, true, booking.BillingTable, booking.BillingColumn),
 		)
 		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
 		return fromV, nil
@@ -647,7 +663,7 @@ func (c *CarClient) QueryBooking(ca *Car) *BookingQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(car.Table, car.FieldID, id),
 			sqlgraph.To(booking.Table, booking.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, car.BookingTable, car.BookingPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, car.BookingTable, car.BookingColumn),
 		)
 		fromV = sqlgraph.Neighbors(ca.driver.Dialect(), step)
 		return fromV, nil
@@ -1103,7 +1119,7 @@ func (c *UserClient) QueryBooking(u *User) *BookingQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(booking.Table, booking.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, user.BookingTable, user.BookingPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.BookingTable, user.BookingColumn),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil

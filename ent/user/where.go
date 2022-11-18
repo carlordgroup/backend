@@ -984,7 +984,7 @@ func HasBooking() predicate.User {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(BookingTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, BookingTable, BookingPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, BookingTable, BookingColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -996,7 +996,7 @@ func HasBookingWith(preds ...predicate.Booking) predicate.User {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(BookingInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, BookingTable, BookingPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, BookingTable, BookingColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
