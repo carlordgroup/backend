@@ -28,21 +28,22 @@ func main() {
 	}
 
 	r := gin.Default()
-
-	g := r.Group("account/")
+	api := r.Group("api/")
+	g := api.Group("account/")
 	authService := auth.New(client)
 	authService.RegisterRouter(g)
 
-	g = r.Group("user/")
+	g = api.Group("user/")
 	user.New(client).RegisterRouter(g, authService)
 
-	g = r.Group("card/")
+	g = api.Group("card/")
 	card.New(client).RegisterRouter(g, authService)
 
-	g = r.Group("management/")
+	g = api.Group("management/")
 	management.New(client).RegisterRouter(g, authService)
 
-	docs.SwaggerInfo.BasePath = "/"
-	r.GET("/api/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	docs.SwaggerInfo.BasePath = "/api"
+	api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	r.Run("0.0.0.0:8686")
+
 }
