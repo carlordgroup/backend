@@ -55,7 +55,7 @@ func (s *service) updateLocation(ctx *gin.Context, id int) (int, any) {
 // @Summary delete a location
 // @Accept json
 // @Success 204
-// @Router /management/location [delete]
+// @Router /management/location/:id [delete]
 func (s *service) deleteLocation(ctx *gin.Context, id int) (int, any) {
 
 	err := s.client.Location.DeleteOneID(id).Exec(ctx)
