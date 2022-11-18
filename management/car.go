@@ -85,7 +85,7 @@ func (s *service) updateCar(ctx *gin.Context, id int) (int, any) {
 // @Summary update a car
 // @Accept json
 // @Success 204
-// @Router /management/car/ [delete]
+// @Router /management/car/:id [delete]
 func (s *service) deleteCar(ctx *gin.Context, id int) (int, any) {
 
 	err := s.client.Car.DeleteOneID(id).Exec(ctx)
