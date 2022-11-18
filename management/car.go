@@ -8,6 +8,14 @@ import (
 	"net/http"
 )
 
+// Add Car godoc
+// @Tags car
+// @Param request body ent.Car true "car info"
+// @Summary add a car
+// @Accept json
+// @Produce json
+// @Success 201 {object} ent.Car
+// @Router /management/car [post]
 func (s *service) addCar(ctx *gin.Context) (int, any) {
 	var data ent.Car
 	err := ctx.ShouldBindJSON(&data)
@@ -36,6 +44,14 @@ func (s *service) addCar(ctx *gin.Context) (int, any) {
 
 }
 
+// Update Car godoc
+// @Tags car
+// @Param request body ent.Car true "car info"
+// @Summary update a car
+// @Accept json
+// @Produce json
+// @Success 200 {object} ent.Car
+// @Router /management/car/:id [post]
 func (s *service) updateCar(ctx *gin.Context, id int) (int, any) {
 	var data ent.Car
 	err := ctx.ShouldBindJSON(&data)
@@ -64,6 +80,12 @@ func (s *service) updateCar(ctx *gin.Context, id int) (int, any) {
 
 }
 
+// Update Car godoc
+// @Tags car
+// @Summary update a car
+// @Accept json
+// @Success 204
+// @Router /management/car/ [delete]
 func (s *service) deleteCar(ctx *gin.Context, id int) (int, any) {
 
 	err := s.client.Car.DeleteOneID(id).Exec(ctx)
@@ -81,6 +103,14 @@ type queryCar struct {
 	Location *string `query:"location"`
 }
 
+// Query Car godoc
+// @Tags car
+// @Param request query queryCar true "car info"
+// @Summary query cars
+// @Accept json
+// @Produce json
+// @Success 204
+// @Router /management/car/ [get]
 func (s *service) filterCar(ctx *gin.Context) (int, any) {
 
 	var query queryCar
