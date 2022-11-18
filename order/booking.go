@@ -58,3 +58,12 @@ func (s *service) bookCar(ctx *gin.Context) (int, any) {
 
 	return http.StatusCreated, b
 }
+
+func (s *service) cancelBookingCar(ctx *gin.Context, id int) (int, any) {
+	userID := ctx.GetInt("id")
+	_, err := s.client.Booking.Delete().Where(booking.And(booking.ID(id), booking.HasUserWith(user.ID(userID)))).Exec(ctx)
+	if err != nil {
+		return http.StatusBadRequest, err
+	}
+	return http.StatusNoContent, nil
+}
