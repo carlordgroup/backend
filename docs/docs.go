@@ -209,6 +209,235 @@ const docTemplate = `{
                 }
             }
         },
+        "/management/car": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "management"
+                ],
+                "summary": "add a car",
+                "parameters": [
+                    {
+                        "description": "car info",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ent.Car"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/ent.Car"
+                        }
+                    }
+                }
+            }
+        },
+        "/management/car/": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "management"
+                ],
+                "summary": "update a car",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "brand",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "carType",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "color",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "location",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "model",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            },
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "management"
+                ],
+                "summary": "update a car",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/management/car/:id": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "management"
+                ],
+                "summary": "update a car",
+                "parameters": [
+                    {
+                        "description": "car info",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ent.Car"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ent.Car"
+                        }
+                    }
+                }
+            }
+        },
+        "/management/location": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "management"
+                ],
+                "summary": "add a location",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/ent.Location"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "management"
+                ],
+                "summary": "add a location",
+                "parameters": [
+                    {
+                        "description": "location info",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ent.Location"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/ent.Location"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "management"
+                ],
+                "summary": "delete a location",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/management/location/:id": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "management"
+                ],
+                "summary": "update a location",
+                "parameters": [
+                    {
+                        "description": "location info",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ent.Location"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ent.Location"
+                        }
+                    }
+                }
+            }
+        },
         "/user/": {
             "get": {
                 "consumes": [
@@ -336,6 +565,182 @@ const docTemplate = `{
                 }
             }
         },
+        "ent.Billing": {
+            "type": "object",
+            "properties": {
+                "edges": {
+                    "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the BillingQuery when eager-loading is set.",
+                    "$ref": "#/definitions/ent.BillingEdges"
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "Status holds the value of the \"status\" field.",
+                    "type": "string"
+                }
+            }
+        },
+        "ent.BillingEdges": {
+            "type": "object",
+            "properties": {
+                "booking": {
+                    "description": "Booking holds the value of the booking edge.",
+                    "$ref": "#/definitions/ent.Booking"
+                },
+                "card": {
+                    "description": "Card holds the value of the card edge.",
+                    "$ref": "#/definitions/ent.Card"
+                },
+                "user": {
+                    "description": "User holds the value of the user edge.",
+                    "$ref": "#/definitions/ent.User"
+                }
+            }
+        },
+        "ent.Booking": {
+            "type": "object",
+            "properties": {
+                "booking_status": {
+                    "description": "BookingStatus holds the value of the \"booking_status\" field.",
+                    "type": "string"
+                },
+                "edges": {
+                    "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the BookingQuery when eager-loading is set.",
+                    "$ref": "#/definitions/ent.BookingEdges"
+                },
+                "end_at": {
+                    "description": "EndAt holds the value of the \"end_at\" field.",
+                    "type": "string"
+                },
+                "fuel_level_at_begin": {
+                    "description": "FuelLevelAtBegin holds the value of the \"fuel_level_at_begin\" field.",
+                    "type": "number"
+                },
+                "fuel_level_at_end": {
+                    "description": "FuelLevelAtEnd holds the value of the \"fuel_level_at_end\" field.",
+                    "type": "number"
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "integer"
+                },
+                "mileage_begin": {
+                    "description": "MileageBegin holds the value of the \"mileage_begin\" field.",
+                    "type": "integer"
+                },
+                "mileage_end": {
+                    "description": "MileageEnd holds the value of the \"mileage_end\" field.",
+                    "type": "integer"
+                },
+                "return_car_at": {
+                    "description": "ReturnCarAt holds the value of the \"return_car_at\" field.",
+                    "type": "string"
+                },
+                "start_at": {
+                    "description": "StartAt holds the value of the \"start_at\" field.",
+                    "type": "string"
+                }
+            }
+        },
+        "ent.BookingEdges": {
+            "type": "object",
+            "properties": {
+                "billing": {
+                    "description": "Billing holds the value of the billing edge.",
+                    "$ref": "#/definitions/ent.Billing"
+                },
+                "car": {
+                    "description": "Car holds the value of the car edge.",
+                    "$ref": "#/definitions/ent.Car"
+                },
+                "user": {
+                    "description": "User holds the value of the user edge.",
+                    "$ref": "#/definitions/ent.User"
+                }
+            }
+        },
+        "ent.Car": {
+            "type": "object",
+            "properties": {
+                "brand": {
+                    "description": "Brand holds the value of the \"brand\" field.",
+                    "type": "string"
+                },
+                "car_type": {
+                    "description": "CarType holds the value of the \"car_type\" field.",
+                    "type": "string"
+                },
+                "color": {
+                    "description": "Color holds the value of the \"color\" field.",
+                    "type": "string"
+                },
+                "deposit": {
+                    "description": "Deposit holds the value of the \"deposit\" field.",
+                    "type": "number"
+                },
+                "edges": {
+                    "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the CarQuery when eager-loading is set.",
+                    "$ref": "#/definitions/ent.CarEdges"
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "integer"
+                },
+                "mileage": {
+                    "description": "Mileage holds the value of the \"mileage\" field.",
+                    "type": "integer"
+                },
+                "model": {
+                    "description": "Model holds the value of the \"model\" field.",
+                    "type": "string"
+                },
+                "plate_country": {
+                    "description": "PlateCountry holds the value of the \"plate_country\" field.",
+                    "type": "string"
+                },
+                "plate_number": {
+                    "description": "PlateNumber holds the value of the \"plate_number\" field.",
+                    "type": "string"
+                },
+                "price": {
+                    "description": "Price holds the value of the \"price\" field.",
+                    "type": "number"
+                },
+                "status": {
+                    "description": "Status holds the value of the \"status\" field.",
+                    "type": "string"
+                },
+                "unit_price": {
+                    "description": "UnitPrice holds the value of the \"unit_price\" field.",
+                    "type": "number"
+                },
+                "year": {
+                    "description": "Year holds the value of the \"year\" field.",
+                    "type": "integer"
+                }
+            }
+        },
+        "ent.CarEdges": {
+            "type": "object",
+            "properties": {
+                "booking": {
+                    "description": "Booking holds the value of the booking edge.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.Booking"
+                    }
+                },
+                "location": {
+                    "description": "Location holds the value of the location edge.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.Location"
+                    }
+                }
+            }
+        },
         "ent.Card": {
             "type": "object",
             "properties": {
@@ -376,6 +781,43 @@ const docTemplate = `{
                 "id": {
                     "description": "ID of the ent.",
                     "type": "integer"
+                }
+            }
+        },
+        "ent.Location": {
+            "type": "object",
+            "properties": {
+                "edges": {
+                    "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the LocationQuery when eager-loading is set.",
+                    "$ref": "#/definitions/ent.LocationEdges"
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "integer"
+                },
+                "latitude": {
+                    "description": "Latitude holds the value of the \"latitude\" field.",
+                    "type": "number"
+                },
+                "longitude": {
+                    "description": "Longitude holds the value of the \"longitude\" field.",
+                    "type": "number"
+                },
+                "name": {
+                    "description": "Name holds the value of the \"name\" field.",
+                    "type": "string"
+                }
+            }
+        },
+        "ent.LocationEdges": {
+            "type": "object",
+            "properties": {
+                "cars": {
+                    "description": "Cars holds the value of the cars edge.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.Car"
+                    }
                 }
             }
         },
@@ -430,6 +872,13 @@ const docTemplate = `{
                 "account": {
                     "description": "Account holds the value of the account edge.",
                     "$ref": "#/definitions/ent.Account"
+                },
+                "booking": {
+                    "description": "Booking holds the value of the booking edge.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.Booking"
+                    }
                 },
                 "cards": {
                     "description": "Card holds the value of the card edge.",
