@@ -7,36 +7,51 @@ const (
 	Label = "billing"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldStatus holds the string denoting the status field in the database.
+	FieldStatus = "status"
 	// EdgeBooking holds the string denoting the booking edge name in mutations.
 	EdgeBooking = "booking"
 	// EdgeCard holds the string denoting the card edge name in mutations.
 	EdgeCard = "card"
+	// EdgeUser holds the string denoting the user edge name in mutations.
+	EdgeUser = "user"
 	// Table holds the table name of the billing in the database.
 	Table = "billings"
-	// BookingTable is the table that holds the booking relation/edge. The primary key declared below.
-	BookingTable = "billing_booking"
+	// BookingTable is the table that holds the booking relation/edge.
+	BookingTable = "bookings"
 	// BookingInverseTable is the table name for the Booking entity.
 	// It exists in this package in order to avoid circular dependency with the "booking" package.
 	BookingInverseTable = "bookings"
+	// BookingColumn is the table column denoting the booking relation/edge.
+	BookingColumn = "billing_booking"
 	// CardTable is the table that holds the card relation/edge.
-	CardTable = "cards"
+	CardTable = "billings"
 	// CardInverseTable is the table name for the Card entity.
 	// It exists in this package in order to avoid circular dependency with the "card" package.
 	CardInverseTable = "cards"
 	// CardColumn is the table column denoting the card relation/edge.
 	CardColumn = "billing_card"
+	// UserTable is the table that holds the user relation/edge.
+	UserTable = "billings"
+	// UserInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	UserInverseTable = "users"
+	// UserColumn is the table column denoting the user relation/edge.
+	UserColumn = "billing_user"
 )
 
 // Columns holds all SQL columns for billing fields.
 var Columns = []string{
 	FieldID,
+	FieldStatus,
 }
 
-var (
-	// BookingPrimaryKey and BookingColumn2 are the table columns denoting the
-	// primary key for the booking relation (M2M).
-	BookingPrimaryKey = []string{"billing_id", "booking_id"}
-)
+// ForeignKeys holds the SQL foreign-keys that are owned by the "billings"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"billing_card",
+	"billing_user",
+}
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -45,5 +60,15 @@ func ValidColumn(column string) bool {
 			return true
 		}
 	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
+			return true
+		}
+	}
 	return false
 }
+
+var (
+	// DefaultStatus holds the default value on creation for the "status" field.
+	DefaultStatus string
+)

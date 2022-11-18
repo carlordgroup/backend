@@ -7,6 +7,7 @@ import (
 	"carlord/ent/booking"
 	"carlord/ent/card"
 	"carlord/ent/predicate"
+	"carlord/ent/user"
 	"context"
 	"database/sql/driver"
 	"fmt"
@@ -28,6 +29,8 @@ type BillingQuery struct {
 	predicates  []predicate.Billing
 	withBooking *BookingQuery
 	withCard    *CardQuery
+	withUser    *UserQuery
+	withFKs     bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -78,7 +81,7 @@ func (bq *BillingQuery) QueryBooking() *BookingQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(billing.Table, billing.FieldID, selector),
 			sqlgraph.To(booking.Table, booking.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, billing.BookingTable, billing.BookingPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2O, false, billing.BookingTable, billing.BookingColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
 		return fromU, nil
@@ -100,7 +103,29 @@ func (bq *BillingQuery) QueryCard() *CardQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(billing.Table, billing.FieldID, selector),
 			sqlgraph.To(card.Table, card.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, billing.CardTable, billing.CardColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, billing.CardTable, billing.CardColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryUser chains the current query on the "user" edge.
+func (bq *BillingQuery) QueryUser() *UserQuery {
+	query := &UserQuery{config: bq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := bq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := bq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(billing.Table, billing.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, billing.UserTable, billing.UserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
 		return fromU, nil
@@ -291,6 +316,7 @@ func (bq *BillingQuery) Clone() *BillingQuery {
 		predicates:  append([]predicate.Billing{}, bq.predicates...),
 		withBooking: bq.withBooking.Clone(),
 		withCard:    bq.withCard.Clone(),
+		withUser:    bq.withUser.Clone(),
 		// clone intermediate query.
 		sql:    bq.sql.Clone(),
 		path:   bq.path,
@@ -320,8 +346,31 @@ func (bq *BillingQuery) WithCard(opts ...func(*CardQuery)) *BillingQuery {
 	return bq
 }
 
+// WithUser tells the query-builder to eager-load the nodes that are connected to
+// the "user" edge. The optional arguments are used to configure the query builder of the edge.
+func (bq *BillingQuery) WithUser(opts ...func(*UserQuery)) *BillingQuery {
+	query := &UserQuery{config: bq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	bq.withUser = query
+	return bq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
+//
+// Example:
+//
+//	var v []struct {
+//		Status string `json:"status,omitempty"`
+//		Count int `json:"count,omitempty"`
+//	}
+//
+//	client.Billing.Query().
+//		GroupBy(billing.FieldStatus).
+//		Aggregate(ent.Count()).
+//		Scan(ctx, &v)
 func (bq *BillingQuery) GroupBy(field string, fields ...string) *BillingGroupBy {
 	grbuild := &BillingGroupBy{config: bq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -338,6 +387,16 @@ func (bq *BillingQuery) GroupBy(field string, fields ...string) *BillingGroupBy 
 
 // Select allows the selection one or more fields/columns for the given query,
 // instead of selecting all fields in the entity.
+//
+// Example:
+//
+//	var v []struct {
+//		Status string `json:"status,omitempty"`
+//	}
+//
+//	client.Billing.Query().
+//		Select(billing.FieldStatus).
+//		Scan(ctx, &v)
 func (bq *BillingQuery) Select(fields ...string) *BillingSelect {
 	bq.fields = append(bq.fields, fields...)
 	selbuild := &BillingSelect{BillingQuery: bq}
@@ -370,12 +429,20 @@ func (bq *BillingQuery) prepareQuery(ctx context.Context) error {
 func (bq *BillingQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Billing, error) {
 	var (
 		nodes       = []*Billing{}
+		withFKs     = bq.withFKs
 		_spec       = bq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			bq.withBooking != nil,
 			bq.withCard != nil,
+			bq.withUser != nil,
 		}
 	)
+	if bq.withCard != nil || bq.withUser != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, billing.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Billing).scanValues(nil, columns)
 	}
@@ -395,16 +462,20 @@ func (bq *BillingQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Bill
 		return nodes, nil
 	}
 	if query := bq.withBooking; query != nil {
-		if err := bq.loadBooking(ctx, query, nodes,
-			func(n *Billing) { n.Edges.Booking = []*Booking{} },
-			func(n *Billing, e *Booking) { n.Edges.Booking = append(n.Edges.Booking, e) }); err != nil {
+		if err := bq.loadBooking(ctx, query, nodes, nil,
+			func(n *Billing, e *Booking) { n.Edges.Booking = e }); err != nil {
 			return nil, err
 		}
 	}
 	if query := bq.withCard; query != nil {
-		if err := bq.loadCard(ctx, query, nodes,
-			func(n *Billing) { n.Edges.Card = []*Card{} },
-			func(n *Billing, e *Card) { n.Edges.Card = append(n.Edges.Card, e) }); err != nil {
+		if err := bq.loadCard(ctx, query, nodes, nil,
+			func(n *Billing, e *Card) { n.Edges.Card = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := bq.withUser; query != nil {
+		if err := bq.loadUser(ctx, query, nodes, nil,
+			func(n *Billing, e *User) { n.Edges.User = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -412,91 +483,88 @@ func (bq *BillingQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Bill
 }
 
 func (bq *BillingQuery) loadBooking(ctx context.Context, query *BookingQuery, nodes []*Billing, init func(*Billing), assign func(*Billing, *Booking)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[int]*Billing)
-	nids := make(map[int]map[*Billing]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
-		}
-	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(billing.BookingTable)
-		s.Join(joinT).On(s.C(booking.FieldID), joinT.C(billing.BookingPrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(billing.BookingPrimaryKey[0]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(billing.BookingPrimaryKey[0]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
-	}
-	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-		assign := spec.Assign
-		values := spec.ScanValues
-		spec.ScanValues = func(columns []string) ([]any, error) {
-			values, err := values(columns[1:])
-			if err != nil {
-				return nil, err
-			}
-			return append([]any{new(sql.NullInt64)}, values...), nil
-		}
-		spec.Assign = func(columns []string, values []any) error {
-			outValue := int(values[0].(*sql.NullInt64).Int64)
-			inValue := int(values[1].(*sql.NullInt64).Int64)
-			if nids[inValue] == nil {
-				nids[inValue] = map[*Billing]struct{}{byID[outValue]: {}}
-				return assign(columns[1:], values[1:])
-			}
-			nids[inValue][byID[outValue]] = struct{}{}
-			return nil
-		}
-	})
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected "booking" node returned %v`, n.ID)
-		}
-		for kn := range nodes {
-			assign(kn, n)
-		}
-	}
-	return nil
-}
-func (bq *BillingQuery) loadCard(ctx context.Context, query *CardQuery, nodes []*Billing, init func(*Billing), assign func(*Billing, *Card)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[int]*Billing)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
 	}
 	query.withFKs = true
-	query.Where(predicate.Card(func(s *sql.Selector) {
-		s.Where(sql.InValues(billing.CardColumn, fks...))
+	query.Where(predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.InValues(billing.BookingColumn, fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.billing_card
+		fk := n.billing_booking
 		if fk == nil {
-			return fmt.Errorf(`foreign-key "billing_card" is nil for node %v`, n.ID)
+			return fmt.Errorf(`foreign-key "billing_booking" is nil for node %v`, n.ID)
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "billing_card" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "billing_booking" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
+	}
+	return nil
+}
+func (bq *BillingQuery) loadCard(ctx context.Context, query *CardQuery, nodes []*Billing, init func(*Billing), assign func(*Billing, *Card)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*Billing)
+	for i := range nodes {
+		if nodes[i].billing_card == nil {
+			continue
+		}
+		fk := *nodes[i].billing_card
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(card.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "billing_card" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (bq *BillingQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*Billing, init func(*Billing), assign func(*Billing, *User)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*Billing)
+	for i := range nodes {
+		if nodes[i].billing_user == nil {
+			continue
+		}
+		fk := *nodes[i].billing_user
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(user.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "billing_user" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
 	}
 	return nil
 }

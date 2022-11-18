@@ -4,6 +4,7 @@ package ent
 
 import (
 	"carlord/ent/account"
+	"carlord/ent/billing"
 	"carlord/ent/car"
 	"carlord/ent/schema"
 	"carlord/ent/user"
@@ -20,6 +21,12 @@ func init() {
 	accountDescIsAdmin := accountFields[2].Descriptor()
 	// account.DefaultIsAdmin holds the default value on creation for the is_admin field.
 	account.DefaultIsAdmin = accountDescIsAdmin.Default.(bool)
+	billingFields := schema.Billing{}.Fields()
+	_ = billingFields
+	// billingDescStatus is the schema descriptor for status field.
+	billingDescStatus := billingFields[0].Descriptor()
+	// billing.DefaultStatus holds the default value on creation for the status field.
+	billing.DefaultStatus = billingDescStatus.Default.(string)
 	carFields := schema.Car{}.Fields()
 	_ = carFields
 	// carDescStatus is the schema descriptor for status field.

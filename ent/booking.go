@@ -3,7 +3,10 @@
 package ent
 
 import (
+	"carlord/ent/billing"
 	"carlord/ent/booking"
+	"carlord/ent/car"
+	"carlord/ent/user"
 	"fmt"
 	"strings"
 	"time"
@@ -21,57 +24,72 @@ type Booking struct {
 	// EndAt holds the value of the "end_at" field.
 	EndAt time.Time `json:"end_at,omitempty"`
 	// ReturnCarAt holds the value of the "return_car_at" field.
-	ReturnCarAt time.Time `json:"return_car_at,omitempty"`
+	ReturnCarAt *time.Time `json:"return_car_at,omitempty"`
 	// FuelLevelAtBegin holds the value of the "fuel_level_at_begin" field.
-	FuelLevelAtBegin float32 `json:"fuel_level_at_begin,omitempty"`
+	FuelLevelAtBegin *float32 `json:"fuel_level_at_begin,omitempty"`
 	// FuelLevelAtEnd holds the value of the "fuel_level_at_end" field.
-	FuelLevelAtEnd float32 `json:"fuel_level_at_end,omitempty"`
+	FuelLevelAtEnd *float32 `json:"fuel_level_at_end,omitempty"`
 	// MileageBegin holds the value of the "mileage_begin" field.
-	MileageBegin int `json:"mileage_begin,omitempty"`
+	MileageBegin *int `json:"mileage_begin,omitempty"`
 	// MileageEnd holds the value of the "mileage_end" field.
-	MileageEnd int `json:"mileage_end,omitempty"`
+	MileageEnd *int `json:"mileage_end,omitempty"`
 	// BookingStatus holds the value of the "booking_status" field.
 	BookingStatus string `json:"booking_status,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the BookingQuery when eager-loading is set.
-	Edges BookingEdges `json:"edges"`
+	Edges           BookingEdges `json:"edges"`
+	billing_booking *int
+	booking_user    *int
+	booking_car     *int
 }
 
 // BookingEdges holds the relations/edges for other nodes in the graph.
 type BookingEdges struct {
 	// User holds the value of the user edge.
-	User []*User `json:"user,omitempty"`
+	User *User `json:"user,omitempty"`
 	// Car holds the value of the car edge.
-	Car []*Car `json:"car,omitempty"`
+	Car *Car `json:"car,omitempty"`
 	// Billing holds the value of the billing edge.
-	Billing []*Billing `json:"billing,omitempty"`
+	Billing *Billing `json:"billing,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
 }
 
 // UserOrErr returns the User value or an error if the edge
-// was not loaded in eager-loading.
-func (e BookingEdges) UserOrErr() ([]*User, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e BookingEdges) UserOrErr() (*User, error) {
 	if e.loadedTypes[0] {
+		if e.User == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: user.Label}
+		}
 		return e.User, nil
 	}
 	return nil, &NotLoadedError{edge: "user"}
 }
 
 // CarOrErr returns the Car value or an error if the edge
-// was not loaded in eager-loading.
-func (e BookingEdges) CarOrErr() ([]*Car, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e BookingEdges) CarOrErr() (*Car, error) {
 	if e.loadedTypes[1] {
+		if e.Car == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: car.Label}
+		}
 		return e.Car, nil
 	}
 	return nil, &NotLoadedError{edge: "car"}
 }
 
 // BillingOrErr returns the Billing value or an error if the edge
-// was not loaded in eager-loading.
-func (e BookingEdges) BillingOrErr() ([]*Billing, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e BookingEdges) BillingOrErr() (*Billing, error) {
 	if e.loadedTypes[2] {
+		if e.Billing == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: billing.Label}
+		}
 		return e.Billing, nil
 	}
 	return nil, &NotLoadedError{edge: "billing"}
@@ -90,6 +108,12 @@ func (*Booking) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case booking.FieldStartAt, booking.FieldEndAt, booking.FieldReturnCarAt:
 			values[i] = new(sql.NullTime)
+		case booking.ForeignKeys[0]: // billing_booking
+			values[i] = new(sql.NullInt64)
+		case booking.ForeignKeys[1]: // booking_user
+			values[i] = new(sql.NullInt64)
+		case booking.ForeignKeys[2]: // booking_car
+			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Booking", columns[i])
 		}
@@ -127,37 +151,63 @@ func (b *Booking) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field return_car_at", values[i])
 			} else if value.Valid {
-				b.ReturnCarAt = value.Time
+				b.ReturnCarAt = new(time.Time)
+				*b.ReturnCarAt = value.Time
 			}
 		case booking.FieldFuelLevelAtBegin:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field fuel_level_at_begin", values[i])
 			} else if value.Valid {
-				b.FuelLevelAtBegin = float32(value.Float64)
+				b.FuelLevelAtBegin = new(float32)
+				*b.FuelLevelAtBegin = float32(value.Float64)
 			}
 		case booking.FieldFuelLevelAtEnd:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field fuel_level_at_end", values[i])
 			} else if value.Valid {
-				b.FuelLevelAtEnd = float32(value.Float64)
+				b.FuelLevelAtEnd = new(float32)
+				*b.FuelLevelAtEnd = float32(value.Float64)
 			}
 		case booking.FieldMileageBegin:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field mileage_begin", values[i])
 			} else if value.Valid {
-				b.MileageBegin = int(value.Int64)
+				b.MileageBegin = new(int)
+				*b.MileageBegin = int(value.Int64)
 			}
 		case booking.FieldMileageEnd:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field mileage_end", values[i])
 			} else if value.Valid {
-				b.MileageEnd = int(value.Int64)
+				b.MileageEnd = new(int)
+				*b.MileageEnd = int(value.Int64)
 			}
 		case booking.FieldBookingStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field booking_status", values[i])
 			} else if value.Valid {
 				b.BookingStatus = value.String
+			}
+		case booking.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field billing_booking", value)
+			} else if value.Valid {
+				b.billing_booking = new(int)
+				*b.billing_booking = int(value.Int64)
+			}
+		case booking.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field booking_user", value)
+			} else if value.Valid {
+				b.booking_user = new(int)
+				*b.booking_user = int(value.Int64)
+			}
+		case booking.ForeignKeys[2]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field booking_car", value)
+			} else if value.Valid {
+				b.booking_car = new(int)
+				*b.booking_car = int(value.Int64)
 			}
 		}
 	}
@@ -208,20 +258,30 @@ func (b *Booking) String() string {
 	builder.WriteString("end_at=")
 	builder.WriteString(b.EndAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("return_car_at=")
-	builder.WriteString(b.ReturnCarAt.Format(time.ANSIC))
+	if v := b.ReturnCarAt; v != nil {
+		builder.WriteString("return_car_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("fuel_level_at_begin=")
-	builder.WriteString(fmt.Sprintf("%v", b.FuelLevelAtBegin))
+	if v := b.FuelLevelAtBegin; v != nil {
+		builder.WriteString("fuel_level_at_begin=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("fuel_level_at_end=")
-	builder.WriteString(fmt.Sprintf("%v", b.FuelLevelAtEnd))
+	if v := b.FuelLevelAtEnd; v != nil {
+		builder.WriteString("fuel_level_at_end=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("mileage_begin=")
-	builder.WriteString(fmt.Sprintf("%v", b.MileageBegin))
+	if v := b.MileageBegin; v != nil {
+		builder.WriteString("mileage_begin=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("mileage_end=")
-	builder.WriteString(fmt.Sprintf("%v", b.MileageEnd))
+	if v := b.MileageEnd; v != nil {
+		builder.WriteString("mileage_end=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("booking_status=")
 	builder.WriteString(b.BookingStatus)

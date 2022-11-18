@@ -71,49 +71,45 @@ func (bc *BookingCreate) SetBookingStatus(s string) *BookingCreate {
 	return bc
 }
 
-// AddUserIDs adds the "user" edge to the User entity by IDs.
-func (bc *BookingCreate) AddUserIDs(ids ...int) *BookingCreate {
-	bc.mutation.AddUserIDs(ids...)
+// SetUserID sets the "user" edge to the User entity by ID.
+func (bc *BookingCreate) SetUserID(id int) *BookingCreate {
+	bc.mutation.SetUserID(id)
 	return bc
 }
 
-// AddUser adds the "user" edges to the User entity.
-func (bc *BookingCreate) AddUser(u ...*User) *BookingCreate {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return bc.AddUserIDs(ids...)
+// SetUser sets the "user" edge to the User entity.
+func (bc *BookingCreate) SetUser(u *User) *BookingCreate {
+	return bc.SetUserID(u.ID)
 }
 
-// AddCarIDs adds the "car" edge to the Car entity by IDs.
-func (bc *BookingCreate) AddCarIDs(ids ...int) *BookingCreate {
-	bc.mutation.AddCarIDs(ids...)
+// SetCarID sets the "car" edge to the Car entity by ID.
+func (bc *BookingCreate) SetCarID(id int) *BookingCreate {
+	bc.mutation.SetCarID(id)
 	return bc
 }
 
-// AddCar adds the "car" edges to the Car entity.
-func (bc *BookingCreate) AddCar(c ...*Car) *BookingCreate {
-	ids := make([]int, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
-	}
-	return bc.AddCarIDs(ids...)
+// SetCar sets the "car" edge to the Car entity.
+func (bc *BookingCreate) SetCar(c *Car) *BookingCreate {
+	return bc.SetCarID(c.ID)
 }
 
-// AddBillingIDs adds the "billing" edge to the Billing entity by IDs.
-func (bc *BookingCreate) AddBillingIDs(ids ...int) *BookingCreate {
-	bc.mutation.AddBillingIDs(ids...)
+// SetBillingID sets the "billing" edge to the Billing entity by ID.
+func (bc *BookingCreate) SetBillingID(id int) *BookingCreate {
+	bc.mutation.SetBillingID(id)
 	return bc
 }
 
-// AddBilling adds the "billing" edges to the Billing entity.
-func (bc *BookingCreate) AddBilling(b ...*Billing) *BookingCreate {
-	ids := make([]int, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
+// SetNillableBillingID sets the "billing" edge to the Billing entity by ID if the given value is not nil.
+func (bc *BookingCreate) SetNillableBillingID(id *int) *BookingCreate {
+	if id != nil {
+		bc = bc.SetBillingID(*id)
 	}
-	return bc.AddBillingIDs(ids...)
+	return bc
+}
+
+// SetBilling sets the "billing" edge to the Billing entity.
+func (bc *BookingCreate) SetBilling(b *Billing) *BookingCreate {
+	return bc.SetBillingID(b.ID)
 }
 
 // Mutation returns the BookingMutation object of the builder.
@@ -216,10 +212,10 @@ func (bc *BookingCreate) check() error {
 	if _, ok := bc.mutation.BookingStatus(); !ok {
 		return &ValidationError{Name: "booking_status", err: errors.New(`ent: missing required field "Booking.booking_status"`)}
 	}
-	if len(bc.mutation.UserIDs()) == 0 {
+	if _, ok := bc.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "Booking.user"`)}
 	}
-	if len(bc.mutation.CarIDs()) == 0 {
+	if _, ok := bc.mutation.CarID(); !ok {
 		return &ValidationError{Name: "car", err: errors.New(`ent: missing required edge "Booking.car"`)}
 	}
 	return nil
@@ -259,23 +255,23 @@ func (bc *BookingCreate) createSpec() (*Booking, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := bc.mutation.ReturnCarAt(); ok {
 		_spec.SetField(booking.FieldReturnCarAt, field.TypeTime, value)
-		_node.ReturnCarAt = value
+		_node.ReturnCarAt = &value
 	}
 	if value, ok := bc.mutation.FuelLevelAtBegin(); ok {
 		_spec.SetField(booking.FieldFuelLevelAtBegin, field.TypeFloat32, value)
-		_node.FuelLevelAtBegin = value
+		_node.FuelLevelAtBegin = &value
 	}
 	if value, ok := bc.mutation.FuelLevelAtEnd(); ok {
 		_spec.SetField(booking.FieldFuelLevelAtEnd, field.TypeFloat32, value)
-		_node.FuelLevelAtEnd = value
+		_node.FuelLevelAtEnd = &value
 	}
 	if value, ok := bc.mutation.MileageBegin(); ok {
 		_spec.SetField(booking.FieldMileageBegin, field.TypeInt, value)
-		_node.MileageBegin = value
+		_node.MileageBegin = &value
 	}
 	if value, ok := bc.mutation.MileageEnd(); ok {
 		_spec.SetField(booking.FieldMileageEnd, field.TypeInt, value)
-		_node.MileageEnd = value
+		_node.MileageEnd = &value
 	}
 	if value, ok := bc.mutation.BookingStatus(); ok {
 		_spec.SetField(booking.FieldBookingStatus, field.TypeString, value)
@@ -283,10 +279,10 @@ func (bc *BookingCreate) createSpec() (*Booking, *sqlgraph.CreateSpec) {
 	}
 	if nodes := bc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   booking.UserTable,
-			Columns: booking.UserPrimaryKey,
+			Columns: []string{booking.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -298,14 +294,15 @@ func (bc *BookingCreate) createSpec() (*Booking, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.booking_user = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := bc.mutation.CarIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   booking.CarTable,
-			Columns: booking.CarPrimaryKey,
+			Columns: []string{booking.CarColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -317,14 +314,15 @@ func (bc *BookingCreate) createSpec() (*Booking, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.booking_car = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := bc.mutation.BillingIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   booking.BillingTable,
-			Columns: booking.BillingPrimaryKey,
+			Columns: []string{booking.BillingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -336,6 +334,7 @@ func (bc *BookingCreate) createSpec() (*Booking, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.billing_booking = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

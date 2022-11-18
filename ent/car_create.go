@@ -348,10 +348,10 @@ func (cc *CarCreate) createSpec() (*Car, *sqlgraph.CreateSpec) {
 	}
 	if nodes := cc.mutation.BookingIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   car.BookingTable,
-			Columns: car.BookingPrimaryKey,
+			Columns: []string{car.BookingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
