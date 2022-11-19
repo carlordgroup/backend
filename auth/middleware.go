@@ -1,12 +1,10 @@
 package auth
 
 import (
-	"carlord/ent"
+	"carlord/data"
 	"carlord/ent/account"
-	"encoding/base64"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
 	"os"
@@ -44,13 +42,9 @@ func (s *service) authentication(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	accountObject := data.NewAccount(c, acc)
 
-	bcryptPass, err := base64.StdEncoding.DecodeString(acc.Password)
-	if err != nil {
-		return nil, err
-	}
-	err = bcrypt.CompareHashAndPassword(bcryptPass, []byte(login.RawPassword))
-	if err != nil {
+	if !accountObject.Verify(login.RawPassword) {
 		return nil, jwt.ErrFailedAuthentication
 	}
 	c.Set("user", acc)
@@ -97,7 +91,7 @@ func (s *service) MustLogin() gin.HandlerFunc {
 }
 func (s *service) MustAdmin() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		if !ctx.MustGet("account").(*ent.Account).IsAdmin {
+		if !ctx.MustGet("account").(*data.Account).Admin() {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "you are not an admin"})
 			return
 		}
@@ -105,14 +99,14 @@ func (s *service) MustAdmin() gin.HandlerFunc {
 	}
 }
 
-func (s *service) GetAccountUser() gin.HandlerFunc {
+func (s *service) GetAccount() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		acc, err := s.client.Account.Query().WithUser().Where(account.ID(ctx.MustGet("id").(int))).Only(ctx)
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, err)
 			return
 		}
-		ctx.Set("account", acc)
+		ctx.Set("account", data.NewAccount(ctx, acc))
 		ctx.Next()
 	}
 }
