@@ -2,6 +2,7 @@ package main
 
 import (
 	"carlord/auth"
+	"carlord/booking"
 	"carlord/card"
 	"carlord/docs"
 	"carlord/ent"
@@ -44,6 +45,9 @@ func main() {
 
 	g = api.Group("management/")
 	management.New(client).RegisterRouter(g, authService)
+
+	g = api.Group("booking/")
+	booking.New(client).RegisterRouter(g, authService)
 
 	docs.SwaggerInfo.BasePath = "/api"
 	api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
