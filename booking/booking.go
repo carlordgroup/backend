@@ -52,7 +52,7 @@ func pay(card *ent.Card) bool {
 // @Summary add a booking
 // @Accept json
 // @Produce json
-// @Success 200 {object} ent.booking
+// @Success 200 {object} ent.Booking
 // @Router /booking/ [post]
 func (s *service) bookCar(ctx *gin.Context) (int, any) {
 	var book bookStruct
