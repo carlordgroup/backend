@@ -1,4 +1,4 @@
-package order
+package booking
 
 import (
 	"carlord/ent"
