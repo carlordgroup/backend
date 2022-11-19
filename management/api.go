@@ -12,7 +12,7 @@ type service struct {
 
 type Authenticate interface {
 	MustLogin() gin.HandlerFunc
-	GetAccountUser() gin.HandlerFunc
+	GetAccount() gin.HandlerFunc
 	MustAdmin() gin.HandlerFunc
 }
 
@@ -26,14 +26,14 @@ func New(client *ent.Client) *service {
 func (s *service) RegisterRouter(group gin.IRouter, auth Authenticate) {
 	g := group.Group("/location")
 	g.GET("/", web.W(s.listLocation))
-	g.Use(auth.MustLogin(), auth.GetAccountUser(), auth.MustAdmin())
+	g.Use(auth.MustLogin(), auth.GetAccount(), auth.MustAdmin())
 	g.POST("/", web.W(s.addLocation))
 	g.POST("/:id", web.ID(s.updateLocation))
 	g.DELETE("/:id", web.ID(s.deleteLocation))
 
 	g = group.Group("/car")
 	g.GET("/", web.W(s.filterCar))
-	g.Use(auth.MustLogin(), auth.GetAccountUser(), auth.MustAdmin())
+	g.Use(auth.MustLogin(), auth.GetAccount(), auth.MustAdmin())
 	g.POST("/", web.W(s.addCar))
 	g.POST("/:id", web.ID(s.updateCar))
 	g.DELETE("/:id", web.ID(s.deleteCar))

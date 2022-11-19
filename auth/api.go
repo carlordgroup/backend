@@ -29,7 +29,7 @@ func (s *service) RegisterRouter(group gin.IRouter) {
 	group.POST("/login", login(s.auth))
 	group.POST("/refresh", s.auth.RefreshHandler)
 	group.POST("/register", web.W(s.register))
-	group.GET("/", s.MustLogin(), s.GetAccountUser(), web.W(s.self))
+	group.GET("/", s.MustLogin(), s.GetAccount(), web.W(s.self))
 }
 
 type tokenSample struct{ Token string }

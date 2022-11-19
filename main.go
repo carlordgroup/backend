@@ -9,6 +9,7 @@ import (
 	"carlord/management"
 	"carlord/user"
 	"context"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
 	swaggerfiles "github.com/swaggo/files"
@@ -29,6 +30,8 @@ func main() {
 	}
 
 	r := gin.Default()
+	// same as
+	r.Use(cors.Default())
 	api := r.Group("api/")
 	g := api.Group("account/")
 	authService := auth.New(client)
