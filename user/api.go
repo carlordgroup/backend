@@ -1,6 +1,7 @@
 package user
 
 import (
+	"carlord/data"
 	"carlord/ent"
 	"carlord/web"
 	"github.com/gin-gonic/gin"
@@ -38,7 +39,7 @@ func (s *service) RegisterRouter(group gin.IRoutes, auth Authenticate) {
 // @Success 200 {object} ent.User
 // @Router /user/ [get]
 func (s *service) get(ctx *gin.Context) (int, any) {
-	u := ctx.MustGet("account").(*ent.Account)
+	u := ctx.MustGet("account").(*data.Account)
 	return http.StatusOK, u.Edges.User
 }
 
