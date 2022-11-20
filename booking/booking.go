@@ -1,16 +1,13 @@
 package booking
 
 import (
-	"carlord/ent"
-	"carlord/ent/billing"
+	"carlord/data"
 	"carlord/ent/booking"
-	"carlord/ent/car"
 	"carlord/ent/card"
 	"carlord/ent/user"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -19,31 +16,6 @@ type bookStruct struct {
 	CardID    int       `json:"card_id" binding:"required"`
 	StartTime time.Time `json:"start_time" binding:"required"`
 	EndTime   time.Time `json:"end_time" binding:"required"`
-}
-
-const (
-	StatusPlan   = "plan"
-	StatusCancel = "cancel"
-	StatusInUse  = "in_use"
-	StatusFinish = "finish"
-)
-
-func (s *service) carNotAvailable(ctx *gin.Context, carID int, startAt, endAt time.Time) (bool, error) {
-	return s.client.Booking.Query().Where(
-		booking.And(
-			booking.HasCarWith(car.ID(carID)),
-			booking.And(
-				booking.StartAtLTE(endAt),
-				booking.EndAtGTE(startAt),
-				booking.BookingStatusNEQ(StatusCancel),
-				booking.BookingStatusNEQ(StatusFinish),
-			),
-		)).Exist(ctx)
-}
-
-func pay(card *ent.Card) bool {
-	time.Sleep(time.Second * 5)
-	return !strings.HasSuffix(card.Number, "00")
 }
 
 // Add booking godoc
@@ -65,14 +37,20 @@ func (s *service) bookCar(ctx *gin.Context) (int, any) {
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
-	notOK, err := s.carNotAvailable(ctx, c.ID, book.StartTime, book.EndTime)
+	carObj := data.NewCar(ctx, c)
+	available, err := carObj.Available(book.StartTime, book.EndTime)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
-	if notOK {
+	if !available {
 		return http.StatusForbidden, errors.New("the time is occupied")
 	}
-	unpaid, err := s.client.Billing.Query().Where(billing.HasUserWith(user.ID(userId)), billing.Status("unpaid")).Exist(ctx)
+	accountObj := ctx.MustGet("account").(*data.Account)
+	userObj, err := accountObj.User()
+	if err != nil {
+		return http.StatusBadRequest, nil
+	}
+	unpaid, err := userObj.HasUnpaidBill()
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
@@ -80,13 +58,7 @@ func (s *service) bookCar(ctx *gin.Context) (int, any) {
 		return http.StatusForbidden, errors.New("cannot start new booking with unpaid bill")
 	}
 
-	b, err := s.client.Booking.Create().
-		SetStartAt(book.StartTime).
-		SetEndAt(book.EndTime).
-		SetCarID(book.CarID).
-		SetUserID(userId).
-		SetBookingStatus(StatusPlan).
-		Save(ctx)
+	b, err := userObj.Book(s.client, carObj, book.StartTime, book.EndTime, book.CardID)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
@@ -95,9 +67,9 @@ func (s *service) bookCar(ctx *gin.Context) (int, any) {
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
-
-	if !pay(userCard) {
-		_, err = b.Update().SetBookingStatus(StatusCancel).Save(ctx)
+	cardObj := data.NewCard(ctx, userCard)
+	if !cardObj.Pay() {
+		err = b.UpdateStatus(data.BookingStatusCancel)
 		if err != nil {
 			return http.StatusBadRequest, err
 		}
@@ -115,7 +87,7 @@ func (s *service) bookCar(ctx *gin.Context) (int, any) {
 // @Router /booking/:id [delete]
 func (s *service) cancelBookingCar(ctx *gin.Context, id int) (int, any) {
 	userID := ctx.GetInt("id")
-	_, err := s.client.Booking.Update().Where(booking.And(booking.ID(id), booking.HasUserWith(user.ID(userID)))).SetBookingStatus(StatusCancel).Save(ctx)
+	_, err := s.client.Booking.Update().Where(booking.And(booking.ID(id), booking.HasUserWith(user.ID(userID)))).SetBookingStatus(data.BookingStatusCancel).Save(ctx)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
@@ -129,10 +101,11 @@ func (s *service) cancelBookingCar(ctx *gin.Context, id int) (int, any) {
 // @Success 200 {object} []ent.Booking
 // @Router /booking/ [get]
 func (s *service) listBooking(ctx *gin.Context) (int, any) {
-	userID := ctx.GetInt("id")
-	data, err := s.client.Booking.Query().Where(booking.HasUserWith(user.ID(userID))).All(ctx)
+	acc := ctx.MustGet("account").(*data.Account)
+	u, err := acc.User()
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
-	return http.StatusOK, data
+	b, err := u.Bookings()
+	return http.StatusOK, b
 }

@@ -4621,6 +4621,9 @@ type UserMutation struct {
 	booking                map[int]struct{}
 	removedbooking         map[int]struct{}
 	clearedbooking         bool
+	bill                   map[int]struct{}
+	removedbill            map[int]struct{}
+	clearedbill            bool
 	done                   bool
 	oldValue               func(context.Context) (*User, error)
 	predicates             []predicate.User
@@ -5219,6 +5222,60 @@ func (m *UserMutation) ResetBooking() {
 	m.removedbooking = nil
 }
 
+// AddBillIDs adds the "bill" edge to the Billing entity by ids.
+func (m *UserMutation) AddBillIDs(ids ...int) {
+	if m.bill == nil {
+		m.bill = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.bill[ids[i]] = struct{}{}
+	}
+}
+
+// ClearBill clears the "bill" edge to the Billing entity.
+func (m *UserMutation) ClearBill() {
+	m.clearedbill = true
+}
+
+// BillCleared reports if the "bill" edge to the Billing entity was cleared.
+func (m *UserMutation) BillCleared() bool {
+	return m.clearedbill
+}
+
+// RemoveBillIDs removes the "bill" edge to the Billing entity by IDs.
+func (m *UserMutation) RemoveBillIDs(ids ...int) {
+	if m.removedbill == nil {
+		m.removedbill = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.bill, ids[i])
+		m.removedbill[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedBill returns the removed IDs of the "bill" edge to the Billing entity.
+func (m *UserMutation) RemovedBillIDs() (ids []int) {
+	for id := range m.removedbill {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// BillIDs returns the "bill" edge IDs in the mutation.
+func (m *UserMutation) BillIDs() (ids []int) {
+	for id := range m.bill {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetBill resets all changes to the "bill" edge.
+func (m *UserMutation) ResetBill() {
+	m.bill = nil
+	m.clearedbill = false
+	m.removedbill = nil
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -5456,7 +5513,7 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.card != nil {
 		edges = append(edges, user.EdgeCard)
 	}
@@ -5468,6 +5525,9 @@ func (m *UserMutation) AddedEdges() []string {
 	}
 	if m.booking != nil {
 		edges = append(edges, user.EdgeBooking)
+	}
+	if m.bill != nil {
+		edges = append(edges, user.EdgeBill)
 	}
 	return edges
 }
@@ -5498,13 +5558,19 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeBill:
+		ids := make([]ent.Value, 0, len(m.bill))
+		for id := range m.bill {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removedcard != nil {
 		edges = append(edges, user.EdgeCard)
 	}
@@ -5513,6 +5579,9 @@ func (m *UserMutation) RemovedEdges() []string {
 	}
 	if m.removedbooking != nil {
 		edges = append(edges, user.EdgeBooking)
+	}
+	if m.removedbill != nil {
+		edges = append(edges, user.EdgeBill)
 	}
 	return edges
 }
@@ -5539,13 +5608,19 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeBill:
+		ids := make([]ent.Value, 0, len(m.removedbill))
+		for id := range m.removedbill {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearedcard {
 		edges = append(edges, user.EdgeCard)
 	}
@@ -5557,6 +5632,9 @@ func (m *UserMutation) ClearedEdges() []string {
 	}
 	if m.clearedbooking {
 		edges = append(edges, user.EdgeBooking)
+	}
+	if m.clearedbill {
+		edges = append(edges, user.EdgeBill)
 	}
 	return edges
 }
@@ -5573,6 +5651,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedaccount
 	case user.EdgeBooking:
 		return m.clearedbooking
+	case user.EdgeBill:
+		return m.clearedbill
 	}
 	return false
 }
@@ -5603,6 +5683,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	case user.EdgeBooking:
 		m.ResetBooking()
+		return nil
+	case user.EdgeBill:
+		m.ResetBill()
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)

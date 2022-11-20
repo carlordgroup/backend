@@ -35,6 +35,8 @@ const (
 	EdgeAccount = "account"
 	// EdgeBooking holds the string denoting the booking edge name in mutations.
 	EdgeBooking = "booking"
+	// EdgeBill holds the string denoting the bill edge name in mutations.
+	EdgeBill = "bill"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// CardTable is the table that holds the card relation/edge.
@@ -65,6 +67,13 @@ const (
 	BookingInverseTable = "bookings"
 	// BookingColumn is the table column denoting the booking relation/edge.
 	BookingColumn = "booking_user"
+	// BillTable is the table that holds the bill relation/edge.
+	BillTable = "billings"
+	// BillInverseTable is the table name for the Billing entity.
+	// It exists in this package in order to avoid circular dependency with the "billing" package.
+	BillInverseTable = "billings"
+	// BillColumn is the table column denoting the bill relation/edge.
+	BillColumn = "billing_user"
 )
 
 // Columns holds all SQL columns for user fields.
