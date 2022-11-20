@@ -4,6 +4,7 @@ package ent
 
 import (
 	"carlord/ent/account"
+	"carlord/ent/billing"
 	"carlord/ent/booking"
 	"carlord/ent/card"
 	"carlord/ent/flaw"
@@ -196,6 +197,21 @@ func (uc *UserCreate) AddBooking(b ...*Booking) *UserCreate {
 		ids[i] = b[i].ID
 	}
 	return uc.AddBookingIDs(ids...)
+}
+
+// AddBillIDs adds the "bill" edge to the Billing entity by IDs.
+func (uc *UserCreate) AddBillIDs(ids ...int) *UserCreate {
+	uc.mutation.AddBillIDs(ids...)
+	return uc
+}
+
+// AddBill adds the "bill" edges to the Billing entity.
+func (uc *UserCreate) AddBill(b ...*Billing) *UserCreate {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return uc.AddBillIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -472,6 +488,25 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: booking.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.BillIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.BillTable,
+			Columns: []string{user.BillColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: billing.FieldID,
 				},
 			},
 		}

@@ -24,9 +24,8 @@ type Card struct {
 	ValidUntil string `json:"valid_until,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the CardQuery when eager-loading is set.
-	Edges        CardEdges `json:"edges"`
-	billing_card *int
-	user_card    *int
+	Edges     CardEdges `json:"edges"`
+	user_card *int
 }
 
 // CardEdges holds the relations/edges for other nodes in the graph.
@@ -60,9 +59,7 @@ func (*Card) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case card.FieldNumber, card.FieldCardholderName, card.FieldValidUntil:
 			values[i] = new(sql.NullString)
-		case card.ForeignKeys[0]: // billing_card
-			values[i] = new(sql.NullInt64)
-		case card.ForeignKeys[1]: // user_card
+		case card.ForeignKeys[0]: // user_card
 			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Card", columns[i])
@@ -104,13 +101,6 @@ func (c *Card) assignValues(columns []string, values []any) error {
 				c.ValidUntil = value.String
 			}
 		case card.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field billing_card", value)
-			} else if value.Valid {
-				c.billing_card = new(int)
-				*c.billing_card = int(value.Int64)
-			}
-		case card.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field user_card", value)
 			} else if value.Valid {

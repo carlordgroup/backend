@@ -1127,6 +1127,22 @@ func (c *UserClient) QueryBooking(u *User) *BookingQuery {
 	return query
 }
 
+// QueryBill queries the bill edge of a User.
+func (c *UserClient) QueryBill(u *User) *BillingQuery {
+	query := &BillingQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(billing.Table, billing.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.BillTable, user.BillColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User

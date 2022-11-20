@@ -4,6 +4,7 @@ package ent
 
 import (
 	"carlord/ent/account"
+	"carlord/ent/billing"
 	"carlord/ent/booking"
 	"carlord/ent/card"
 	"carlord/ent/flaw"
@@ -200,6 +201,21 @@ func (uu *UserUpdate) AddBooking(b ...*Booking) *UserUpdate {
 	return uu.AddBookingIDs(ids...)
 }
 
+// AddBillIDs adds the "bill" edge to the Billing entity by IDs.
+func (uu *UserUpdate) AddBillIDs(ids ...int) *UserUpdate {
+	uu.mutation.AddBillIDs(ids...)
+	return uu
+}
+
+// AddBill adds the "bill" edges to the Billing entity.
+func (uu *UserUpdate) AddBill(b ...*Billing) *UserUpdate {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return uu.AddBillIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
@@ -272,6 +288,27 @@ func (uu *UserUpdate) RemoveBooking(b ...*Booking) *UserUpdate {
 		ids[i] = b[i].ID
 	}
 	return uu.RemoveBookingIDs(ids...)
+}
+
+// ClearBill clears all "bill" edges to the Billing entity.
+func (uu *UserUpdate) ClearBill() *UserUpdate {
+	uu.mutation.ClearBill()
+	return uu
+}
+
+// RemoveBillIDs removes the "bill" edge to Billing entities by IDs.
+func (uu *UserUpdate) RemoveBillIDs(ids ...int) *UserUpdate {
+	uu.mutation.RemoveBillIDs(ids...)
+	return uu
+}
+
+// RemoveBill removes "bill" edges to Billing entities.
+func (uu *UserUpdate) RemoveBill(b ...*Billing) *UserUpdate {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return uu.RemoveBillIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -581,6 +618,60 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if uu.mutation.BillCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.BillTable,
+			Columns: []string{user.BillColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: billing.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedBillIDs(); len(nodes) > 0 && !uu.mutation.BillCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.BillTable,
+			Columns: []string{user.BillColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: billing.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.BillIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.BillTable,
+			Columns: []string{user.BillColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: billing.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -768,6 +859,21 @@ func (uuo *UserUpdateOne) AddBooking(b ...*Booking) *UserUpdateOne {
 	return uuo.AddBookingIDs(ids...)
 }
 
+// AddBillIDs adds the "bill" edge to the Billing entity by IDs.
+func (uuo *UserUpdateOne) AddBillIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.AddBillIDs(ids...)
+	return uuo
+}
+
+// AddBill adds the "bill" edges to the Billing entity.
+func (uuo *UserUpdateOne) AddBill(b ...*Billing) *UserUpdateOne {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return uuo.AddBillIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
@@ -840,6 +946,27 @@ func (uuo *UserUpdateOne) RemoveBooking(b ...*Booking) *UserUpdateOne {
 		ids[i] = b[i].ID
 	}
 	return uuo.RemoveBookingIDs(ids...)
+}
+
+// ClearBill clears all "bill" edges to the Billing entity.
+func (uuo *UserUpdateOne) ClearBill() *UserUpdateOne {
+	uuo.mutation.ClearBill()
+	return uuo
+}
+
+// RemoveBillIDs removes the "bill" edge to Billing entities by IDs.
+func (uuo *UserUpdateOne) RemoveBillIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.RemoveBillIDs(ids...)
+	return uuo
+}
+
+// RemoveBill removes "bill" edges to Billing entities.
+func (uuo *UserUpdateOne) RemoveBill(b ...*Billing) *UserUpdateOne {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return uuo.RemoveBillIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -1171,6 +1298,60 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: booking.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.BillCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.BillTable,
+			Columns: []string{user.BillColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: billing.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedBillIDs(); len(nodes) > 0 && !uuo.mutation.BillCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.BillTable,
+			Columns: []string{user.BillColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: billing.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.BillIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.BillTable,
+			Columns: []string{user.BillColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: billing.FieldID,
 				},
 			},
 		}
