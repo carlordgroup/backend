@@ -13,6 +13,14 @@ import (
 	"time"
 )
 
+// createUser godoc
+// @Tags offline
+// @Param request body ent.User true "user info"
+// @Summary offline create temp user
+// @Accept json
+// @Produce json
+// @Success 200 {object} ent.User
+// @Router /management/offline/user [post]
 func (s *service) createUser(ctx *gin.Context) (int, any) {
 	var u ent.User
 	err := ctx.ShouldBindJSON(&u)
@@ -42,6 +50,14 @@ type cardBinding struct {
 	ValidUntil     string `json:"valid_until" binding:"required"`
 }
 
+// createCard godoc
+// @Tags offline
+// @Param request body cardBinding true "card info"
+// @Summary offline create temp card
+// @Accept json
+// @Produce json
+// @Success 200 {object} ent.Card
+// @Router /management/offline/card [post]
 func (s *service) createCard(ctx *gin.Context, id int) (int, any) {
 
 	var cardInfo cardBinding
@@ -66,14 +82,14 @@ type bookStruct struct {
 	EndTime   time.Time `json:"end_time" binding:"required"`
 }
 
-// Add booking godoc
-// @Tags booking
+// Add bookCar godoc
+// @Tags offline
 // @Param request body bookStruct true "booking info"
 // @Summary add a booking
 // @Accept json
 // @Produce json
 // @Success 200 {object} ent.Booking
-// @Router /booking/ [post]
+// @Router /management/offline/book/ [post]
 func (s *service) bookCar(ctx *gin.Context) (int, any) {
 	var book bookStruct
 	err := ctx.ShouldBindJSON(&book)
@@ -127,12 +143,12 @@ func (s *service) bookCar(ctx *gin.Context) (int, any) {
 	return http.StatusCreated, b
 }
 
-// Cancel booking godoc
-// @Tags booking
+// cancelBookingCar godoc
+// @Tags offline
 // @Summary remove a booking
 // @Produce json
 // @Success 204
-// @Router /booking/:id [delete]
+// @Router /management/offline/book/:id [delete]
 func (s *service) cancelBookingCar(ctx *gin.Context, id int) (int, any) {
 	_, err := s.client.Booking.Update().
 		Where(booking.And(booking.ID(id))).

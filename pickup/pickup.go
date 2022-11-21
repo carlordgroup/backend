@@ -11,6 +11,14 @@ type bookingData struct {
 	Mileage   int     `json:"mileage"`
 }
 
+// realizeBooking godoc
+// @Tags pickup
+// @Param request body bookingData true "updated info"
+// @Summary run the booking
+// @Accept json
+// @Produce json
+// @Success 200 {object} ent.Booking
+// @Router /pickup/start/:id [post]
 func (s *service) realizeBooking(ctx *gin.Context, id int) (int, any) {
 	var d bookingData
 	err := ctx.ShouldBindJSON(&d)
@@ -29,6 +37,13 @@ func (s *service) realizeBooking(ctx *gin.Context, id int) (int, any) {
 	return http.StatusOK, book
 }
 
+// returnCar godoc
+// @Tags pickup
+// @Summary end the booking
+// @Param request body bookingData true "updated info"
+// @Accept json
+// @Success 204
+// @Router /pickup/finish/:id [post]
 func (s *service) returnCar(ctx *gin.Context, id int) (int, any) {
 	var d bookingData
 	err := ctx.ShouldBindJSON(&d)
