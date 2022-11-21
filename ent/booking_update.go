@@ -49,6 +49,69 @@ func (bu *BookingUpdate) SetReturnCarAt(t time.Time) *BookingUpdate {
 	return bu
 }
 
+// SetRate sets the "rate" field.
+func (bu *BookingUpdate) SetRate(f float32) *BookingUpdate {
+	bu.mutation.ResetRate()
+	bu.mutation.SetRate(f)
+	return bu
+}
+
+// SetNillableRate sets the "rate" field if the given value is not nil.
+func (bu *BookingUpdate) SetNillableRate(f *float32) *BookingUpdate {
+	if f != nil {
+		bu.SetRate(*f)
+	}
+	return bu
+}
+
+// AddRate adds f to the "rate" field.
+func (bu *BookingUpdate) AddRate(f float32) *BookingUpdate {
+	bu.mutation.AddRate(f)
+	return bu
+}
+
+// SetExceedRate sets the "exceed_rate" field.
+func (bu *BookingUpdate) SetExceedRate(f float32) *BookingUpdate {
+	bu.mutation.ResetExceedRate()
+	bu.mutation.SetExceedRate(f)
+	return bu
+}
+
+// SetNillableExceedRate sets the "exceed_rate" field if the given value is not nil.
+func (bu *BookingUpdate) SetNillableExceedRate(f *float32) *BookingUpdate {
+	if f != nil {
+		bu.SetExceedRate(*f)
+	}
+	return bu
+}
+
+// AddExceedRate adds f to the "exceed_rate" field.
+func (bu *BookingUpdate) AddExceedRate(f float32) *BookingUpdate {
+	bu.mutation.AddExceedRate(f)
+	return bu
+}
+
+// SetDeposit sets the "deposit" field.
+func (bu *BookingUpdate) SetDeposit(f float32) *BookingUpdate {
+	bu.mutation.ResetDeposit()
+	bu.mutation.SetDeposit(f)
+	return bu
+}
+
+// SetNillableDeposit sets the "deposit" field if the given value is not nil.
+func (bu *BookingUpdate) SetNillableDeposit(f *float32) *BookingUpdate {
+	if f != nil {
+		bu.SetDeposit(*f)
+	}
+	return bu
+}
+
+// AddDeposit adds f to the "deposit" field.
+func (bu *BookingUpdate) AddDeposit(f float32) *BookingUpdate {
+	bu.mutation.AddDeposit(f)
+	return bu
+}
+
 // SetFuelLevelAtBegin sets the "fuel_level_at_begin" field.
 func (bu *BookingUpdate) SetFuelLevelAtBegin(f float32) *BookingUpdate {
 	bu.mutation.ResetFuelLevelAtBegin()
@@ -269,6 +332,24 @@ func (bu *BookingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := bu.mutation.ReturnCarAt(); ok {
 		_spec.SetField(booking.FieldReturnCarAt, field.TypeTime, value)
 	}
+	if value, ok := bu.mutation.Rate(); ok {
+		_spec.SetField(booking.FieldRate, field.TypeFloat32, value)
+	}
+	if value, ok := bu.mutation.AddedRate(); ok {
+		_spec.AddField(booking.FieldRate, field.TypeFloat32, value)
+	}
+	if value, ok := bu.mutation.ExceedRate(); ok {
+		_spec.SetField(booking.FieldExceedRate, field.TypeFloat32, value)
+	}
+	if value, ok := bu.mutation.AddedExceedRate(); ok {
+		_spec.AddField(booking.FieldExceedRate, field.TypeFloat32, value)
+	}
+	if value, ok := bu.mutation.Deposit(); ok {
+		_spec.SetField(booking.FieldDeposit, field.TypeFloat32, value)
+	}
+	if value, ok := bu.mutation.AddedDeposit(); ok {
+		_spec.AddField(booking.FieldDeposit, field.TypeFloat32, value)
+	}
 	if value, ok := bu.mutation.FuelLevelAtBegin(); ok {
 		_spec.SetField(booking.FieldFuelLevelAtBegin, field.TypeFloat32, value)
 	}
@@ -435,6 +516,69 @@ func (buo *BookingUpdateOne) SetEndAt(t time.Time) *BookingUpdateOne {
 // SetReturnCarAt sets the "return_car_at" field.
 func (buo *BookingUpdateOne) SetReturnCarAt(t time.Time) *BookingUpdateOne {
 	buo.mutation.SetReturnCarAt(t)
+	return buo
+}
+
+// SetRate sets the "rate" field.
+func (buo *BookingUpdateOne) SetRate(f float32) *BookingUpdateOne {
+	buo.mutation.ResetRate()
+	buo.mutation.SetRate(f)
+	return buo
+}
+
+// SetNillableRate sets the "rate" field if the given value is not nil.
+func (buo *BookingUpdateOne) SetNillableRate(f *float32) *BookingUpdateOne {
+	if f != nil {
+		buo.SetRate(*f)
+	}
+	return buo
+}
+
+// AddRate adds f to the "rate" field.
+func (buo *BookingUpdateOne) AddRate(f float32) *BookingUpdateOne {
+	buo.mutation.AddRate(f)
+	return buo
+}
+
+// SetExceedRate sets the "exceed_rate" field.
+func (buo *BookingUpdateOne) SetExceedRate(f float32) *BookingUpdateOne {
+	buo.mutation.ResetExceedRate()
+	buo.mutation.SetExceedRate(f)
+	return buo
+}
+
+// SetNillableExceedRate sets the "exceed_rate" field if the given value is not nil.
+func (buo *BookingUpdateOne) SetNillableExceedRate(f *float32) *BookingUpdateOne {
+	if f != nil {
+		buo.SetExceedRate(*f)
+	}
+	return buo
+}
+
+// AddExceedRate adds f to the "exceed_rate" field.
+func (buo *BookingUpdateOne) AddExceedRate(f float32) *BookingUpdateOne {
+	buo.mutation.AddExceedRate(f)
+	return buo
+}
+
+// SetDeposit sets the "deposit" field.
+func (buo *BookingUpdateOne) SetDeposit(f float32) *BookingUpdateOne {
+	buo.mutation.ResetDeposit()
+	buo.mutation.SetDeposit(f)
+	return buo
+}
+
+// SetNillableDeposit sets the "deposit" field if the given value is not nil.
+func (buo *BookingUpdateOne) SetNillableDeposit(f *float32) *BookingUpdateOne {
+	if f != nil {
+		buo.SetDeposit(*f)
+	}
+	return buo
+}
+
+// AddDeposit adds f to the "deposit" field.
+func (buo *BookingUpdateOne) AddDeposit(f float32) *BookingUpdateOne {
+	buo.mutation.AddDeposit(f)
 	return buo
 }
 
@@ -687,6 +831,24 @@ func (buo *BookingUpdateOne) sqlSave(ctx context.Context) (_node *Booking, err e
 	}
 	if value, ok := buo.mutation.ReturnCarAt(); ok {
 		_spec.SetField(booking.FieldReturnCarAt, field.TypeTime, value)
+	}
+	if value, ok := buo.mutation.Rate(); ok {
+		_spec.SetField(booking.FieldRate, field.TypeFloat32, value)
+	}
+	if value, ok := buo.mutation.AddedRate(); ok {
+		_spec.AddField(booking.FieldRate, field.TypeFloat32, value)
+	}
+	if value, ok := buo.mutation.ExceedRate(); ok {
+		_spec.SetField(booking.FieldExceedRate, field.TypeFloat32, value)
+	}
+	if value, ok := buo.mutation.AddedExceedRate(); ok {
+		_spec.AddField(booking.FieldExceedRate, field.TypeFloat32, value)
+	}
+	if value, ok := buo.mutation.Deposit(); ok {
+		_spec.SetField(booking.FieldDeposit, field.TypeFloat32, value)
+	}
+	if value, ok := buo.mutation.AddedDeposit(); ok {
+		_spec.AddField(booking.FieldDeposit, field.TypeFloat32, value)
 	}
 	if value, ok := buo.mutation.FuelLevelAtBegin(); ok {
 		_spec.SetField(booking.FieldFuelLevelAtBegin, field.TypeFloat32, value)

@@ -1,7 +1,8 @@
-package booking
+package management
 
 import (
 	"carlord/data"
+	"carlord/ent"
 	"carlord/ent/account"
 	"carlord/ent/booking"
 	"carlord/ent/card"
@@ -12,9 +13,55 @@ import (
 	"time"
 )
 
+func (s *service) createUser(ctx *gin.Context) (int, any) {
+	var u ent.User
+	err := ctx.ShouldBindJSON(&u)
+	if err != nil {
+		return http.StatusBadRequest, err
+	}
+
+	user, err := s.client.User.Create().
+		SetAddress(u.Address).
+		SetBirthday(u.Birthday).
+		SetDriverLicenseCountry(u.DriverLicenseCountry).
+		SetDriverLicenseID(u.DriverLicenseID).
+		SetFirstName(u.FirstName).
+		SetLastName(u.LastName).
+		SetPostalCode(u.PostalCode).
+		SetTel(u.Tel).
+		Save(ctx)
+	if err != nil {
+		return http.StatusBadRequest, nil
+	}
+	return http.StatusOK, user
+}
+
+type cardBinding struct {
+	Number         string `json:"number" binding:"numeric,required"`
+	CardholderName string `json:"cardholder_name" binding:"required"`
+	ValidUntil     string `json:"valid_until" binding:"required"`
+}
+
+func (s *service) createCard(ctx *gin.Context, id int) (int, any) {
+
+	var cardInfo cardBinding
+	err := ctx.ShouldBindJSON(&cardInfo)
+	if err != nil {
+		return http.StatusBadRequest, err
+	}
+
+	card, err := s.client.Card.Create().SetNumber(cardInfo.Number).SetCardholderName(cardInfo.CardholderName).SetValidUntil(cardInfo.ValidUntil).SetOwnerID(id).Save(ctx)
+	if err != nil {
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, card
+
+}
+
 type bookStruct struct {
 	CarID     int       `json:"car_id" binding:"required"`
 	CardID    int       `json:"card_id" binding:"required"`
+	UserID    int       `json:"user_id" binding:"required"`
 	StartTime time.Time `json:"start_time" binding:"required"`
 	EndTime   time.Time `json:"end_time" binding:"required"`
 }
@@ -33,7 +80,7 @@ func (s *service) bookCar(ctx *gin.Context) (int, any) {
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
-	accountId := ctx.GetInt("id")
+	accountID := ctx.GetInt("id")
 	c, err := s.client.Car.Get(ctx, book.CarID)
 	if err != nil {
 		return http.StatusBadRequest, err
@@ -46,11 +93,11 @@ func (s *service) bookCar(ctx *gin.Context) (int, any) {
 	if !available {
 		return http.StatusForbidden, errors.New("the time is occupied")
 	}
-	accountObj := ctx.MustGet("account").(*data.Account)
-	userObj, err := accountObj.User()
+	u, err := s.client.User.Get(ctx, book.UserID)
 	if err != nil {
 		return http.StatusBadRequest, nil
 	}
+	userObj := data.NewUser(ctx, u)
 	unpaid, err := userObj.HasUnpaidBill()
 	if err != nil {
 		return http.StatusBadRequest, err
@@ -64,7 +111,7 @@ func (s *service) bookCar(ctx *gin.Context) (int, any) {
 		return http.StatusBadRequest, err
 	}
 
-	userCard, err := s.client.Card.Query().Where(card.ID(book.CardID), card.HasOwnerWith(user.HasAccountWith(account.ID(accountId)))).Only(ctx)
+	userCard, err := s.client.Card.Query().Where(card.ID(book.CardID), card.HasOwnerWith(user.HasAccountWith(account.ID(accountID)))).Only(ctx)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
@@ -87,28 +134,11 @@ func (s *service) bookCar(ctx *gin.Context) (int, any) {
 // @Success 204
 // @Router /booking/:id [delete]
 func (s *service) cancelBookingCar(ctx *gin.Context, id int) (int, any) {
-	accountID := ctx.GetInt("id")
 	_, err := s.client.Booking.Update().
-		Where(booking.And(booking.ID(id), booking.HasUserWith(user.HasAccountWith(account.ID(accountID))))).
+		Where(booking.And(booking.ID(id))).
 		SetBookingStatus(data.BookingStatusCancel).Save(ctx)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
 	return http.StatusNoContent, nil
-}
-
-// List booking godoc
-// @Tags booking
-// @Summary list booking
-// @Produce json
-// @Success 200 {object} []ent.Booking
-// @Router /booking/ [get]
-func (s *service) listBooking(ctx *gin.Context) (int, any) {
-	acc := ctx.MustGet("account").(*data.Account)
-	u, err := acc.User()
-	if err != nil {
-		return http.StatusBadRequest, err
-	}
-	b, err := u.Bookings()
-	return http.StatusOK, b
 }

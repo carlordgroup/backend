@@ -73,19 +73,6 @@ func (f CardFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 	return f(ctx, mv)
 }
 
-// The FlawFunc type is an adapter to allow the use of ordinary
-// function as Flaw mutator.
-type FlawFunc func(context.Context, *ent.FlawMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f FlawFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.FlawMutation)
-	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.FlawMutation", m)
-	}
-	return f(ctx, mv)
-}
-
 // The LocationFunc type is an adapter to allow the use of ordinary
 // function as Location mutator.
 type LocationFunc func(context.Context, *ent.LocationMutation) (ent.Value, error)

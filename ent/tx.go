@@ -22,8 +22,6 @@ type Tx struct {
 	Car *CarClient
 	// Card is the client for interacting with the Card builders.
 	Card *CardClient
-	// Flaw is the client for interacting with the Flaw builders.
-	Flaw *FlawClient
 	// Location is the client for interacting with the Location builders.
 	Location *LocationClient
 	// User is the client for interacting with the User builders.
@@ -164,7 +162,6 @@ func (tx *Tx) init() {
 	tx.Booking = NewBookingClient(tx.config)
 	tx.Car = NewCarClient(tx.config)
 	tx.Card = NewCardClient(tx.config)
-	tx.Flaw = NewFlawClient(tx.config)
 	tx.Location = NewLocationClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }

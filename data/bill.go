@@ -10,6 +10,10 @@ const (
 	BillPaid   = "paid"
 )
 
+const (
+	Rate = 5
+)
+
 type Bill struct {
 	*ent.Billing
 	ctx context.Context
@@ -35,5 +39,25 @@ func (b *Bill) Charge() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return NewCard(b.ctx, c).Pay(), nil
+	result := NewCard(b.ctx, c).Pay()
+	if !result {
+		return false, nil
+	}
+	b.Billing, err = b.Update().SetStatus(BillPaid).Save(b.ctx)
+	return true, nil
+}
+
+// Calculate the bill calculation
+func (b *Bill) Calculate() error {
+	book, err := b.QueryBooking().Only(b.ctx)
+	if err != nil {
+		return err
+	}
+	basic := float32(book.EndAt.Sub(book.StartAt).Hours()) * book.Rate
+	var compensation float32
+	if book.ReturnCarAt.Sub(book.EndAt).Hours() > 0 {
+		compensation = float32(book.ReturnCarAt.Sub(book.EndAt).Hours()) * book.ExceedRate
+	}
+	_, err = b.Update().SetBasicCost(basic).SetCompensation(compensation).SetStatus(BillUnpaid).SetDeposit(book.Deposit).Save(b.ctx)
+	return err
 }

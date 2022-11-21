@@ -21,9 +21,6 @@ type Car func(*sql.Selector)
 // Card is the predicate function for card builders.
 type Card func(*sql.Selector)
 
-// Flaw is the predicate function for flaw builders.
-type Flaw func(*sql.Selector)
-
 // Location is the predicate function for location builders.
 type Location func(*sql.Selector)
 

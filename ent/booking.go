@@ -25,6 +25,12 @@ type Booking struct {
 	EndAt time.Time `json:"end_at,omitempty"`
 	// ReturnCarAt holds the value of the "return_car_at" field.
 	ReturnCarAt *time.Time `json:"return_car_at,omitempty"`
+	// Rate holds the value of the "rate" field.
+	Rate float32 `json:"rate,omitempty"`
+	// ExceedRate holds the value of the "exceed_rate" field.
+	ExceedRate float32 `json:"exceed_rate,omitempty"`
+	// Deposit holds the value of the "deposit" field.
+	Deposit float32 `json:"deposit,omitempty"`
 	// FuelLevelAtBegin holds the value of the "fuel_level_at_begin" field.
 	FuelLevelAtBegin *float32 `json:"fuel_level_at_begin,omitempty"`
 	// FuelLevelAtEnd holds the value of the "fuel_level_at_end" field.
@@ -100,7 +106,7 @@ func (*Booking) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case booking.FieldFuelLevelAtBegin, booking.FieldFuelLevelAtEnd:
+		case booking.FieldRate, booking.FieldExceedRate, booking.FieldDeposit, booking.FieldFuelLevelAtBegin, booking.FieldFuelLevelAtEnd:
 			values[i] = new(sql.NullFloat64)
 		case booking.FieldID, booking.FieldMileageBegin, booking.FieldMileageEnd:
 			values[i] = new(sql.NullInt64)
@@ -153,6 +159,24 @@ func (b *Booking) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				b.ReturnCarAt = new(time.Time)
 				*b.ReturnCarAt = value.Time
+			}
+		case booking.FieldRate:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field rate", values[i])
+			} else if value.Valid {
+				b.Rate = float32(value.Float64)
+			}
+		case booking.FieldExceedRate:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field exceed_rate", values[i])
+			} else if value.Valid {
+				b.ExceedRate = float32(value.Float64)
+			}
+		case booking.FieldDeposit:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field deposit", values[i])
+			} else if value.Valid {
+				b.Deposit = float32(value.Float64)
 			}
 		case booking.FieldFuelLevelAtBegin:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
@@ -262,6 +286,15 @@ func (b *Booking) String() string {
 		builder.WriteString("return_car_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
+	builder.WriteString(", ")
+	builder.WriteString("rate=")
+	builder.WriteString(fmt.Sprintf("%v", b.Rate))
+	builder.WriteString(", ")
+	builder.WriteString("exceed_rate=")
+	builder.WriteString(fmt.Sprintf("%v", b.ExceedRate))
+	builder.WriteString(", ")
+	builder.WriteString("deposit=")
+	builder.WriteString(fmt.Sprintf("%v", b.Deposit))
 	builder.WriteString(", ")
 	if v := b.FuelLevelAtBegin; v != nil {
 		builder.WriteString("fuel_level_at_begin=")

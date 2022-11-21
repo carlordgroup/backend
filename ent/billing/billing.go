@@ -9,6 +9,14 @@ const (
 	FieldID = "id"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
+	// FieldBasicCost holds the string denoting the basic_cost field in the database.
+	FieldBasicCost = "basic_cost"
+	// FieldFuelCost holds the string denoting the fuel_cost field in the database.
+	FieldFuelCost = "fuel_cost"
+	// FieldCompensation holds the string denoting the compensation field in the database.
+	FieldCompensation = "compensation"
+	// FieldDeposit holds the string denoting the deposit field in the database.
+	FieldDeposit = "deposit"
 	// EdgeBooking holds the string denoting the booking edge name in mutations.
 	EdgeBooking = "booking"
 	// EdgeCard holds the string denoting the card edge name in mutations.
@@ -44,6 +52,10 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldStatus,
+	FieldBasicCost,
+	FieldFuelCost,
+	FieldCompensation,
+	FieldDeposit,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "billings"
@@ -71,4 +83,12 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultStatus holds the default value on creation for the "status" field.
 	DefaultStatus string
+	// DefaultBasicCost holds the default value on creation for the "basic_cost" field.
+	DefaultBasicCost float32
+	// DefaultFuelCost holds the default value on creation for the "fuel_cost" field.
+	DefaultFuelCost float32
+	// DefaultCompensation holds the default value on creation for the "compensation" field.
+	DefaultCompensation float32
+	// DefaultDeposit holds the default value on creation for the "deposit" field.
+	DefaultDeposit float32
 )

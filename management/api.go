@@ -38,4 +38,11 @@ func (s *service) RegisterRouter(group gin.IRouter, auth Authenticate) {
 	g.POST("/:id", web.ID(s.updateCar))
 	g.DELETE("/:id", web.ID(s.deleteCar))
 
+	g.Use(auth.MustLogin(), auth.GetAccount(), auth.MustAdmin())
+	g = group.Group("/offline")
+	g.POST("/user", web.W(s.createUser))
+	g.POST("/card/:id", web.ID(s.createCard))
+	g.POST("/book", web.W(s.bookCar))
+	g.DELETE("/book/:id", web.ID(s.cancelBookingCar))
+
 }

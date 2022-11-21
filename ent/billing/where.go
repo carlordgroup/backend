@@ -87,6 +87,34 @@ func Status(v string) predicate.Billing {
 	})
 }
 
+// BasicCost applies equality check predicate on the "basic_cost" field. It's identical to BasicCostEQ.
+func BasicCost(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldBasicCost), v))
+	})
+}
+
+// FuelCost applies equality check predicate on the "fuel_cost" field. It's identical to FuelCostEQ.
+func FuelCost(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldFuelCost), v))
+	})
+}
+
+// Compensation applies equality check predicate on the "compensation" field. It's identical to CompensationEQ.
+func Compensation(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldCompensation), v))
+	})
+}
+
+// Deposit applies equality check predicate on the "deposit" field. It's identical to DepositEQ.
+func Deposit(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldDeposit), v))
+	})
+}
+
 // StatusEQ applies the EQ predicate on the "status" field.
 func StatusEQ(v string) predicate.Billing {
 	return predicate.Billing(func(s *sql.Selector) {
@@ -183,6 +211,262 @@ func StatusEqualFold(v string) predicate.Billing {
 func StatusContainsFold(v string) predicate.Billing {
 	return predicate.Billing(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldStatus), v))
+	})
+}
+
+// BasicCostEQ applies the EQ predicate on the "basic_cost" field.
+func BasicCostEQ(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldBasicCost), v))
+	})
+}
+
+// BasicCostNEQ applies the NEQ predicate on the "basic_cost" field.
+func BasicCostNEQ(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldBasicCost), v))
+	})
+}
+
+// BasicCostIn applies the In predicate on the "basic_cost" field.
+func BasicCostIn(vs ...float32) predicate.Billing {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldBasicCost), v...))
+	})
+}
+
+// BasicCostNotIn applies the NotIn predicate on the "basic_cost" field.
+func BasicCostNotIn(vs ...float32) predicate.Billing {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldBasicCost), v...))
+	})
+}
+
+// BasicCostGT applies the GT predicate on the "basic_cost" field.
+func BasicCostGT(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldBasicCost), v))
+	})
+}
+
+// BasicCostGTE applies the GTE predicate on the "basic_cost" field.
+func BasicCostGTE(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldBasicCost), v))
+	})
+}
+
+// BasicCostLT applies the LT predicate on the "basic_cost" field.
+func BasicCostLT(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldBasicCost), v))
+	})
+}
+
+// BasicCostLTE applies the LTE predicate on the "basic_cost" field.
+func BasicCostLTE(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldBasicCost), v))
+	})
+}
+
+// FuelCostEQ applies the EQ predicate on the "fuel_cost" field.
+func FuelCostEQ(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldFuelCost), v))
+	})
+}
+
+// FuelCostNEQ applies the NEQ predicate on the "fuel_cost" field.
+func FuelCostNEQ(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldFuelCost), v))
+	})
+}
+
+// FuelCostIn applies the In predicate on the "fuel_cost" field.
+func FuelCostIn(vs ...float32) predicate.Billing {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldFuelCost), v...))
+	})
+}
+
+// FuelCostNotIn applies the NotIn predicate on the "fuel_cost" field.
+func FuelCostNotIn(vs ...float32) predicate.Billing {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldFuelCost), v...))
+	})
+}
+
+// FuelCostGT applies the GT predicate on the "fuel_cost" field.
+func FuelCostGT(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldFuelCost), v))
+	})
+}
+
+// FuelCostGTE applies the GTE predicate on the "fuel_cost" field.
+func FuelCostGTE(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldFuelCost), v))
+	})
+}
+
+// FuelCostLT applies the LT predicate on the "fuel_cost" field.
+func FuelCostLT(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldFuelCost), v))
+	})
+}
+
+// FuelCostLTE applies the LTE predicate on the "fuel_cost" field.
+func FuelCostLTE(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldFuelCost), v))
+	})
+}
+
+// CompensationEQ applies the EQ predicate on the "compensation" field.
+func CompensationEQ(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldCompensation), v))
+	})
+}
+
+// CompensationNEQ applies the NEQ predicate on the "compensation" field.
+func CompensationNEQ(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldCompensation), v))
+	})
+}
+
+// CompensationIn applies the In predicate on the "compensation" field.
+func CompensationIn(vs ...float32) predicate.Billing {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldCompensation), v...))
+	})
+}
+
+// CompensationNotIn applies the NotIn predicate on the "compensation" field.
+func CompensationNotIn(vs ...float32) predicate.Billing {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldCompensation), v...))
+	})
+}
+
+// CompensationGT applies the GT predicate on the "compensation" field.
+func CompensationGT(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldCompensation), v))
+	})
+}
+
+// CompensationGTE applies the GTE predicate on the "compensation" field.
+func CompensationGTE(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldCompensation), v))
+	})
+}
+
+// CompensationLT applies the LT predicate on the "compensation" field.
+func CompensationLT(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldCompensation), v))
+	})
+}
+
+// CompensationLTE applies the LTE predicate on the "compensation" field.
+func CompensationLTE(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldCompensation), v))
+	})
+}
+
+// DepositEQ applies the EQ predicate on the "deposit" field.
+func DepositEQ(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldDeposit), v))
+	})
+}
+
+// DepositNEQ applies the NEQ predicate on the "deposit" field.
+func DepositNEQ(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldDeposit), v))
+	})
+}
+
+// DepositIn applies the In predicate on the "deposit" field.
+func DepositIn(vs ...float32) predicate.Billing {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldDeposit), v...))
+	})
+}
+
+// DepositNotIn applies the NotIn predicate on the "deposit" field.
+func DepositNotIn(vs ...float32) predicate.Billing {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldDeposit), v...))
+	})
+}
+
+// DepositGT applies the GT predicate on the "deposit" field.
+func DepositGT(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldDeposit), v))
+	})
+}
+
+// DepositGTE applies the GTE predicate on the "deposit" field.
+func DepositGTE(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldDeposit), v))
+	})
+}
+
+// DepositLT applies the LT predicate on the "deposit" field.
+func DepositLT(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldDeposit), v))
+	})
+}
+
+// DepositLTE applies the LTE predicate on the "deposit" field.
+func DepositLTE(v float32) predicate.Billing {
+	return predicate.Billing(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldDeposit), v))
 	})
 }
 

@@ -2,6 +2,7 @@ package card
 
 import (
 	"carlord/ent"
+	"carlord/ent/account"
 	"carlord/ent/card"
 	"carlord/ent/user"
 	"carlord/web"
@@ -40,7 +41,7 @@ func (s *service) RegisterRouter(group gin.IRouter, auth Authenticate) {
 // @Success 200 {object} []ent.Card
 // @Router /card/ [get]
 func (s *service) get(ctx *gin.Context) (int, any) {
-	cards, err := s.client.Card.Query().Where(card.HasOwnerWith(user.ID(ctx.MustGet("id").(int)))).All(ctx)
+	cards, err := s.client.Card.Query().Where(card.HasOwnerWith(user.HasAccountWith(account.ID(ctx.GetInt("id"))))).All(ctx)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
@@ -118,7 +119,7 @@ func (s *service) create(ctx *gin.Context) (int, any) {
 	newCard, err := s.client.Card.Create().SetNumber(cardInfo.Number).
 		SetCardholderName(cardInfo.CardholderName).
 		SetValidUntil(cardInfo.ValidUntil).
-		SetOwnerID(ctx.MustGet("id").(int)).Save(ctx)
+		SetOwnerID(s.client.User.Query().Where(user.HasAccountWith(account.ID(ctx.GetInt("id")))).OnlyIDX(ctx)).Save(ctx)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
