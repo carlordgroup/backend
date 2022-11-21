@@ -89,7 +89,11 @@ func (s *service) register(ctx *gin.Context) (int, any) {
 		tx.Rollback()
 		return http.StatusBadRequest, err
 	}
-
+	_, err = tx.User.Create().SetAccountID(a.ID).Save(ctx)
+	if err != nil {
+		tx.Rollback()
+		return http.StatusBadRequest, err
+	}
 	err = tx.Commit()
 	if err != nil {
 		tx.Rollback()
