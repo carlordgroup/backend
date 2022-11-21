@@ -29,8 +29,6 @@ const (
 	FieldBirthday = "birthday"
 	// EdgeCard holds the string denoting the card edge name in mutations.
 	EdgeCard = "card"
-	// EdgeNoteFlaws holds the string denoting the note_flaws edge name in mutations.
-	EdgeNoteFlaws = "note_flaws"
 	// EdgeAccount holds the string denoting the account edge name in mutations.
 	EdgeAccount = "account"
 	// EdgeBooking holds the string denoting the booking edge name in mutations.
@@ -46,13 +44,6 @@ const (
 	CardInverseTable = "cards"
 	// CardColumn is the table column denoting the card relation/edge.
 	CardColumn = "user_card"
-	// NoteFlawsTable is the table that holds the note_flaws relation/edge.
-	NoteFlawsTable = "flaws"
-	// NoteFlawsInverseTable is the table name for the Flaw entity.
-	// It exists in this package in order to avoid circular dependency with the "flaw" package.
-	NoteFlawsInverseTable = "flaws"
-	// NoteFlawsColumn is the table column denoting the note_flaws relation/edge.
-	NoteFlawsColumn = "user_note_flaws"
 	// AccountTable is the table that holds the account relation/edge.
 	AccountTable = "users"
 	// AccountInverseTable is the table name for the Account entity.

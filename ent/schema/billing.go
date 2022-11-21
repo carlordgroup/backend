@@ -15,6 +15,10 @@ type Billing struct {
 func (Billing) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("status").Default("unpaid"),
+		field.Float32("basic_cost").Default(0),
+		field.Float32("fuel_cost").Default(0),
+		field.Float32("compensation").Default(0),
+		field.Float32("deposit").Default(0),
 	}
 }
 

@@ -8,7 +8,6 @@ import (
 	"carlord/ent/booking"
 	"carlord/ent/car"
 	"carlord/ent/card"
-	"carlord/ent/flaw"
 	"carlord/ent/location"
 	"carlord/ent/user"
 	"context"
@@ -43,7 +42,6 @@ func columnChecker(table string) func(string) error {
 		booking.Table:  booking.ValidColumn,
 		car.Table:      car.ValidColumn,
 		card.Table:     card.ValidColumn,
-		flaw.Table:     flaw.ValidColumn,
 		location.Table: location.ValidColumn,
 		user.Table:     user.ValidColumn,
 	}

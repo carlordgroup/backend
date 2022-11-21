@@ -25,6 +25,10 @@ var (
 	BillingsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "status", Type: field.TypeString, Default: "unpaid"},
+		{Name: "basic_cost", Type: field.TypeFloat32, Default: 0},
+		{Name: "fuel_cost", Type: field.TypeFloat32, Default: 0},
+		{Name: "compensation", Type: field.TypeFloat32, Default: 0},
+		{Name: "deposit", Type: field.TypeFloat32, Default: 0},
 		{Name: "billing_card", Type: field.TypeInt, Nullable: true},
 		{Name: "billing_user", Type: field.TypeInt, Nullable: true},
 	}
@@ -36,13 +40,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "billings_cards_card",
-				Columns:    []*schema.Column{BillingsColumns[2]},
+				Columns:    []*schema.Column{BillingsColumns[6]},
 				RefColumns: []*schema.Column{CardsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "billings_users_user",
-				Columns:    []*schema.Column{BillingsColumns[3]},
+				Columns:    []*schema.Column{BillingsColumns[7]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -54,6 +58,9 @@ var (
 		{Name: "start_at", Type: field.TypeTime},
 		{Name: "end_at", Type: field.TypeTime},
 		{Name: "return_car_at", Type: field.TypeTime},
+		{Name: "rate", Type: field.TypeFloat32, Default: 5},
+		{Name: "exceed_rate", Type: field.TypeFloat32, Default: 10},
+		{Name: "deposit", Type: field.TypeFloat32, Default: 0},
 		{Name: "fuel_level_at_begin", Type: field.TypeFloat32},
 		{Name: "fuel_level_at_end", Type: field.TypeFloat32},
 		{Name: "mileage_begin", Type: field.TypeInt},
@@ -71,19 +78,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "bookings_billings_booking",
-				Columns:    []*schema.Column{BookingsColumns[9]},
+				Columns:    []*schema.Column{BookingsColumns[12]},
 				RefColumns: []*schema.Column{BillingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "bookings_users_user",
-				Columns:    []*schema.Column{BookingsColumns[10]},
+				Columns:    []*schema.Column{BookingsColumns[13]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "bookings_cars_car",
-				Columns:    []*schema.Column{BookingsColumns[11]},
+				Columns:    []*schema.Column{BookingsColumns[14]},
 				RefColumns: []*schema.Column{CarsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -142,25 +149,6 @@ var (
 			},
 		},
 	}
-	// FlawsColumns holds the columns for the "flaws" table.
-	FlawsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "user_note_flaws", Type: field.TypeInt, Nullable: true},
-	}
-	// FlawsTable holds the schema information for the "flaws" table.
-	FlawsTable = &schema.Table{
-		Name:       "flaws",
-		Columns:    FlawsColumns,
-		PrimaryKey: []*schema.Column{FlawsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "flaws_users_note_flaws",
-				Columns:    []*schema.Column{FlawsColumns[1]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
-	}
 	// LocationsColumns holds the columns for the "locations" table.
 	LocationsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -194,7 +182,7 @@ var (
 		{Name: "driver_license_id", Type: field.TypeString, Default: ""},
 		{Name: "driver_license_country", Type: field.TypeString, Default: ""},
 		{Name: "birthday", Type: field.TypeTime},
-		{Name: "account_user", Type: field.TypeInt, Unique: true},
+		{Name: "account_user", Type: field.TypeInt, Unique: true, Nullable: true},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
@@ -206,7 +194,7 @@ var (
 				Symbol:     "users_accounts_user",
 				Columns:    []*schema.Column{UsersColumns[9]},
 				RefColumns: []*schema.Column{AccountsColumns[0]},
-				OnDelete:   schema.NoAction,
+				OnDelete:   schema.SetNull,
 			},
 		},
 	}
@@ -217,7 +205,6 @@ var (
 		BookingsTable,
 		CarsTable,
 		CardsTable,
-		FlawsTable,
 		LocationsTable,
 		UsersTable,
 	}
@@ -231,7 +218,6 @@ func init() {
 	BookingsTable.ForeignKeys[2].RefTable = CarsTable
 	CarsTable.ForeignKeys[0].RefTable = LocationsTable
 	CardsTable.ForeignKeys[0].RefTable = UsersTable
-	FlawsTable.ForeignKeys[0].RefTable = UsersTable
 	LocationsTable.ForeignKeys[0].RefTable = CarsTable
 	UsersTable.ForeignKeys[0].RefTable = AccountsTable
 }

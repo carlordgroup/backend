@@ -7,7 +7,6 @@ import (
 	"carlord/ent/billing"
 	"carlord/ent/booking"
 	"carlord/ent/card"
-	"carlord/ent/flaw"
 	"carlord/ent/user"
 	"context"
 	"errors"
@@ -137,12 +136,6 @@ func (uc *UserCreate) SetNillableBirthday(t *time.Time) *UserCreate {
 	return uc
 }
 
-// SetID sets the "id" field.
-func (uc *UserCreate) SetID(i int) *UserCreate {
-	uc.mutation.SetID(i)
-	return uc
-}
-
 // AddCardIDs adds the "card" edge to the Card entity by IDs.
 func (uc *UserCreate) AddCardIDs(ids ...int) *UserCreate {
 	uc.mutation.AddCardIDs(ids...)
@@ -158,24 +151,17 @@ func (uc *UserCreate) AddCard(c ...*Card) *UserCreate {
 	return uc.AddCardIDs(ids...)
 }
 
-// AddNoteFlawIDs adds the "note_flaws" edge to the Flaw entity by IDs.
-func (uc *UserCreate) AddNoteFlawIDs(ids ...int) *UserCreate {
-	uc.mutation.AddNoteFlawIDs(ids...)
-	return uc
-}
-
-// AddNoteFlaws adds the "note_flaws" edges to the Flaw entity.
-func (uc *UserCreate) AddNoteFlaws(f ...*Flaw) *UserCreate {
-	ids := make([]int, len(f))
-	for i := range f {
-		ids[i] = f[i].ID
-	}
-	return uc.AddNoteFlawIDs(ids...)
-}
-
 // SetAccountID sets the "account" edge to the Account entity by ID.
 func (uc *UserCreate) SetAccountID(id int) *UserCreate {
 	uc.mutation.SetAccountID(id)
+	return uc
+}
+
+// SetNillableAccountID sets the "account" edge to the Account entity by ID if the given value is not nil.
+func (uc *UserCreate) SetNillableAccountID(id *int) *UserCreate {
+	if id != nil {
+		uc = uc.SetAccountID(*id)
+	}
 	return uc
 }
 
@@ -351,9 +337,6 @@ func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.Birthday(); !ok {
 		return &ValidationError{Name: "birthday", err: errors.New(`ent: missing required field "User.birthday"`)}
 	}
-	if _, ok := uc.mutation.AccountID(); !ok {
-		return &ValidationError{Name: "account", err: errors.New(`ent: missing required edge "User.account"`)}
-	}
 	return nil
 }
 
@@ -365,10 +348,8 @@ func (uc *UserCreate) sqlSave(ctx context.Context) (*User, error) {
 		}
 		return nil, err
 	}
-	if _spec.ID.Value != _node.ID {
-		id := _spec.ID.Value.(int64)
-		_node.ID = int(id)
-	}
+	id := _spec.ID.Value.(int64)
+	_node.ID = int(id)
 	return _node, nil
 }
 
@@ -383,10 +364,6 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
-	if id, ok := uc.mutation.ID(); ok {
-		_node.ID = id
-		_spec.ID.Value = id
-	}
 	if value, ok := uc.mutation.FirstName(); ok {
 		_spec.SetField(user.FieldFirstName, field.TypeString, value)
 		_node.FirstName = value
@@ -430,25 +407,6 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: card.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := uc.mutation.NoteFlawsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.NoteFlawsTable,
-			Columns: []string{user.NoteFlawsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: flaw.FieldID,
 				},
 			},
 		}
@@ -559,7 +517,7 @@ func (ucb *UserCreateBulk) Save(ctx context.Context) ([]*User, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil && nodes[i].ID == 0 {
+				if specs[i].ID.Value != nil {
 					id := specs[i].ID.Value.(int64)
 					nodes[i].ID = int(id)
 				}

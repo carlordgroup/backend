@@ -20,6 +20,14 @@ type Billing struct {
 	ID int `json:"id,omitempty"`
 	// Status holds the value of the "status" field.
 	Status string `json:"status,omitempty"`
+	// BasicCost holds the value of the "basic_cost" field.
+	BasicCost float32 `json:"basic_cost,omitempty"`
+	// FuelCost holds the value of the "fuel_cost" field.
+	FuelCost float32 `json:"fuel_cost,omitempty"`
+	// Compensation holds the value of the "compensation" field.
+	Compensation float32 `json:"compensation,omitempty"`
+	// Deposit holds the value of the "deposit" field.
+	Deposit float32 `json:"deposit,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the BillingQuery when eager-loading is set.
 	Edges        BillingEdges `json:"edges"`
@@ -84,6 +92,8 @@ func (*Billing) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case billing.FieldBasicCost, billing.FieldFuelCost, billing.FieldCompensation, billing.FieldDeposit:
+			values[i] = new(sql.NullFloat64)
 		case billing.FieldID:
 			values[i] = new(sql.NullInt64)
 		case billing.FieldStatus:
@@ -118,6 +128,30 @@ func (b *Billing) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
 				b.Status = value.String
+			}
+		case billing.FieldBasicCost:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field basic_cost", values[i])
+			} else if value.Valid {
+				b.BasicCost = float32(value.Float64)
+			}
+		case billing.FieldFuelCost:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field fuel_cost", values[i])
+			} else if value.Valid {
+				b.FuelCost = float32(value.Float64)
+			}
+		case billing.FieldCompensation:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field compensation", values[i])
+			} else if value.Valid {
+				b.Compensation = float32(value.Float64)
+			}
+		case billing.FieldDeposit:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field deposit", values[i])
+			} else if value.Valid {
+				b.Deposit = float32(value.Float64)
 			}
 		case billing.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -178,6 +212,18 @@ func (b *Billing) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", b.ID))
 	builder.WriteString("status=")
 	builder.WriteString(b.Status)
+	builder.WriteString(", ")
+	builder.WriteString("basic_cost=")
+	builder.WriteString(fmt.Sprintf("%v", b.BasicCost))
+	builder.WriteString(", ")
+	builder.WriteString("fuel_cost=")
+	builder.WriteString(fmt.Sprintf("%v", b.FuelCost))
+	builder.WriteString(", ")
+	builder.WriteString("compensation=")
+	builder.WriteString(fmt.Sprintf("%v", b.Compensation))
+	builder.WriteString(", ")
+	builder.WriteString("deposit=")
+	builder.WriteString(fmt.Sprintf("%v", b.Deposit))
 	builder.WriteByte(')')
 	return builder.String()
 }

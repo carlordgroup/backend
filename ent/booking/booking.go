@@ -13,6 +13,12 @@ const (
 	FieldEndAt = "end_at"
 	// FieldReturnCarAt holds the string denoting the return_car_at field in the database.
 	FieldReturnCarAt = "return_car_at"
+	// FieldRate holds the string denoting the rate field in the database.
+	FieldRate = "rate"
+	// FieldExceedRate holds the string denoting the exceed_rate field in the database.
+	FieldExceedRate = "exceed_rate"
+	// FieldDeposit holds the string denoting the deposit field in the database.
+	FieldDeposit = "deposit"
 	// FieldFuelLevelAtBegin holds the string denoting the fuel_level_at_begin field in the database.
 	FieldFuelLevelAtBegin = "fuel_level_at_begin"
 	// FieldFuelLevelAtEnd holds the string denoting the fuel_level_at_end field in the database.
@@ -60,6 +66,9 @@ var Columns = []string{
 	FieldStartAt,
 	FieldEndAt,
 	FieldReturnCarAt,
+	FieldRate,
+	FieldExceedRate,
+	FieldDeposit,
 	FieldFuelLevelAtBegin,
 	FieldFuelLevelAtEnd,
 	FieldMileageBegin,
@@ -89,3 +98,12 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultRate holds the default value on creation for the "rate" field.
+	DefaultRate float32
+	// DefaultExceedRate holds the default value on creation for the "exceed_rate" field.
+	DefaultExceedRate float32
+	// DefaultDeposit holds the default value on creation for the "deposit" field.
+	DefaultDeposit float32
+)

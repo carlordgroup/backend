@@ -36,6 +36,62 @@ func (bc *BillingCreate) SetNillableStatus(s *string) *BillingCreate {
 	return bc
 }
 
+// SetBasicCost sets the "basic_cost" field.
+func (bc *BillingCreate) SetBasicCost(f float32) *BillingCreate {
+	bc.mutation.SetBasicCost(f)
+	return bc
+}
+
+// SetNillableBasicCost sets the "basic_cost" field if the given value is not nil.
+func (bc *BillingCreate) SetNillableBasicCost(f *float32) *BillingCreate {
+	if f != nil {
+		bc.SetBasicCost(*f)
+	}
+	return bc
+}
+
+// SetFuelCost sets the "fuel_cost" field.
+func (bc *BillingCreate) SetFuelCost(f float32) *BillingCreate {
+	bc.mutation.SetFuelCost(f)
+	return bc
+}
+
+// SetNillableFuelCost sets the "fuel_cost" field if the given value is not nil.
+func (bc *BillingCreate) SetNillableFuelCost(f *float32) *BillingCreate {
+	if f != nil {
+		bc.SetFuelCost(*f)
+	}
+	return bc
+}
+
+// SetCompensation sets the "compensation" field.
+func (bc *BillingCreate) SetCompensation(f float32) *BillingCreate {
+	bc.mutation.SetCompensation(f)
+	return bc
+}
+
+// SetNillableCompensation sets the "compensation" field if the given value is not nil.
+func (bc *BillingCreate) SetNillableCompensation(f *float32) *BillingCreate {
+	if f != nil {
+		bc.SetCompensation(*f)
+	}
+	return bc
+}
+
+// SetDeposit sets the "deposit" field.
+func (bc *BillingCreate) SetDeposit(f float32) *BillingCreate {
+	bc.mutation.SetDeposit(f)
+	return bc
+}
+
+// SetNillableDeposit sets the "deposit" field if the given value is not nil.
+func (bc *BillingCreate) SetNillableDeposit(f *float32) *BillingCreate {
+	if f != nil {
+		bc.SetDeposit(*f)
+	}
+	return bc
+}
+
 // SetBookingID sets the "booking" edge to the Booking entity by ID.
 func (bc *BillingCreate) SetBookingID(id int) *BillingCreate {
 	bc.mutation.SetBookingID(id)
@@ -166,12 +222,40 @@ func (bc *BillingCreate) defaults() {
 		v := billing.DefaultStatus
 		bc.mutation.SetStatus(v)
 	}
+	if _, ok := bc.mutation.BasicCost(); !ok {
+		v := billing.DefaultBasicCost
+		bc.mutation.SetBasicCost(v)
+	}
+	if _, ok := bc.mutation.FuelCost(); !ok {
+		v := billing.DefaultFuelCost
+		bc.mutation.SetFuelCost(v)
+	}
+	if _, ok := bc.mutation.Compensation(); !ok {
+		v := billing.DefaultCompensation
+		bc.mutation.SetCompensation(v)
+	}
+	if _, ok := bc.mutation.Deposit(); !ok {
+		v := billing.DefaultDeposit
+		bc.mutation.SetDeposit(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
 func (bc *BillingCreate) check() error {
 	if _, ok := bc.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Billing.status"`)}
+	}
+	if _, ok := bc.mutation.BasicCost(); !ok {
+		return &ValidationError{Name: "basic_cost", err: errors.New(`ent: missing required field "Billing.basic_cost"`)}
+	}
+	if _, ok := bc.mutation.FuelCost(); !ok {
+		return &ValidationError{Name: "fuel_cost", err: errors.New(`ent: missing required field "Billing.fuel_cost"`)}
+	}
+	if _, ok := bc.mutation.Compensation(); !ok {
+		return &ValidationError{Name: "compensation", err: errors.New(`ent: missing required field "Billing.compensation"`)}
+	}
+	if _, ok := bc.mutation.Deposit(); !ok {
+		return &ValidationError{Name: "deposit", err: errors.New(`ent: missing required field "Billing.deposit"`)}
 	}
 	if _, ok := bc.mutation.BookingID(); !ok {
 		return &ValidationError{Name: "booking", err: errors.New(`ent: missing required edge "Billing.booking"`)}
@@ -206,6 +290,22 @@ func (bc *BillingCreate) createSpec() (*Billing, *sqlgraph.CreateSpec) {
 	if value, ok := bc.mutation.Status(); ok {
 		_spec.SetField(billing.FieldStatus, field.TypeString, value)
 		_node.Status = value
+	}
+	if value, ok := bc.mutation.BasicCost(); ok {
+		_spec.SetField(billing.FieldBasicCost, field.TypeFloat32, value)
+		_node.BasicCost = value
+	}
+	if value, ok := bc.mutation.FuelCost(); ok {
+		_spec.SetField(billing.FieldFuelCost, field.TypeFloat32, value)
+		_node.FuelCost = value
+	}
+	if value, ok := bc.mutation.Compensation(); ok {
+		_spec.SetField(billing.FieldCompensation, field.TypeFloat32, value)
+		_node.Compensation = value
+	}
+	if value, ok := bc.mutation.Deposit(); ok {
+		_spec.SetField(billing.FieldDeposit, field.TypeFloat32, value)
+		_node.Deposit = value
 	}
 	if nodes := bc.mutation.BookingIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

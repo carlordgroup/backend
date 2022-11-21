@@ -29,7 +29,6 @@ type hooks struct {
 	Booking  []ent.Hook
 	Car      []ent.Hook
 	Card     []ent.Hook
-	Flaw     []ent.Hook
 	Location []ent.Hook
 	User     []ent.Hook
 }

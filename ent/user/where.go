@@ -922,34 +922,6 @@ func HasCardWith(preds ...predicate.Card) predicate.User {
 	})
 }
 
-// HasNoteFlaws applies the HasEdge predicate on the "note_flaws" edge.
-func HasNoteFlaws() predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(NoteFlawsTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, NoteFlawsTable, NoteFlawsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasNoteFlawsWith applies the HasEdge predicate on the "note_flaws" edge with a given conditions (other predicates).
-func HasNoteFlawsWith(preds ...predicate.Flaw) predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(NoteFlawsInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, NoteFlawsTable, NoteFlawsColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasAccount applies the HasEdge predicate on the "account" edge.
 func HasAccount() predicate.User {
 	return predicate.User(func(s *sql.Selector) {

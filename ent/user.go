@@ -43,8 +43,6 @@ type User struct {
 type UserEdges struct {
 	// Card holds the value of the card edge.
 	Card []*Card `json:"cards"`
-	// NoteFlaws holds the value of the note_flaws edge.
-	NoteFlaws []*Flaw `json:"flaws"`
 	// Account holds the value of the account edge.
 	Account *Account `json:"account,omitempty"`
 	// Booking holds the value of the booking edge.
@@ -53,7 +51,7 @@ type UserEdges struct {
 	Bill []*Billing `json:"bill,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [4]bool
 }
 
 // CardOrErr returns the Card value or an error if the edge
@@ -65,19 +63,10 @@ func (e UserEdges) CardOrErr() ([]*Card, error) {
 	return nil, &NotLoadedError{edge: "card"}
 }
 
-// NoteFlawsOrErr returns the NoteFlaws value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) NoteFlawsOrErr() ([]*Flaw, error) {
-	if e.loadedTypes[1] {
-		return e.NoteFlaws, nil
-	}
-	return nil, &NotLoadedError{edge: "note_flaws"}
-}
-
 // AccountOrErr returns the Account value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e UserEdges) AccountOrErr() (*Account, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		if e.Account == nil {
 			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: account.Label}
@@ -90,7 +79,7 @@ func (e UserEdges) AccountOrErr() (*Account, error) {
 // BookingOrErr returns the Booking value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) BookingOrErr() ([]*Booking, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[2] {
 		return e.Booking, nil
 	}
 	return nil, &NotLoadedError{edge: "booking"}
@@ -99,7 +88,7 @@ func (e UserEdges) BookingOrErr() ([]*Booking, error) {
 // BillOrErr returns the Bill value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) BillOrErr() ([]*Billing, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[3] {
 		return e.Bill, nil
 	}
 	return nil, &NotLoadedError{edge: "bill"}
@@ -202,11 +191,6 @@ func (u *User) assignValues(columns []string, values []any) error {
 // QueryCard queries the "card" edge of the User entity.
 func (u *User) QueryCard() *CardQuery {
 	return (&UserClient{config: u.config}).QueryCard(u)
-}
-
-// QueryNoteFlaws queries the "note_flaws" edge of the User entity.
-func (u *User) QueryNoteFlaws() *FlawQuery {
-	return (&UserClient{config: u.config}).QueryNoteFlaws(u)
 }
 
 // QueryAccount queries the "account" edge of the User entity.

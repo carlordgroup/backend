@@ -44,6 +44,90 @@ func (bu *BillingUpdate) SetNillableStatus(s *string) *BillingUpdate {
 	return bu
 }
 
+// SetBasicCost sets the "basic_cost" field.
+func (bu *BillingUpdate) SetBasicCost(f float32) *BillingUpdate {
+	bu.mutation.ResetBasicCost()
+	bu.mutation.SetBasicCost(f)
+	return bu
+}
+
+// SetNillableBasicCost sets the "basic_cost" field if the given value is not nil.
+func (bu *BillingUpdate) SetNillableBasicCost(f *float32) *BillingUpdate {
+	if f != nil {
+		bu.SetBasicCost(*f)
+	}
+	return bu
+}
+
+// AddBasicCost adds f to the "basic_cost" field.
+func (bu *BillingUpdate) AddBasicCost(f float32) *BillingUpdate {
+	bu.mutation.AddBasicCost(f)
+	return bu
+}
+
+// SetFuelCost sets the "fuel_cost" field.
+func (bu *BillingUpdate) SetFuelCost(f float32) *BillingUpdate {
+	bu.mutation.ResetFuelCost()
+	bu.mutation.SetFuelCost(f)
+	return bu
+}
+
+// SetNillableFuelCost sets the "fuel_cost" field if the given value is not nil.
+func (bu *BillingUpdate) SetNillableFuelCost(f *float32) *BillingUpdate {
+	if f != nil {
+		bu.SetFuelCost(*f)
+	}
+	return bu
+}
+
+// AddFuelCost adds f to the "fuel_cost" field.
+func (bu *BillingUpdate) AddFuelCost(f float32) *BillingUpdate {
+	bu.mutation.AddFuelCost(f)
+	return bu
+}
+
+// SetCompensation sets the "compensation" field.
+func (bu *BillingUpdate) SetCompensation(f float32) *BillingUpdate {
+	bu.mutation.ResetCompensation()
+	bu.mutation.SetCompensation(f)
+	return bu
+}
+
+// SetNillableCompensation sets the "compensation" field if the given value is not nil.
+func (bu *BillingUpdate) SetNillableCompensation(f *float32) *BillingUpdate {
+	if f != nil {
+		bu.SetCompensation(*f)
+	}
+	return bu
+}
+
+// AddCompensation adds f to the "compensation" field.
+func (bu *BillingUpdate) AddCompensation(f float32) *BillingUpdate {
+	bu.mutation.AddCompensation(f)
+	return bu
+}
+
+// SetDeposit sets the "deposit" field.
+func (bu *BillingUpdate) SetDeposit(f float32) *BillingUpdate {
+	bu.mutation.ResetDeposit()
+	bu.mutation.SetDeposit(f)
+	return bu
+}
+
+// SetNillableDeposit sets the "deposit" field if the given value is not nil.
+func (bu *BillingUpdate) SetNillableDeposit(f *float32) *BillingUpdate {
+	if f != nil {
+		bu.SetDeposit(*f)
+	}
+	return bu
+}
+
+// AddDeposit adds f to the "deposit" field.
+func (bu *BillingUpdate) AddDeposit(f float32) *BillingUpdate {
+	bu.mutation.AddDeposit(f)
+	return bu
+}
+
 // SetBookingID sets the "booking" edge to the Booking entity by ID.
 func (bu *BillingUpdate) SetBookingID(id int) *BillingUpdate {
 	bu.mutation.SetBookingID(id)
@@ -205,6 +289,30 @@ func (bu *BillingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := bu.mutation.Status(); ok {
 		_spec.SetField(billing.FieldStatus, field.TypeString, value)
 	}
+	if value, ok := bu.mutation.BasicCost(); ok {
+		_spec.SetField(billing.FieldBasicCost, field.TypeFloat32, value)
+	}
+	if value, ok := bu.mutation.AddedBasicCost(); ok {
+		_spec.AddField(billing.FieldBasicCost, field.TypeFloat32, value)
+	}
+	if value, ok := bu.mutation.FuelCost(); ok {
+		_spec.SetField(billing.FieldFuelCost, field.TypeFloat32, value)
+	}
+	if value, ok := bu.mutation.AddedFuelCost(); ok {
+		_spec.AddField(billing.FieldFuelCost, field.TypeFloat32, value)
+	}
+	if value, ok := bu.mutation.Compensation(); ok {
+		_spec.SetField(billing.FieldCompensation, field.TypeFloat32, value)
+	}
+	if value, ok := bu.mutation.AddedCompensation(); ok {
+		_spec.AddField(billing.FieldCompensation, field.TypeFloat32, value)
+	}
+	if value, ok := bu.mutation.Deposit(); ok {
+		_spec.SetField(billing.FieldDeposit, field.TypeFloat32, value)
+	}
+	if value, ok := bu.mutation.AddedDeposit(); ok {
+		_spec.AddField(billing.FieldDeposit, field.TypeFloat32, value)
+	}
 	if bu.mutation.BookingCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -340,6 +448,90 @@ func (buo *BillingUpdateOne) SetNillableStatus(s *string) *BillingUpdateOne {
 	if s != nil {
 		buo.SetStatus(*s)
 	}
+	return buo
+}
+
+// SetBasicCost sets the "basic_cost" field.
+func (buo *BillingUpdateOne) SetBasicCost(f float32) *BillingUpdateOne {
+	buo.mutation.ResetBasicCost()
+	buo.mutation.SetBasicCost(f)
+	return buo
+}
+
+// SetNillableBasicCost sets the "basic_cost" field if the given value is not nil.
+func (buo *BillingUpdateOne) SetNillableBasicCost(f *float32) *BillingUpdateOne {
+	if f != nil {
+		buo.SetBasicCost(*f)
+	}
+	return buo
+}
+
+// AddBasicCost adds f to the "basic_cost" field.
+func (buo *BillingUpdateOne) AddBasicCost(f float32) *BillingUpdateOne {
+	buo.mutation.AddBasicCost(f)
+	return buo
+}
+
+// SetFuelCost sets the "fuel_cost" field.
+func (buo *BillingUpdateOne) SetFuelCost(f float32) *BillingUpdateOne {
+	buo.mutation.ResetFuelCost()
+	buo.mutation.SetFuelCost(f)
+	return buo
+}
+
+// SetNillableFuelCost sets the "fuel_cost" field if the given value is not nil.
+func (buo *BillingUpdateOne) SetNillableFuelCost(f *float32) *BillingUpdateOne {
+	if f != nil {
+		buo.SetFuelCost(*f)
+	}
+	return buo
+}
+
+// AddFuelCost adds f to the "fuel_cost" field.
+func (buo *BillingUpdateOne) AddFuelCost(f float32) *BillingUpdateOne {
+	buo.mutation.AddFuelCost(f)
+	return buo
+}
+
+// SetCompensation sets the "compensation" field.
+func (buo *BillingUpdateOne) SetCompensation(f float32) *BillingUpdateOne {
+	buo.mutation.ResetCompensation()
+	buo.mutation.SetCompensation(f)
+	return buo
+}
+
+// SetNillableCompensation sets the "compensation" field if the given value is not nil.
+func (buo *BillingUpdateOne) SetNillableCompensation(f *float32) *BillingUpdateOne {
+	if f != nil {
+		buo.SetCompensation(*f)
+	}
+	return buo
+}
+
+// AddCompensation adds f to the "compensation" field.
+func (buo *BillingUpdateOne) AddCompensation(f float32) *BillingUpdateOne {
+	buo.mutation.AddCompensation(f)
+	return buo
+}
+
+// SetDeposit sets the "deposit" field.
+func (buo *BillingUpdateOne) SetDeposit(f float32) *BillingUpdateOne {
+	buo.mutation.ResetDeposit()
+	buo.mutation.SetDeposit(f)
+	return buo
+}
+
+// SetNillableDeposit sets the "deposit" field if the given value is not nil.
+func (buo *BillingUpdateOne) SetNillableDeposit(f *float32) *BillingUpdateOne {
+	if f != nil {
+		buo.SetDeposit(*f)
+	}
+	return buo
+}
+
+// AddDeposit adds f to the "deposit" field.
+func (buo *BillingUpdateOne) AddDeposit(f float32) *BillingUpdateOne {
+	buo.mutation.AddDeposit(f)
 	return buo
 }
 
@@ -533,6 +725,30 @@ func (buo *BillingUpdateOne) sqlSave(ctx context.Context) (_node *Billing, err e
 	}
 	if value, ok := buo.mutation.Status(); ok {
 		_spec.SetField(billing.FieldStatus, field.TypeString, value)
+	}
+	if value, ok := buo.mutation.BasicCost(); ok {
+		_spec.SetField(billing.FieldBasicCost, field.TypeFloat32, value)
+	}
+	if value, ok := buo.mutation.AddedBasicCost(); ok {
+		_spec.AddField(billing.FieldBasicCost, field.TypeFloat32, value)
+	}
+	if value, ok := buo.mutation.FuelCost(); ok {
+		_spec.SetField(billing.FieldFuelCost, field.TypeFloat32, value)
+	}
+	if value, ok := buo.mutation.AddedFuelCost(); ok {
+		_spec.AddField(billing.FieldFuelCost, field.TypeFloat32, value)
+	}
+	if value, ok := buo.mutation.Compensation(); ok {
+		_spec.SetField(billing.FieldCompensation, field.TypeFloat32, value)
+	}
+	if value, ok := buo.mutation.AddedCompensation(); ok {
+		_spec.AddField(billing.FieldCompensation, field.TypeFloat32, value)
+	}
+	if value, ok := buo.mutation.Deposit(); ok {
+		_spec.SetField(billing.FieldDeposit, field.TypeFloat32, value)
+	}
+	if value, ok := buo.mutation.AddedDeposit(); ok {
+		_spec.AddField(billing.FieldDeposit, field.TypeFloat32, value)
 	}
 	if buo.mutation.BookingCleared() {
 		edge := &sqlgraph.EdgeSpec{

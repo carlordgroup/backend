@@ -32,8 +32,9 @@ func NewBookings(ctx context.Context, data []*ent.Booking) []*Booking {
 	return result
 }
 
-func (b *Booking) Bill() {
-	//TODO
+func (b *Booking) Bill() (*Bill, error) {
+	bill, err := b.QueryBilling().Only(b.ctx)
+	return NewBill(b.ctx, bill), err
 }
 
 func (b *Booking) End() {

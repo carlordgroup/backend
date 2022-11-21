@@ -7,7 +7,6 @@ import (
 	"carlord/ent/billing"
 	"carlord/ent/booking"
 	"carlord/ent/card"
-	"carlord/ent/flaw"
 	"carlord/ent/predicate"
 	"carlord/ent/user"
 	"context"
@@ -23,18 +22,17 @@ import (
 // UserQuery is the builder for querying User entities.
 type UserQuery struct {
 	config
-	limit         *int
-	offset        *int
-	unique        *bool
-	order         []OrderFunc
-	fields        []string
-	predicates    []predicate.User
-	withCard      *CardQuery
-	withNoteFlaws *FlawQuery
-	withAccount   *AccountQuery
-	withBooking   *BookingQuery
-	withBill      *BillingQuery
-	withFKs       bool
+	limit       *int
+	offset      *int
+	unique      *bool
+	order       []OrderFunc
+	fields      []string
+	predicates  []predicate.User
+	withCard    *CardQuery
+	withAccount *AccountQuery
+	withBooking *BookingQuery
+	withBill    *BillingQuery
+	withFKs     bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -86,28 +84,6 @@ func (uq *UserQuery) QueryCard() *CardQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(card.Table, card.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.CardTable, user.CardColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryNoteFlaws chains the current query on the "note_flaws" edge.
-func (uq *UserQuery) QueryNoteFlaws() *FlawQuery {
-	query := &FlawQuery{config: uq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := uq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := uq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(flaw.Table, flaw.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.NoteFlawsTable, user.NoteFlawsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -357,16 +333,15 @@ func (uq *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:        uq.config,
-		limit:         uq.limit,
-		offset:        uq.offset,
-		order:         append([]OrderFunc{}, uq.order...),
-		predicates:    append([]predicate.User{}, uq.predicates...),
-		withCard:      uq.withCard.Clone(),
-		withNoteFlaws: uq.withNoteFlaws.Clone(),
-		withAccount:   uq.withAccount.Clone(),
-		withBooking:   uq.withBooking.Clone(),
-		withBill:      uq.withBill.Clone(),
+		config:      uq.config,
+		limit:       uq.limit,
+		offset:      uq.offset,
+		order:       append([]OrderFunc{}, uq.order...),
+		predicates:  append([]predicate.User{}, uq.predicates...),
+		withCard:    uq.withCard.Clone(),
+		withAccount: uq.withAccount.Clone(),
+		withBooking: uq.withBooking.Clone(),
+		withBill:    uq.withBill.Clone(),
 		// clone intermediate query.
 		sql:    uq.sql.Clone(),
 		path:   uq.path,
@@ -382,17 +357,6 @@ func (uq *UserQuery) WithCard(opts ...func(*CardQuery)) *UserQuery {
 		opt(query)
 	}
 	uq.withCard = query
-	return uq
-}
-
-// WithNoteFlaws tells the query-builder to eager-load the nodes that are connected to
-// the "note_flaws" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithNoteFlaws(opts ...func(*FlawQuery)) *UserQuery {
-	query := &FlawQuery{config: uq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	uq.withNoteFlaws = query
 	return uq
 }
 
@@ -503,9 +467,8 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		nodes       = []*User{}
 		withFKs     = uq.withFKs
 		_spec       = uq.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [4]bool{
 			uq.withCard != nil,
-			uq.withNoteFlaws != nil,
 			uq.withAccount != nil,
 			uq.withBooking != nil,
 			uq.withBill != nil,
@@ -539,13 +502,6 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := uq.loadCard(ctx, query, nodes,
 			func(n *User) { n.Edges.Card = []*Card{} },
 			func(n *User, e *Card) { n.Edges.Card = append(n.Edges.Card, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := uq.withNoteFlaws; query != nil {
-		if err := uq.loadNoteFlaws(ctx, query, nodes,
-			func(n *User) { n.Edges.NoteFlaws = []*Flaw{} },
-			func(n *User, e *Flaw) { n.Edges.NoteFlaws = append(n.Edges.NoteFlaws, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -598,37 +554,6 @@ func (uq *UserQuery) loadCard(ctx context.Context, query *CardQuery, nodes []*Us
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "user_card" returned %v for node %v`, *fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (uq *UserQuery) loadNoteFlaws(ctx context.Context, query *FlawQuery, nodes []*User, init func(*User), assign func(*User, *Flaw)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*User)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	query.withFKs = true
-	query.Where(predicate.Flaw(func(s *sql.Selector) {
-		s.Where(sql.InValues(user.NoteFlawsColumn, fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.user_note_flaws
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "user_note_flaws" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "user_note_flaws" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

@@ -3,6 +3,8 @@ package user
 import (
 	"carlord/data"
 	"carlord/ent"
+	"carlord/ent/account"
+	"carlord/ent/user"
 	"carlord/web"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -57,7 +59,16 @@ func (s *service) post(ctx *gin.Context) (int, any) {
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
-	updatedUser, err := s.client.User.UpdateOneID(ctx.MustGet("id").(int)).
+	accountID := ctx.MustGet("id").(int)
+	var userEdit *ent.User
+	hasUser := s.client.User.Query().Where(user.HasAccountWith(account.ID(accountID))).ExistX(ctx)
+	if hasUser {
+		userEdit = s.client.User.Query().Where(user.HasAccountWith(account.ID(accountID))).OnlyX(ctx)
+	} else {
+		userEdit = s.client.User.Create().SetAccountID(accountID).SaveX(ctx)
+	}
+
+	updatedUser, err := userEdit.Update().
 		SetAddress(u.Address).
 		SetBirthday(u.Birthday).
 		SetDriverLicenseCountry(u.DriverLicenseCountry).

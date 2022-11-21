@@ -41,6 +41,48 @@ func (bc *BookingCreate) SetReturnCarAt(t time.Time) *BookingCreate {
 	return bc
 }
 
+// SetRate sets the "rate" field.
+func (bc *BookingCreate) SetRate(f float32) *BookingCreate {
+	bc.mutation.SetRate(f)
+	return bc
+}
+
+// SetNillableRate sets the "rate" field if the given value is not nil.
+func (bc *BookingCreate) SetNillableRate(f *float32) *BookingCreate {
+	if f != nil {
+		bc.SetRate(*f)
+	}
+	return bc
+}
+
+// SetExceedRate sets the "exceed_rate" field.
+func (bc *BookingCreate) SetExceedRate(f float32) *BookingCreate {
+	bc.mutation.SetExceedRate(f)
+	return bc
+}
+
+// SetNillableExceedRate sets the "exceed_rate" field if the given value is not nil.
+func (bc *BookingCreate) SetNillableExceedRate(f *float32) *BookingCreate {
+	if f != nil {
+		bc.SetExceedRate(*f)
+	}
+	return bc
+}
+
+// SetDeposit sets the "deposit" field.
+func (bc *BookingCreate) SetDeposit(f float32) *BookingCreate {
+	bc.mutation.SetDeposit(f)
+	return bc
+}
+
+// SetNillableDeposit sets the "deposit" field if the given value is not nil.
+func (bc *BookingCreate) SetNillableDeposit(f *float32) *BookingCreate {
+	if f != nil {
+		bc.SetDeposit(*f)
+	}
+	return bc
+}
+
 // SetFuelLevelAtBegin sets the "fuel_level_at_begin" field.
 func (bc *BookingCreate) SetFuelLevelAtBegin(f float32) *BookingCreate {
 	bc.mutation.SetFuelLevelAtBegin(f)
@@ -123,6 +165,7 @@ func (bc *BookingCreate) Save(ctx context.Context) (*Booking, error) {
 		err  error
 		node *Booking
 	)
+	bc.defaults()
 	if len(bc.hooks) == 0 {
 		if err = bc.check(); err != nil {
 			return nil, err
@@ -186,6 +229,22 @@ func (bc *BookingCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (bc *BookingCreate) defaults() {
+	if _, ok := bc.mutation.Rate(); !ok {
+		v := booking.DefaultRate
+		bc.mutation.SetRate(v)
+	}
+	if _, ok := bc.mutation.ExceedRate(); !ok {
+		v := booking.DefaultExceedRate
+		bc.mutation.SetExceedRate(v)
+	}
+	if _, ok := bc.mutation.Deposit(); !ok {
+		v := booking.DefaultDeposit
+		bc.mutation.SetDeposit(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (bc *BookingCreate) check() error {
 	if _, ok := bc.mutation.StartAt(); !ok {
@@ -196,6 +255,15 @@ func (bc *BookingCreate) check() error {
 	}
 	if _, ok := bc.mutation.ReturnCarAt(); !ok {
 		return &ValidationError{Name: "return_car_at", err: errors.New(`ent: missing required field "Booking.return_car_at"`)}
+	}
+	if _, ok := bc.mutation.Rate(); !ok {
+		return &ValidationError{Name: "rate", err: errors.New(`ent: missing required field "Booking.rate"`)}
+	}
+	if _, ok := bc.mutation.ExceedRate(); !ok {
+		return &ValidationError{Name: "exceed_rate", err: errors.New(`ent: missing required field "Booking.exceed_rate"`)}
+	}
+	if _, ok := bc.mutation.Deposit(); !ok {
+		return &ValidationError{Name: "deposit", err: errors.New(`ent: missing required field "Booking.deposit"`)}
 	}
 	if _, ok := bc.mutation.FuelLevelAtBegin(); !ok {
 		return &ValidationError{Name: "fuel_level_at_begin", err: errors.New(`ent: missing required field "Booking.fuel_level_at_begin"`)}
@@ -256,6 +324,18 @@ func (bc *BookingCreate) createSpec() (*Booking, *sqlgraph.CreateSpec) {
 	if value, ok := bc.mutation.ReturnCarAt(); ok {
 		_spec.SetField(booking.FieldReturnCarAt, field.TypeTime, value)
 		_node.ReturnCarAt = &value
+	}
+	if value, ok := bc.mutation.Rate(); ok {
+		_spec.SetField(booking.FieldRate, field.TypeFloat32, value)
+		_node.Rate = value
+	}
+	if value, ok := bc.mutation.ExceedRate(); ok {
+		_spec.SetField(booking.FieldExceedRate, field.TypeFloat32, value)
+		_node.ExceedRate = value
+	}
+	if value, ok := bc.mutation.Deposit(); ok {
+		_spec.SetField(booking.FieldDeposit, field.TypeFloat32, value)
+		_node.Deposit = value
 	}
 	if value, ok := bc.mutation.FuelLevelAtBegin(); ok {
 		_spec.SetField(booking.FieldFuelLevelAtBegin, field.TypeFloat32, value)
@@ -354,6 +434,7 @@ func (bcb *BookingCreateBulk) Save(ctx context.Context) ([]*Booking, error) {
 	for i := range bcb.builders {
 		func(i int, root context.Context) {
 			builder := bcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*BookingMutation)
 				if !ok {

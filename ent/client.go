@@ -15,7 +15,6 @@ import (
 	"carlord/ent/booking"
 	"carlord/ent/car"
 	"carlord/ent/card"
-	"carlord/ent/flaw"
 	"carlord/ent/location"
 	"carlord/ent/user"
 
@@ -39,8 +38,6 @@ type Client struct {
 	Car *CarClient
 	// Card is the client for interacting with the Card builders.
 	Card *CardClient
-	// Flaw is the client for interacting with the Flaw builders.
-	Flaw *FlawClient
 	// Location is the client for interacting with the Location builders.
 	Location *LocationClient
 	// User is the client for interacting with the User builders.
@@ -63,7 +60,6 @@ func (c *Client) init() {
 	c.Booking = NewBookingClient(c.config)
 	c.Car = NewCarClient(c.config)
 	c.Card = NewCardClient(c.config)
-	c.Flaw = NewFlawClient(c.config)
 	c.Location = NewLocationClient(c.config)
 	c.User = NewUserClient(c.config)
 }
@@ -104,7 +100,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Booking:  NewBookingClient(cfg),
 		Car:      NewCarClient(cfg),
 		Card:     NewCardClient(cfg),
-		Flaw:     NewFlawClient(cfg),
 		Location: NewLocationClient(cfg),
 		User:     NewUserClient(cfg),
 	}, nil
@@ -131,7 +126,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Booking:  NewBookingClient(cfg),
 		Car:      NewCarClient(cfg),
 		Card:     NewCardClient(cfg),
-		Flaw:     NewFlawClient(cfg),
 		Location: NewLocationClient(cfg),
 		User:     NewUserClient(cfg),
 	}, nil
@@ -167,7 +161,6 @@ func (c *Client) Use(hooks ...Hook) {
 	c.Booking.Use(hooks...)
 	c.Car.Use(hooks...)
 	c.Card.Use(hooks...)
-	c.Flaw.Use(hooks...)
 	c.Location.Use(hooks...)
 	c.User.Use(hooks...)
 }
@@ -782,96 +775,6 @@ func (c *CardClient) Hooks() []Hook {
 	return c.hooks.Card
 }
 
-// FlawClient is a client for the Flaw schema.
-type FlawClient struct {
-	config
-}
-
-// NewFlawClient returns a client for the Flaw from the given config.
-func NewFlawClient(c config) *FlawClient {
-	return &FlawClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `flaw.Hooks(f(g(h())))`.
-func (c *FlawClient) Use(hooks ...Hook) {
-	c.hooks.Flaw = append(c.hooks.Flaw, hooks...)
-}
-
-// Create returns a builder for creating a Flaw entity.
-func (c *FlawClient) Create() *FlawCreate {
-	mutation := newFlawMutation(c.config, OpCreate)
-	return &FlawCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Flaw entities.
-func (c *FlawClient) CreateBulk(builders ...*FlawCreate) *FlawCreateBulk {
-	return &FlawCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Flaw.
-func (c *FlawClient) Update() *FlawUpdate {
-	mutation := newFlawMutation(c.config, OpUpdate)
-	return &FlawUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *FlawClient) UpdateOne(f *Flaw) *FlawUpdateOne {
-	mutation := newFlawMutation(c.config, OpUpdateOne, withFlaw(f))
-	return &FlawUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *FlawClient) UpdateOneID(id int) *FlawUpdateOne {
-	mutation := newFlawMutation(c.config, OpUpdateOne, withFlawID(id))
-	return &FlawUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Flaw.
-func (c *FlawClient) Delete() *FlawDelete {
-	mutation := newFlawMutation(c.config, OpDelete)
-	return &FlawDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *FlawClient) DeleteOne(f *Flaw) *FlawDeleteOne {
-	return c.DeleteOneID(f.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *FlawClient) DeleteOneID(id int) *FlawDeleteOne {
-	builder := c.Delete().Where(flaw.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &FlawDeleteOne{builder}
-}
-
-// Query returns a query builder for Flaw.
-func (c *FlawClient) Query() *FlawQuery {
-	return &FlawQuery{
-		config: c.config,
-	}
-}
-
-// Get returns a Flaw entity by its id.
-func (c *FlawClient) Get(ctx context.Context, id int) (*Flaw, error) {
-	return c.Query().Where(flaw.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *FlawClient) GetX(ctx context.Context, id int) *Flaw {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// Hooks returns the client hooks.
-func (c *FlawClient) Hooks() []Hook {
-	return c.hooks.Flaw
-}
-
 // LocationClient is a client for the Location schema.
 type LocationClient struct {
 	config
@@ -1072,22 +975,6 @@ func (c *UserClient) QueryCard(u *User) *CardQuery {
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(card.Table, card.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.CardTable, user.CardColumn),
-		)
-		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryNoteFlaws queries the note_flaws edge of a User.
-func (c *UserClient) QueryNoteFlaws(u *User) *FlawQuery {
-	query := &FlawQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := u.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(flaw.Table, flaw.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.NoteFlawsTable, user.NoteFlawsColumn),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil

@@ -102,6 +102,27 @@ func ReturnCarAt(v time.Time) predicate.Booking {
 	})
 }
 
+// Rate applies equality check predicate on the "rate" field. It's identical to RateEQ.
+func Rate(v float32) predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldRate), v))
+	})
+}
+
+// ExceedRate applies equality check predicate on the "exceed_rate" field. It's identical to ExceedRateEQ.
+func ExceedRate(v float32) predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldExceedRate), v))
+	})
+}
+
+// Deposit applies equality check predicate on the "deposit" field. It's identical to DepositEQ.
+func Deposit(v float32) predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldDeposit), v))
+	})
+}
+
 // FuelLevelAtBegin applies equality check predicate on the "fuel_level_at_begin" field. It's identical to FuelLevelAtBeginEQ.
 func FuelLevelAtBegin(v float32) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
@@ -326,6 +347,198 @@ func ReturnCarAtLT(v time.Time) predicate.Booking {
 func ReturnCarAtLTE(v time.Time) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldReturnCarAt), v))
+	})
+}
+
+// RateEQ applies the EQ predicate on the "rate" field.
+func RateEQ(v float32) predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldRate), v))
+	})
+}
+
+// RateNEQ applies the NEQ predicate on the "rate" field.
+func RateNEQ(v float32) predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldRate), v))
+	})
+}
+
+// RateIn applies the In predicate on the "rate" field.
+func RateIn(vs ...float32) predicate.Booking {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldRate), v...))
+	})
+}
+
+// RateNotIn applies the NotIn predicate on the "rate" field.
+func RateNotIn(vs ...float32) predicate.Booking {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldRate), v...))
+	})
+}
+
+// RateGT applies the GT predicate on the "rate" field.
+func RateGT(v float32) predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldRate), v))
+	})
+}
+
+// RateGTE applies the GTE predicate on the "rate" field.
+func RateGTE(v float32) predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldRate), v))
+	})
+}
+
+// RateLT applies the LT predicate on the "rate" field.
+func RateLT(v float32) predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldRate), v))
+	})
+}
+
+// RateLTE applies the LTE predicate on the "rate" field.
+func RateLTE(v float32) predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldRate), v))
+	})
+}
+
+// ExceedRateEQ applies the EQ predicate on the "exceed_rate" field.
+func ExceedRateEQ(v float32) predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldExceedRate), v))
+	})
+}
+
+// ExceedRateNEQ applies the NEQ predicate on the "exceed_rate" field.
+func ExceedRateNEQ(v float32) predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldExceedRate), v))
+	})
+}
+
+// ExceedRateIn applies the In predicate on the "exceed_rate" field.
+func ExceedRateIn(vs ...float32) predicate.Booking {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldExceedRate), v...))
+	})
+}
+
+// ExceedRateNotIn applies the NotIn predicate on the "exceed_rate" field.
+func ExceedRateNotIn(vs ...float32) predicate.Booking {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldExceedRate), v...))
+	})
+}
+
+// ExceedRateGT applies the GT predicate on the "exceed_rate" field.
+func ExceedRateGT(v float32) predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldExceedRate), v))
+	})
+}
+
+// ExceedRateGTE applies the GTE predicate on the "exceed_rate" field.
+func ExceedRateGTE(v float32) predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldExceedRate), v))
+	})
+}
+
+// ExceedRateLT applies the LT predicate on the "exceed_rate" field.
+func ExceedRateLT(v float32) predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldExceedRate), v))
+	})
+}
+
+// ExceedRateLTE applies the LTE predicate on the "exceed_rate" field.
+func ExceedRateLTE(v float32) predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldExceedRate), v))
+	})
+}
+
+// DepositEQ applies the EQ predicate on the "deposit" field.
+func DepositEQ(v float32) predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldDeposit), v))
+	})
+}
+
+// DepositNEQ applies the NEQ predicate on the "deposit" field.
+func DepositNEQ(v float32) predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldDeposit), v))
+	})
+}
+
+// DepositIn applies the In predicate on the "deposit" field.
+func DepositIn(vs ...float32) predicate.Booking {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldDeposit), v...))
+	})
+}
+
+// DepositNotIn applies the NotIn predicate on the "deposit" field.
+func DepositNotIn(vs ...float32) predicate.Booking {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldDeposit), v...))
+	})
+}
+
+// DepositGT applies the GT predicate on the "deposit" field.
+func DepositGT(v float32) predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldDeposit), v))
+	})
+}
+
+// DepositGTE applies the GTE predicate on the "deposit" field.
+func DepositGTE(v float32) predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldDeposit), v))
+	})
+}
+
+// DepositLT applies the LT predicate on the "deposit" field.
+func DepositLT(v float32) predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldDeposit), v))
+	})
+}
+
+// DepositLTE applies the LTE predicate on the "deposit" field.
+func DepositLTE(v float32) predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldDeposit), v))
 	})
 }
 
