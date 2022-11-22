@@ -44,7 +44,7 @@ func (u *User) HasUnpaidBill() (bool, error) {
 }
 
 func (u *User) Bookings() ([]*Booking, error) {
-	books, err := u.QueryBooking().All(u.ctx)
+	books, err := u.QueryBooking().WithBilling().All(u.ctx)
 	if err != nil {
 		return nil, err
 	}
