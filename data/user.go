@@ -25,7 +25,6 @@ func (u *User) Cards() ([]*Card, error) {
 }
 
 func (u *User) Book(client *ent.Client, car *Car, startAt time.Time, endAt time.Time, cardID int) (*Booking, error) {
-	billCreate := client.Billing.Create().SetUserID(u.ID).SetCardID(cardID)
 	b, err := client.Booking.Create().
 		SetStartAt(startAt).
 		SetEndAt(endAt).
@@ -33,8 +32,7 @@ func (u *User) Book(client *ent.Client, car *Car, startAt time.Time, endAt time.
 		SetUserID(u.ID).
 		SetBookingStatus(BookingStatusPlan).
 		Save(u.ctx)
-	billCreate.SetBooking(b)
-	_, err = billCreate.Save(u.ctx)
+	_, err = client.Billing.Create().SetUserID(u.ID).SetCardID(cardID).SetBookingID(b.ID).Save(u.ctx)
 	if err != nil {
 		return nil, err
 	}

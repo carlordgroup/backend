@@ -640,7 +640,7 @@ func (c *CarClient) QueryLocation(ca *Car) *LocationQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(car.Table, car.FieldID, id),
 			sqlgraph.To(location.Table, location.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, car.LocationTable, car.LocationColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, car.LocationTable, car.LocationColumn),
 		)
 		fromV = sqlgraph.Neighbors(ca.driver.Dialect(), step)
 		return fromV, nil

@@ -21,14 +21,14 @@ func W(finer ResultFiner) gin.HandlerFunc {
 	}
 }
 
-type id struct {
-	ID int `json:"id" binding:"required,number"`
+type I struct {
+	ID int `uri:"id" binding:"required,number"`
 }
 
 func ID(finer IDResultFiner) gin.HandlerFunc {
 	return W(func(ctx *gin.Context) (int, any) {
-		var i id
-		err := ctx.ShouldBindJSON(&i)
+		var i I
+		err := ctx.ShouldBindUri(&i)
 		if err != nil {
 			return http.StatusBadRequest, err
 		}

@@ -134,6 +134,14 @@ func (bu *BillingUpdate) SetBookingID(id int) *BillingUpdate {
 	return bu
 }
 
+// SetNillableBookingID sets the "booking" edge to the Booking entity by ID if the given value is not nil.
+func (bu *BillingUpdate) SetNillableBookingID(id *int) *BillingUpdate {
+	if id != nil {
+		bu = bu.SetBookingID(*id)
+	}
+	return bu
+}
+
 // SetBooking sets the "booking" edge to the Booking entity.
 func (bu *BillingUpdate) SetBooking(b *Booking) *BillingUpdate {
 	return bu.SetBookingID(b.ID)
@@ -207,18 +215,12 @@ func (bu *BillingUpdate) Save(ctx context.Context) (int, error) {
 		affected int
 	)
 	if len(bu.hooks) == 0 {
-		if err = bu.check(); err != nil {
-			return 0, err
-		}
 		affected, err = bu.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*BillingMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = bu.check(); err != nil {
-				return 0, err
 			}
 			bu.mutation = mutation
 			affected, err = bu.sqlSave(ctx)
@@ -258,14 +260,6 @@ func (bu *BillingUpdate) ExecX(ctx context.Context) {
 	if err := bu.Exec(ctx); err != nil {
 		panic(err)
 	}
-}
-
-// check runs all checks and user-defined validators on the builder.
-func (bu *BillingUpdate) check() error {
-	if _, ok := bu.mutation.BookingID(); bu.mutation.BookingCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "Billing.booking"`)
-	}
-	return nil
 }
 
 func (bu *BillingUpdate) sqlSave(ctx context.Context) (n int, err error) {
@@ -541,6 +535,14 @@ func (buo *BillingUpdateOne) SetBookingID(id int) *BillingUpdateOne {
 	return buo
 }
 
+// SetNillableBookingID sets the "booking" edge to the Booking entity by ID if the given value is not nil.
+func (buo *BillingUpdateOne) SetNillableBookingID(id *int) *BillingUpdateOne {
+	if id != nil {
+		buo = buo.SetBookingID(*id)
+	}
+	return buo
+}
+
 // SetBooking sets the "booking" edge to the Booking entity.
 func (buo *BillingUpdateOne) SetBooking(b *Booking) *BillingUpdateOne {
 	return buo.SetBookingID(b.ID)
@@ -621,18 +623,12 @@ func (buo *BillingUpdateOne) Save(ctx context.Context) (*Billing, error) {
 		node *Billing
 	)
 	if len(buo.hooks) == 0 {
-		if err = buo.check(); err != nil {
-			return nil, err
-		}
 		node, err = buo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*BillingMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = buo.check(); err != nil {
-				return nil, err
 			}
 			buo.mutation = mutation
 			node, err = buo.sqlSave(ctx)
@@ -678,14 +674,6 @@ func (buo *BillingUpdateOne) ExecX(ctx context.Context) {
 	if err := buo.Exec(ctx); err != nil {
 		panic(err)
 	}
-}
-
-// check runs all checks and user-defined validators on the builder.
-func (buo *BillingUpdateOne) check() error {
-	if _, ok := buo.mutation.BookingID(); buo.mutation.BookingCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "Billing.booking"`)
-	}
-	return nil
 }
 
 func (buo *BillingUpdateOne) sqlSave(ctx context.Context) (_node *Billing, err error) {

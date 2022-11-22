@@ -41,6 +41,14 @@ func (bc *BookingCreate) SetReturnCarAt(t time.Time) *BookingCreate {
 	return bc
 }
 
+// SetNillableReturnCarAt sets the "return_car_at" field if the given value is not nil.
+func (bc *BookingCreate) SetNillableReturnCarAt(t *time.Time) *BookingCreate {
+	if t != nil {
+		bc.SetReturnCarAt(*t)
+	}
+	return bc
+}
+
 // SetRate sets the "rate" field.
 func (bc *BookingCreate) SetRate(f float32) *BookingCreate {
 	bc.mutation.SetRate(f)
@@ -89,9 +97,25 @@ func (bc *BookingCreate) SetFuelLevelAtBegin(f float32) *BookingCreate {
 	return bc
 }
 
+// SetNillableFuelLevelAtBegin sets the "fuel_level_at_begin" field if the given value is not nil.
+func (bc *BookingCreate) SetNillableFuelLevelAtBegin(f *float32) *BookingCreate {
+	if f != nil {
+		bc.SetFuelLevelAtBegin(*f)
+	}
+	return bc
+}
+
 // SetFuelLevelAtEnd sets the "fuel_level_at_end" field.
 func (bc *BookingCreate) SetFuelLevelAtEnd(f float32) *BookingCreate {
 	bc.mutation.SetFuelLevelAtEnd(f)
+	return bc
+}
+
+// SetNillableFuelLevelAtEnd sets the "fuel_level_at_end" field if the given value is not nil.
+func (bc *BookingCreate) SetNillableFuelLevelAtEnd(f *float32) *BookingCreate {
+	if f != nil {
+		bc.SetFuelLevelAtEnd(*f)
+	}
 	return bc
 }
 
@@ -101,15 +125,39 @@ func (bc *BookingCreate) SetMileageBegin(i int) *BookingCreate {
 	return bc
 }
 
+// SetNillableMileageBegin sets the "mileage_begin" field if the given value is not nil.
+func (bc *BookingCreate) SetNillableMileageBegin(i *int) *BookingCreate {
+	if i != nil {
+		bc.SetMileageBegin(*i)
+	}
+	return bc
+}
+
 // SetMileageEnd sets the "mileage_end" field.
 func (bc *BookingCreate) SetMileageEnd(i int) *BookingCreate {
 	bc.mutation.SetMileageEnd(i)
 	return bc
 }
 
+// SetNillableMileageEnd sets the "mileage_end" field if the given value is not nil.
+func (bc *BookingCreate) SetNillableMileageEnd(i *int) *BookingCreate {
+	if i != nil {
+		bc.SetMileageEnd(*i)
+	}
+	return bc
+}
+
 // SetBookingStatus sets the "booking_status" field.
 func (bc *BookingCreate) SetBookingStatus(s string) *BookingCreate {
 	bc.mutation.SetBookingStatus(s)
+	return bc
+}
+
+// SetNillableBookingStatus sets the "booking_status" field if the given value is not nil.
+func (bc *BookingCreate) SetNillableBookingStatus(s *string) *BookingCreate {
+	if s != nil {
+		bc.SetBookingStatus(*s)
+	}
 	return bc
 }
 
@@ -243,6 +291,10 @@ func (bc *BookingCreate) defaults() {
 		v := booking.DefaultDeposit
 		bc.mutation.SetDeposit(v)
 	}
+	if _, ok := bc.mutation.BookingStatus(); !ok {
+		v := booking.DefaultBookingStatus
+		bc.mutation.SetBookingStatus(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -253,9 +305,6 @@ func (bc *BookingCreate) check() error {
 	if _, ok := bc.mutation.EndAt(); !ok {
 		return &ValidationError{Name: "end_at", err: errors.New(`ent: missing required field "Booking.end_at"`)}
 	}
-	if _, ok := bc.mutation.ReturnCarAt(); !ok {
-		return &ValidationError{Name: "return_car_at", err: errors.New(`ent: missing required field "Booking.return_car_at"`)}
-	}
 	if _, ok := bc.mutation.Rate(); !ok {
 		return &ValidationError{Name: "rate", err: errors.New(`ent: missing required field "Booking.rate"`)}
 	}
@@ -264,18 +313,6 @@ func (bc *BookingCreate) check() error {
 	}
 	if _, ok := bc.mutation.Deposit(); !ok {
 		return &ValidationError{Name: "deposit", err: errors.New(`ent: missing required field "Booking.deposit"`)}
-	}
-	if _, ok := bc.mutation.FuelLevelAtBegin(); !ok {
-		return &ValidationError{Name: "fuel_level_at_begin", err: errors.New(`ent: missing required field "Booking.fuel_level_at_begin"`)}
-	}
-	if _, ok := bc.mutation.FuelLevelAtEnd(); !ok {
-		return &ValidationError{Name: "fuel_level_at_end", err: errors.New(`ent: missing required field "Booking.fuel_level_at_end"`)}
-	}
-	if _, ok := bc.mutation.MileageBegin(); !ok {
-		return &ValidationError{Name: "mileage_begin", err: errors.New(`ent: missing required field "Booking.mileage_begin"`)}
-	}
-	if _, ok := bc.mutation.MileageEnd(); !ok {
-		return &ValidationError{Name: "mileage_end", err: errors.New(`ent: missing required field "Booking.mileage_end"`)}
 	}
 	if _, ok := bc.mutation.BookingStatus(); !ok {
 		return &ValidationError{Name: "booking_status", err: errors.New(`ent: missing required field "Booking.booking_status"`)}
@@ -323,7 +360,7 @@ func (bc *BookingCreate) createSpec() (*Booking, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := bc.mutation.ReturnCarAt(); ok {
 		_spec.SetField(booking.FieldReturnCarAt, field.TypeTime, value)
-		_node.ReturnCarAt = &value
+		_node.ReturnCarAt = value
 	}
 	if value, ok := bc.mutation.Rate(); ok {
 		_spec.SetField(booking.FieldRate, field.TypeFloat32, value)
@@ -339,19 +376,19 @@ func (bc *BookingCreate) createSpec() (*Booking, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := bc.mutation.FuelLevelAtBegin(); ok {
 		_spec.SetField(booking.FieldFuelLevelAtBegin, field.TypeFloat32, value)
-		_node.FuelLevelAtBegin = &value
+		_node.FuelLevelAtBegin = value
 	}
 	if value, ok := bc.mutation.FuelLevelAtEnd(); ok {
 		_spec.SetField(booking.FieldFuelLevelAtEnd, field.TypeFloat32, value)
-		_node.FuelLevelAtEnd = &value
+		_node.FuelLevelAtEnd = value
 	}
 	if value, ok := bc.mutation.MileageBegin(); ok {
 		_spec.SetField(booking.FieldMileageBegin, field.TypeInt, value)
-		_node.MileageBegin = &value
+		_node.MileageBegin = value
 	}
 	if value, ok := bc.mutation.MileageEnd(); ok {
 		_spec.SetField(booking.FieldMileageEnd, field.TypeInt, value)
-		_node.MileageEnd = &value
+		_node.MileageEnd = value
 	}
 	if value, ok := bc.mutation.BookingStatus(); ok {
 		_spec.SetField(booking.FieldBookingStatus, field.TypeString, value)

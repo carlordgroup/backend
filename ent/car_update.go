@@ -144,19 +144,23 @@ func (cu *CarUpdate) AddDeposit(f float32) *CarUpdate {
 	return cu
 }
 
-// AddLocationIDs adds the "location" edge to the Location entity by IDs.
-func (cu *CarUpdate) AddLocationIDs(ids ...int) *CarUpdate {
-	cu.mutation.AddLocationIDs(ids...)
+// SetLocationID sets the "location" edge to the Location entity by ID.
+func (cu *CarUpdate) SetLocationID(id int) *CarUpdate {
+	cu.mutation.SetLocationID(id)
 	return cu
 }
 
-// AddLocation adds the "location" edges to the Location entity.
-func (cu *CarUpdate) AddLocation(l ...*Location) *CarUpdate {
-	ids := make([]int, len(l))
-	for i := range l {
-		ids[i] = l[i].ID
+// SetNillableLocationID sets the "location" edge to the Location entity by ID if the given value is not nil.
+func (cu *CarUpdate) SetNillableLocationID(id *int) *CarUpdate {
+	if id != nil {
+		cu = cu.SetLocationID(*id)
 	}
-	return cu.AddLocationIDs(ids...)
+	return cu
+}
+
+// SetLocation sets the "location" edge to the Location entity.
+func (cu *CarUpdate) SetLocation(l *Location) *CarUpdate {
+	return cu.SetLocationID(l.ID)
 }
 
 // AddBookingIDs adds the "booking" edge to the Booking entity by IDs.
@@ -179,25 +183,10 @@ func (cu *CarUpdate) Mutation() *CarMutation {
 	return cu.mutation
 }
 
-// ClearLocation clears all "location" edges to the Location entity.
+// ClearLocation clears the "location" edge to the Location entity.
 func (cu *CarUpdate) ClearLocation() *CarUpdate {
 	cu.mutation.ClearLocation()
 	return cu
-}
-
-// RemoveLocationIDs removes the "location" edge to Location entities by IDs.
-func (cu *CarUpdate) RemoveLocationIDs(ids ...int) *CarUpdate {
-	cu.mutation.RemoveLocationIDs(ids...)
-	return cu
-}
-
-// RemoveLocation removes "location" edges to Location entities.
-func (cu *CarUpdate) RemoveLocation(l ...*Location) *CarUpdate {
-	ids := make([]int, len(l))
-	for i := range l {
-		ids[i] = l[i].ID
-	}
-	return cu.RemoveLocationIDs(ids...)
 }
 
 // ClearBooking clears all "booking" edges to the Booking entity.
@@ -346,7 +335,7 @@ func (cu *CarUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if cu.mutation.LocationCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   car.LocationTable,
 			Columns: []string{car.LocationColumn},
@@ -357,31 +346,12 @@ func (cu *CarUpdate) sqlSave(ctx context.Context) (n int, err error) {
 					Column: location.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := cu.mutation.RemovedLocationIDs(); len(nodes) > 0 && !cu.mutation.LocationCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   car.LocationTable,
-			Columns: []string{car.LocationColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: location.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := cu.mutation.LocationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   car.LocationTable,
 			Columns: []string{car.LocationColumn},
@@ -586,19 +556,23 @@ func (cuo *CarUpdateOne) AddDeposit(f float32) *CarUpdateOne {
 	return cuo
 }
 
-// AddLocationIDs adds the "location" edge to the Location entity by IDs.
-func (cuo *CarUpdateOne) AddLocationIDs(ids ...int) *CarUpdateOne {
-	cuo.mutation.AddLocationIDs(ids...)
+// SetLocationID sets the "location" edge to the Location entity by ID.
+func (cuo *CarUpdateOne) SetLocationID(id int) *CarUpdateOne {
+	cuo.mutation.SetLocationID(id)
 	return cuo
 }
 
-// AddLocation adds the "location" edges to the Location entity.
-func (cuo *CarUpdateOne) AddLocation(l ...*Location) *CarUpdateOne {
-	ids := make([]int, len(l))
-	for i := range l {
-		ids[i] = l[i].ID
+// SetNillableLocationID sets the "location" edge to the Location entity by ID if the given value is not nil.
+func (cuo *CarUpdateOne) SetNillableLocationID(id *int) *CarUpdateOne {
+	if id != nil {
+		cuo = cuo.SetLocationID(*id)
 	}
-	return cuo.AddLocationIDs(ids...)
+	return cuo
+}
+
+// SetLocation sets the "location" edge to the Location entity.
+func (cuo *CarUpdateOne) SetLocation(l *Location) *CarUpdateOne {
+	return cuo.SetLocationID(l.ID)
 }
 
 // AddBookingIDs adds the "booking" edge to the Booking entity by IDs.
@@ -621,25 +595,10 @@ func (cuo *CarUpdateOne) Mutation() *CarMutation {
 	return cuo.mutation
 }
 
-// ClearLocation clears all "location" edges to the Location entity.
+// ClearLocation clears the "location" edge to the Location entity.
 func (cuo *CarUpdateOne) ClearLocation() *CarUpdateOne {
 	cuo.mutation.ClearLocation()
 	return cuo
-}
-
-// RemoveLocationIDs removes the "location" edge to Location entities by IDs.
-func (cuo *CarUpdateOne) RemoveLocationIDs(ids ...int) *CarUpdateOne {
-	cuo.mutation.RemoveLocationIDs(ids...)
-	return cuo
-}
-
-// RemoveLocation removes "location" edges to Location entities.
-func (cuo *CarUpdateOne) RemoveLocation(l ...*Location) *CarUpdateOne {
-	ids := make([]int, len(l))
-	for i := range l {
-		ids[i] = l[i].ID
-	}
-	return cuo.RemoveLocationIDs(ids...)
 }
 
 // ClearBooking clears all "booking" edges to the Booking entity.
@@ -818,7 +777,7 @@ func (cuo *CarUpdateOne) sqlSave(ctx context.Context) (_node *Car, err error) {
 	}
 	if cuo.mutation.LocationCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   car.LocationTable,
 			Columns: []string{car.LocationColumn},
@@ -829,31 +788,12 @@ func (cuo *CarUpdateOne) sqlSave(ctx context.Context) (_node *Car, err error) {
 					Column: location.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := cuo.mutation.RemovedLocationIDs(); len(nodes) > 0 && !cuo.mutation.LocationCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   car.LocationTable,
-			Columns: []string{car.LocationColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: location.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := cuo.mutation.LocationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   car.LocationTable,
 			Columns: []string{car.LocationColumn},

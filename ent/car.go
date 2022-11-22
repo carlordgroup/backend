@@ -4,6 +4,7 @@ package ent
 
 import (
 	"carlord/ent/car"
+	"carlord/ent/location"
 	"fmt"
 	"strings"
 
@@ -42,13 +43,14 @@ type Car struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the CarQuery when eager-loading is set.
 	Edges         CarEdges `json:"edges"`
+	car_location  *int
 	location_cars *int
 }
 
 // CarEdges holds the relations/edges for other nodes in the graph.
 type CarEdges struct {
 	// Location holds the value of the location edge.
-	Location []*Location `json:"location,omitempty"`
+	Location *Location `json:"location,omitempty"`
 	// Booking holds the value of the booking edge.
 	Booking []*Booking `json:"booking,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -57,9 +59,13 @@ type CarEdges struct {
 }
 
 // LocationOrErr returns the Location value or an error if the edge
-// was not loaded in eager-loading.
-func (e CarEdges) LocationOrErr() ([]*Location, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e CarEdges) LocationOrErr() (*Location, error) {
 	if e.loadedTypes[0] {
+		if e.Location == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: location.Label}
+		}
 		return e.Location, nil
 	}
 	return nil, &NotLoadedError{edge: "location"}
@@ -85,7 +91,9 @@ func (*Car) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case car.FieldColor, car.FieldBrand, car.FieldModel, car.FieldStatus, car.FieldCarType, car.FieldPlateNumber, car.FieldPlateCountry:
 			values[i] = new(sql.NullString)
-		case car.ForeignKeys[0]: // location_cars
+		case car.ForeignKeys[0]: // car_location
+			values[i] = new(sql.NullInt64)
+		case car.ForeignKeys[1]: // location_cars
 			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Car", columns[i])
@@ -181,6 +189,13 @@ func (c *Car) assignValues(columns []string, values []any) error {
 				c.Deposit = float32(value.Float64)
 			}
 		case car.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field car_location", value)
+			} else if value.Valid {
+				c.car_location = new(int)
+				*c.car_location = int(value.Int64)
+			}
+		case car.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field location_cars", value)
 			} else if value.Valid {

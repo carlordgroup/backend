@@ -25,7 +25,7 @@ func (Billing) Fields() []ent.Field {
 // Edges of the Billing.
 func (Billing) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("booking", Booking.Type).Required().Unique(),
+		edge.To("booking", Booking.Type).Unique(),
 		edge.To("card", Card.Type).Unique(),
 		edge.To("user", User.Type).Unique(),
 	}
