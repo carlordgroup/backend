@@ -57,15 +57,15 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "start_at", Type: field.TypeTime},
 		{Name: "end_at", Type: field.TypeTime},
-		{Name: "return_car_at", Type: field.TypeTime},
+		{Name: "return_car_at", Type: field.TypeTime, Nullable: true},
 		{Name: "rate", Type: field.TypeFloat32, Default: 5},
 		{Name: "exceed_rate", Type: field.TypeFloat32, Default: 10},
 		{Name: "deposit", Type: field.TypeFloat32, Default: 0},
-		{Name: "fuel_level_at_begin", Type: field.TypeFloat32},
-		{Name: "fuel_level_at_end", Type: field.TypeFloat32},
-		{Name: "mileage_begin", Type: field.TypeInt},
-		{Name: "mileage_end", Type: field.TypeInt},
-		{Name: "booking_status", Type: field.TypeString},
+		{Name: "fuel_level_at_begin", Type: field.TypeFloat32, Nullable: true},
+		{Name: "fuel_level_at_end", Type: field.TypeFloat32, Nullable: true},
+		{Name: "mileage_begin", Type: field.TypeInt, Nullable: true},
+		{Name: "mileage_end", Type: field.TypeInt, Nullable: true},
+		{Name: "booking_status", Type: field.TypeString, Default: "plan"},
 		{Name: "billing_booking", Type: field.TypeInt, Unique: true, Nullable: true},
 		{Name: "booking_user", Type: field.TypeInt},
 		{Name: "booking_car", Type: field.TypeInt},
@@ -103,7 +103,7 @@ var (
 		{Name: "brand", Type: field.TypeString},
 		{Name: "model", Type: field.TypeString},
 		{Name: "year", Type: field.TypeInt},
-		{Name: "status", Type: field.TypeString, Default: "ready"},
+		{Name: "status", Type: field.TypeString, Default: "idle"},
 		{Name: "car_type", Type: field.TypeString},
 		{Name: "plate_number", Type: field.TypeString},
 		{Name: "plate_country", Type: field.TypeString},
@@ -111,6 +111,7 @@ var (
 		{Name: "price", Type: field.TypeFloat32},
 		{Name: "mileage", Type: field.TypeInt},
 		{Name: "deposit", Type: field.TypeFloat32},
+		{Name: "car_location", Type: field.TypeInt, Nullable: true},
 		{Name: "location_cars", Type: field.TypeInt, Nullable: true},
 	}
 	// CarsTable holds the schema information for the "cars" table.
@@ -120,8 +121,14 @@ var (
 		PrimaryKey: []*schema.Column{CarsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "cars_locations_cars",
+				Symbol:     "cars_locations_location",
 				Columns:    []*schema.Column{CarsColumns[13]},
+				RefColumns: []*schema.Column{LocationsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "cars_locations_cars",
+				Columns:    []*schema.Column{CarsColumns[14]},
 				RefColumns: []*schema.Column{LocationsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -155,21 +162,12 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "latitude", Type: field.TypeFloat32},
 		{Name: "longitude", Type: field.TypeFloat32},
-		{Name: "car_location", Type: field.TypeInt, Nullable: true},
 	}
 	// LocationsTable holds the schema information for the "locations" table.
 	LocationsTable = &schema.Table{
 		Name:       "locations",
 		Columns:    LocationsColumns,
 		PrimaryKey: []*schema.Column{LocationsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "locations_cars_location",
-				Columns:    []*schema.Column{LocationsColumns[4]},
-				RefColumns: []*schema.Column{CarsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
 	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
@@ -217,7 +215,7 @@ func init() {
 	BookingsTable.ForeignKeys[1].RefTable = UsersTable
 	BookingsTable.ForeignKeys[2].RefTable = CarsTable
 	CarsTable.ForeignKeys[0].RefTable = LocationsTable
+	CarsTable.ForeignKeys[1].RefTable = LocationsTable
 	CardsTable.ForeignKeys[0].RefTable = UsersTable
-	LocationsTable.ForeignKeys[0].RefTable = CarsTable
 	UsersTable.ForeignKeys[0].RefTable = AccountsTable
 }

@@ -8,6 +8,11 @@ import (
 	"net/http"
 )
 
+type carData struct {
+	ent.Car
+	LocationID int `json:"location_id"`
+}
+
 // Add Car godoc
 // @Tags car
 // @Param request body ent.Car true "car info"
@@ -17,7 +22,7 @@ import (
 // @Success 201 {object} ent.Car
 // @Router /management/car [post]
 func (s *service) addCar(ctx *gin.Context) (int, any) {
-	var data ent.Car
+	var data carData
 	err := ctx.ShouldBindJSON(&data)
 	if err != nil {
 		return http.StatusBadRequest, err
@@ -36,6 +41,7 @@ func (s *service) addCar(ctx *gin.Context) (int, any) {
 		SetUnitPrice(data.UnitPrice).
 		SetPlateNumber(data.PlateNumber).
 		SetPlateCountry(data.PlateCountry).
+		SetLocationID(data.LocationID).
 		Save(ctx)
 	if err != nil {
 		return http.StatusBadRequest, err
@@ -53,7 +59,7 @@ func (s *service) addCar(ctx *gin.Context) (int, any) {
 // @Success 200 {object} ent.Car
 // @Router /management/car/:id [post]
 func (s *service) updateCar(ctx *gin.Context, id int) (int, any) {
-	var data ent.Car
+	var data carData
 	err := ctx.ShouldBindJSON(&data)
 	if err != nil {
 		return http.StatusBadRequest, err
@@ -72,6 +78,7 @@ func (s *service) updateCar(ctx *gin.Context, id int) (int, any) {
 		SetUnitPrice(data.UnitPrice).
 		SetPlateNumber(data.PlateNumber).
 		SetPlateCountry(data.PlateCountry).
+		SetLocationID(data.LocationID).
 		Save(ctx)
 	if err != nil {
 		return http.StatusBadRequest, err

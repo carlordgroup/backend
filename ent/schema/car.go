@@ -18,7 +18,7 @@ func (Car) Fields() []ent.Field {
 		field.String("brand"),
 		field.String("model"),
 		field.Int("year"),
-		field.String("status").Default("ready"),
+		field.String("status").Default("idle"),
 		field.String("car_type"),
 		field.String("plate_number"),
 		field.String("plate_country"),
@@ -32,7 +32,7 @@ func (Car) Fields() []ent.Field {
 // Edges of the Car.
 func (Car) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("location", Location.Type),
+		edge.To("location", Location.Type).Unique(),
 		edge.From("booking", Booking.Type).Ref("car"),
 	}
 }

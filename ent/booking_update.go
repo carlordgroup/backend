@@ -49,6 +49,20 @@ func (bu *BookingUpdate) SetReturnCarAt(t time.Time) *BookingUpdate {
 	return bu
 }
 
+// SetNillableReturnCarAt sets the "return_car_at" field if the given value is not nil.
+func (bu *BookingUpdate) SetNillableReturnCarAt(t *time.Time) *BookingUpdate {
+	if t != nil {
+		bu.SetReturnCarAt(*t)
+	}
+	return bu
+}
+
+// ClearReturnCarAt clears the value of the "return_car_at" field.
+func (bu *BookingUpdate) ClearReturnCarAt() *BookingUpdate {
+	bu.mutation.ClearReturnCarAt()
+	return bu
+}
+
 // SetRate sets the "rate" field.
 func (bu *BookingUpdate) SetRate(f float32) *BookingUpdate {
 	bu.mutation.ResetRate()
@@ -119,9 +133,23 @@ func (bu *BookingUpdate) SetFuelLevelAtBegin(f float32) *BookingUpdate {
 	return bu
 }
 
+// SetNillableFuelLevelAtBegin sets the "fuel_level_at_begin" field if the given value is not nil.
+func (bu *BookingUpdate) SetNillableFuelLevelAtBegin(f *float32) *BookingUpdate {
+	if f != nil {
+		bu.SetFuelLevelAtBegin(*f)
+	}
+	return bu
+}
+
 // AddFuelLevelAtBegin adds f to the "fuel_level_at_begin" field.
 func (bu *BookingUpdate) AddFuelLevelAtBegin(f float32) *BookingUpdate {
 	bu.mutation.AddFuelLevelAtBegin(f)
+	return bu
+}
+
+// ClearFuelLevelAtBegin clears the value of the "fuel_level_at_begin" field.
+func (bu *BookingUpdate) ClearFuelLevelAtBegin() *BookingUpdate {
+	bu.mutation.ClearFuelLevelAtBegin()
 	return bu
 }
 
@@ -132,9 +160,23 @@ func (bu *BookingUpdate) SetFuelLevelAtEnd(f float32) *BookingUpdate {
 	return bu
 }
 
+// SetNillableFuelLevelAtEnd sets the "fuel_level_at_end" field if the given value is not nil.
+func (bu *BookingUpdate) SetNillableFuelLevelAtEnd(f *float32) *BookingUpdate {
+	if f != nil {
+		bu.SetFuelLevelAtEnd(*f)
+	}
+	return bu
+}
+
 // AddFuelLevelAtEnd adds f to the "fuel_level_at_end" field.
 func (bu *BookingUpdate) AddFuelLevelAtEnd(f float32) *BookingUpdate {
 	bu.mutation.AddFuelLevelAtEnd(f)
+	return bu
+}
+
+// ClearFuelLevelAtEnd clears the value of the "fuel_level_at_end" field.
+func (bu *BookingUpdate) ClearFuelLevelAtEnd() *BookingUpdate {
+	bu.mutation.ClearFuelLevelAtEnd()
 	return bu
 }
 
@@ -145,9 +187,23 @@ func (bu *BookingUpdate) SetMileageBegin(i int) *BookingUpdate {
 	return bu
 }
 
+// SetNillableMileageBegin sets the "mileage_begin" field if the given value is not nil.
+func (bu *BookingUpdate) SetNillableMileageBegin(i *int) *BookingUpdate {
+	if i != nil {
+		bu.SetMileageBegin(*i)
+	}
+	return bu
+}
+
 // AddMileageBegin adds i to the "mileage_begin" field.
 func (bu *BookingUpdate) AddMileageBegin(i int) *BookingUpdate {
 	bu.mutation.AddMileageBegin(i)
+	return bu
+}
+
+// ClearMileageBegin clears the value of the "mileage_begin" field.
+func (bu *BookingUpdate) ClearMileageBegin() *BookingUpdate {
+	bu.mutation.ClearMileageBegin()
 	return bu
 }
 
@@ -158,15 +214,37 @@ func (bu *BookingUpdate) SetMileageEnd(i int) *BookingUpdate {
 	return bu
 }
 
+// SetNillableMileageEnd sets the "mileage_end" field if the given value is not nil.
+func (bu *BookingUpdate) SetNillableMileageEnd(i *int) *BookingUpdate {
+	if i != nil {
+		bu.SetMileageEnd(*i)
+	}
+	return bu
+}
+
 // AddMileageEnd adds i to the "mileage_end" field.
 func (bu *BookingUpdate) AddMileageEnd(i int) *BookingUpdate {
 	bu.mutation.AddMileageEnd(i)
 	return bu
 }
 
+// ClearMileageEnd clears the value of the "mileage_end" field.
+func (bu *BookingUpdate) ClearMileageEnd() *BookingUpdate {
+	bu.mutation.ClearMileageEnd()
+	return bu
+}
+
 // SetBookingStatus sets the "booking_status" field.
 func (bu *BookingUpdate) SetBookingStatus(s string) *BookingUpdate {
 	bu.mutation.SetBookingStatus(s)
+	return bu
+}
+
+// SetNillableBookingStatus sets the "booking_status" field if the given value is not nil.
+func (bu *BookingUpdate) SetNillableBookingStatus(s *string) *BookingUpdate {
+	if s != nil {
+		bu.SetBookingStatus(*s)
+	}
 	return bu
 }
 
@@ -332,6 +410,9 @@ func (bu *BookingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := bu.mutation.ReturnCarAt(); ok {
 		_spec.SetField(booking.FieldReturnCarAt, field.TypeTime, value)
 	}
+	if bu.mutation.ReturnCarAtCleared() {
+		_spec.ClearField(booking.FieldReturnCarAt, field.TypeTime)
+	}
 	if value, ok := bu.mutation.Rate(); ok {
 		_spec.SetField(booking.FieldRate, field.TypeFloat32, value)
 	}
@@ -356,11 +437,17 @@ func (bu *BookingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := bu.mutation.AddedFuelLevelAtBegin(); ok {
 		_spec.AddField(booking.FieldFuelLevelAtBegin, field.TypeFloat32, value)
 	}
+	if bu.mutation.FuelLevelAtBeginCleared() {
+		_spec.ClearField(booking.FieldFuelLevelAtBegin, field.TypeFloat32)
+	}
 	if value, ok := bu.mutation.FuelLevelAtEnd(); ok {
 		_spec.SetField(booking.FieldFuelLevelAtEnd, field.TypeFloat32, value)
 	}
 	if value, ok := bu.mutation.AddedFuelLevelAtEnd(); ok {
 		_spec.AddField(booking.FieldFuelLevelAtEnd, field.TypeFloat32, value)
+	}
+	if bu.mutation.FuelLevelAtEndCleared() {
+		_spec.ClearField(booking.FieldFuelLevelAtEnd, field.TypeFloat32)
 	}
 	if value, ok := bu.mutation.MileageBegin(); ok {
 		_spec.SetField(booking.FieldMileageBegin, field.TypeInt, value)
@@ -368,11 +455,17 @@ func (bu *BookingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := bu.mutation.AddedMileageBegin(); ok {
 		_spec.AddField(booking.FieldMileageBegin, field.TypeInt, value)
 	}
+	if bu.mutation.MileageBeginCleared() {
+		_spec.ClearField(booking.FieldMileageBegin, field.TypeInt)
+	}
 	if value, ok := bu.mutation.MileageEnd(); ok {
 		_spec.SetField(booking.FieldMileageEnd, field.TypeInt, value)
 	}
 	if value, ok := bu.mutation.AddedMileageEnd(); ok {
 		_spec.AddField(booking.FieldMileageEnd, field.TypeInt, value)
+	}
+	if bu.mutation.MileageEndCleared() {
+		_spec.ClearField(booking.FieldMileageEnd, field.TypeInt)
 	}
 	if value, ok := bu.mutation.BookingStatus(); ok {
 		_spec.SetField(booking.FieldBookingStatus, field.TypeString, value)
@@ -519,6 +612,20 @@ func (buo *BookingUpdateOne) SetReturnCarAt(t time.Time) *BookingUpdateOne {
 	return buo
 }
 
+// SetNillableReturnCarAt sets the "return_car_at" field if the given value is not nil.
+func (buo *BookingUpdateOne) SetNillableReturnCarAt(t *time.Time) *BookingUpdateOne {
+	if t != nil {
+		buo.SetReturnCarAt(*t)
+	}
+	return buo
+}
+
+// ClearReturnCarAt clears the value of the "return_car_at" field.
+func (buo *BookingUpdateOne) ClearReturnCarAt() *BookingUpdateOne {
+	buo.mutation.ClearReturnCarAt()
+	return buo
+}
+
 // SetRate sets the "rate" field.
 func (buo *BookingUpdateOne) SetRate(f float32) *BookingUpdateOne {
 	buo.mutation.ResetRate()
@@ -589,9 +696,23 @@ func (buo *BookingUpdateOne) SetFuelLevelAtBegin(f float32) *BookingUpdateOne {
 	return buo
 }
 
+// SetNillableFuelLevelAtBegin sets the "fuel_level_at_begin" field if the given value is not nil.
+func (buo *BookingUpdateOne) SetNillableFuelLevelAtBegin(f *float32) *BookingUpdateOne {
+	if f != nil {
+		buo.SetFuelLevelAtBegin(*f)
+	}
+	return buo
+}
+
 // AddFuelLevelAtBegin adds f to the "fuel_level_at_begin" field.
 func (buo *BookingUpdateOne) AddFuelLevelAtBegin(f float32) *BookingUpdateOne {
 	buo.mutation.AddFuelLevelAtBegin(f)
+	return buo
+}
+
+// ClearFuelLevelAtBegin clears the value of the "fuel_level_at_begin" field.
+func (buo *BookingUpdateOne) ClearFuelLevelAtBegin() *BookingUpdateOne {
+	buo.mutation.ClearFuelLevelAtBegin()
 	return buo
 }
 
@@ -602,9 +723,23 @@ func (buo *BookingUpdateOne) SetFuelLevelAtEnd(f float32) *BookingUpdateOne {
 	return buo
 }
 
+// SetNillableFuelLevelAtEnd sets the "fuel_level_at_end" field if the given value is not nil.
+func (buo *BookingUpdateOne) SetNillableFuelLevelAtEnd(f *float32) *BookingUpdateOne {
+	if f != nil {
+		buo.SetFuelLevelAtEnd(*f)
+	}
+	return buo
+}
+
 // AddFuelLevelAtEnd adds f to the "fuel_level_at_end" field.
 func (buo *BookingUpdateOne) AddFuelLevelAtEnd(f float32) *BookingUpdateOne {
 	buo.mutation.AddFuelLevelAtEnd(f)
+	return buo
+}
+
+// ClearFuelLevelAtEnd clears the value of the "fuel_level_at_end" field.
+func (buo *BookingUpdateOne) ClearFuelLevelAtEnd() *BookingUpdateOne {
+	buo.mutation.ClearFuelLevelAtEnd()
 	return buo
 }
 
@@ -615,9 +750,23 @@ func (buo *BookingUpdateOne) SetMileageBegin(i int) *BookingUpdateOne {
 	return buo
 }
 
+// SetNillableMileageBegin sets the "mileage_begin" field if the given value is not nil.
+func (buo *BookingUpdateOne) SetNillableMileageBegin(i *int) *BookingUpdateOne {
+	if i != nil {
+		buo.SetMileageBegin(*i)
+	}
+	return buo
+}
+
 // AddMileageBegin adds i to the "mileage_begin" field.
 func (buo *BookingUpdateOne) AddMileageBegin(i int) *BookingUpdateOne {
 	buo.mutation.AddMileageBegin(i)
+	return buo
+}
+
+// ClearMileageBegin clears the value of the "mileage_begin" field.
+func (buo *BookingUpdateOne) ClearMileageBegin() *BookingUpdateOne {
+	buo.mutation.ClearMileageBegin()
 	return buo
 }
 
@@ -628,15 +777,37 @@ func (buo *BookingUpdateOne) SetMileageEnd(i int) *BookingUpdateOne {
 	return buo
 }
 
+// SetNillableMileageEnd sets the "mileage_end" field if the given value is not nil.
+func (buo *BookingUpdateOne) SetNillableMileageEnd(i *int) *BookingUpdateOne {
+	if i != nil {
+		buo.SetMileageEnd(*i)
+	}
+	return buo
+}
+
 // AddMileageEnd adds i to the "mileage_end" field.
 func (buo *BookingUpdateOne) AddMileageEnd(i int) *BookingUpdateOne {
 	buo.mutation.AddMileageEnd(i)
 	return buo
 }
 
+// ClearMileageEnd clears the value of the "mileage_end" field.
+func (buo *BookingUpdateOne) ClearMileageEnd() *BookingUpdateOne {
+	buo.mutation.ClearMileageEnd()
+	return buo
+}
+
 // SetBookingStatus sets the "booking_status" field.
 func (buo *BookingUpdateOne) SetBookingStatus(s string) *BookingUpdateOne {
 	buo.mutation.SetBookingStatus(s)
+	return buo
+}
+
+// SetNillableBookingStatus sets the "booking_status" field if the given value is not nil.
+func (buo *BookingUpdateOne) SetNillableBookingStatus(s *string) *BookingUpdateOne {
+	if s != nil {
+		buo.SetBookingStatus(*s)
+	}
 	return buo
 }
 
@@ -832,6 +1003,9 @@ func (buo *BookingUpdateOne) sqlSave(ctx context.Context) (_node *Booking, err e
 	if value, ok := buo.mutation.ReturnCarAt(); ok {
 		_spec.SetField(booking.FieldReturnCarAt, field.TypeTime, value)
 	}
+	if buo.mutation.ReturnCarAtCleared() {
+		_spec.ClearField(booking.FieldReturnCarAt, field.TypeTime)
+	}
 	if value, ok := buo.mutation.Rate(); ok {
 		_spec.SetField(booking.FieldRate, field.TypeFloat32, value)
 	}
@@ -856,11 +1030,17 @@ func (buo *BookingUpdateOne) sqlSave(ctx context.Context) (_node *Booking, err e
 	if value, ok := buo.mutation.AddedFuelLevelAtBegin(); ok {
 		_spec.AddField(booking.FieldFuelLevelAtBegin, field.TypeFloat32, value)
 	}
+	if buo.mutation.FuelLevelAtBeginCleared() {
+		_spec.ClearField(booking.FieldFuelLevelAtBegin, field.TypeFloat32)
+	}
 	if value, ok := buo.mutation.FuelLevelAtEnd(); ok {
 		_spec.SetField(booking.FieldFuelLevelAtEnd, field.TypeFloat32, value)
 	}
 	if value, ok := buo.mutation.AddedFuelLevelAtEnd(); ok {
 		_spec.AddField(booking.FieldFuelLevelAtEnd, field.TypeFloat32, value)
+	}
+	if buo.mutation.FuelLevelAtEndCleared() {
+		_spec.ClearField(booking.FieldFuelLevelAtEnd, field.TypeFloat32)
 	}
 	if value, ok := buo.mutation.MileageBegin(); ok {
 		_spec.SetField(booking.FieldMileageBegin, field.TypeInt, value)
@@ -868,11 +1048,17 @@ func (buo *BookingUpdateOne) sqlSave(ctx context.Context) (_node *Booking, err e
 	if value, ok := buo.mutation.AddedMileageBegin(); ok {
 		_spec.AddField(booking.FieldMileageBegin, field.TypeInt, value)
 	}
+	if buo.mutation.MileageBeginCleared() {
+		_spec.ClearField(booking.FieldMileageBegin, field.TypeInt)
+	}
 	if value, ok := buo.mutation.MileageEnd(); ok {
 		_spec.SetField(booking.FieldMileageEnd, field.TypeInt, value)
 	}
 	if value, ok := buo.mutation.AddedMileageEnd(); ok {
 		_spec.AddField(booking.FieldMileageEnd, field.TypeInt, value)
+	}
+	if buo.mutation.MileageEndCleared() {
+		_spec.ClearField(booking.FieldMileageEnd, field.TypeInt)
 	}
 	if value, ok := buo.mutation.BookingStatus(); ok {
 		_spec.SetField(booking.FieldBookingStatus, field.TypeString, value)

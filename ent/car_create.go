@@ -101,19 +101,23 @@ func (cc *CarCreate) SetDeposit(f float32) *CarCreate {
 	return cc
 }
 
-// AddLocationIDs adds the "location" edge to the Location entity by IDs.
-func (cc *CarCreate) AddLocationIDs(ids ...int) *CarCreate {
-	cc.mutation.AddLocationIDs(ids...)
+// SetLocationID sets the "location" edge to the Location entity by ID.
+func (cc *CarCreate) SetLocationID(id int) *CarCreate {
+	cc.mutation.SetLocationID(id)
 	return cc
 }
 
-// AddLocation adds the "location" edges to the Location entity.
-func (cc *CarCreate) AddLocation(l ...*Location) *CarCreate {
-	ids := make([]int, len(l))
-	for i := range l {
-		ids[i] = l[i].ID
+// SetNillableLocationID sets the "location" edge to the Location entity by ID if the given value is not nil.
+func (cc *CarCreate) SetNillableLocationID(id *int) *CarCreate {
+	if id != nil {
+		cc = cc.SetLocationID(*id)
 	}
-	return cc.AddLocationIDs(ids...)
+	return cc
+}
+
+// SetLocation sets the "location" edge to the Location entity.
+func (cc *CarCreate) SetLocation(l *Location) *CarCreate {
+	return cc.SetLocationID(l.ID)
 }
 
 // AddBookingIDs adds the "booking" edge to the Booking entity by IDs.
@@ -329,7 +333,7 @@ func (cc *CarCreate) createSpec() (*Car, *sqlgraph.CreateSpec) {
 	}
 	if nodes := cc.mutation.LocationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   car.LocationTable,
 			Columns: []string{car.LocationColumn},
@@ -344,6 +348,7 @@ func (cc *CarCreate) createSpec() (*Car, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.car_location = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := cc.mutation.BookingIDs(); len(nodes) > 0 {

@@ -350,6 +350,20 @@ func ReturnCarAtLTE(v time.Time) predicate.Booking {
 	})
 }
 
+// ReturnCarAtIsNil applies the IsNil predicate on the "return_car_at" field.
+func ReturnCarAtIsNil() predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldReturnCarAt)))
+	})
+}
+
+// ReturnCarAtNotNil applies the NotNil predicate on the "return_car_at" field.
+func ReturnCarAtNotNil() predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldReturnCarAt)))
+	})
+}
+
 // RateEQ applies the EQ predicate on the "rate" field.
 func RateEQ(v float32) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
@@ -606,6 +620,20 @@ func FuelLevelAtBeginLTE(v float32) predicate.Booking {
 	})
 }
 
+// FuelLevelAtBeginIsNil applies the IsNil predicate on the "fuel_level_at_begin" field.
+func FuelLevelAtBeginIsNil() predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldFuelLevelAtBegin)))
+	})
+}
+
+// FuelLevelAtBeginNotNil applies the NotNil predicate on the "fuel_level_at_begin" field.
+func FuelLevelAtBeginNotNil() predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldFuelLevelAtBegin)))
+	})
+}
+
 // FuelLevelAtEndEQ applies the EQ predicate on the "fuel_level_at_end" field.
 func FuelLevelAtEndEQ(v float32) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
@@ -667,6 +695,20 @@ func FuelLevelAtEndLT(v float32) predicate.Booking {
 func FuelLevelAtEndLTE(v float32) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldFuelLevelAtEnd), v))
+	})
+}
+
+// FuelLevelAtEndIsNil applies the IsNil predicate on the "fuel_level_at_end" field.
+func FuelLevelAtEndIsNil() predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldFuelLevelAtEnd)))
+	})
+}
+
+// FuelLevelAtEndNotNil applies the NotNil predicate on the "fuel_level_at_end" field.
+func FuelLevelAtEndNotNil() predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldFuelLevelAtEnd)))
 	})
 }
 
@@ -734,6 +776,20 @@ func MileageBeginLTE(v int) predicate.Booking {
 	})
 }
 
+// MileageBeginIsNil applies the IsNil predicate on the "mileage_begin" field.
+func MileageBeginIsNil() predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldMileageBegin)))
+	})
+}
+
+// MileageBeginNotNil applies the NotNil predicate on the "mileage_begin" field.
+func MileageBeginNotNil() predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldMileageBegin)))
+	})
+}
+
 // MileageEndEQ applies the EQ predicate on the "mileage_end" field.
 func MileageEndEQ(v int) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
@@ -795,6 +851,20 @@ func MileageEndLT(v int) predicate.Booking {
 func MileageEndLTE(v int) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldMileageEnd), v))
+	})
+}
+
+// MileageEndIsNil applies the IsNil predicate on the "mileage_end" field.
+func MileageEndIsNil() predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldMileageEnd)))
+	})
+}
+
+// MileageEndNotNil applies the NotNil predicate on the "mileage_end" field.
+func MileageEndNotNil() predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldMileageEnd)))
 	})
 }
 

@@ -1183,7 +1183,7 @@ func HasLocation() predicate.Car {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(LocationTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, LocationTable, LocationColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, LocationTable, LocationColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -1195,7 +1195,7 @@ func HasLocationWith(preds ...predicate.Location) predicate.Car {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(LocationInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, LocationTable, LocationColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, LocationTable, LocationColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

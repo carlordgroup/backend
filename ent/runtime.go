@@ -58,6 +58,10 @@ func init() {
 	bookingDescDeposit := bookingFields[5].Descriptor()
 	// booking.DefaultDeposit holds the default value on creation for the deposit field.
 	booking.DefaultDeposit = bookingDescDeposit.Default.(float32)
+	// bookingDescBookingStatus is the schema descriptor for booking_status field.
+	bookingDescBookingStatus := bookingFields[10].Descriptor()
+	// booking.DefaultBookingStatus holds the default value on creation for the booking_status field.
+	booking.DefaultBookingStatus = bookingDescBookingStatus.Default.(string)
 	carFields := schema.Car{}.Fields()
 	_ = carFields
 	// carDescStatus is the schema descriptor for status field.

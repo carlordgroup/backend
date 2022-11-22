@@ -38,7 +38,7 @@ const (
 	// Table holds the table name of the car in the database.
 	Table = "cars"
 	// LocationTable is the table that holds the location relation/edge.
-	LocationTable = "locations"
+	LocationTable = "cars"
 	// LocationInverseTable is the table name for the Location entity.
 	// It exists in this package in order to avoid circular dependency with the "location" package.
 	LocationInverseTable = "locations"
@@ -73,6 +73,7 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "cars"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
+	"car_location",
 	"location_cars",
 }
 

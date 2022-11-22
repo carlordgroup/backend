@@ -79,7 +79,7 @@ func (cq *CarQuery) QueryLocation() *LocationQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(car.Table, car.FieldID, selector),
 			sqlgraph.To(location.Table, location.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, car.LocationTable, car.LocationColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, car.LocationTable, car.LocationColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
 		return fromU, nil
@@ -400,6 +400,9 @@ func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, err
 			cq.withBooking != nil,
 		}
 	)
+	if cq.withLocation != nil {
+		withFKs = true
+	}
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, car.ForeignKeys...)
 	}
@@ -422,9 +425,8 @@ func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, err
 		return nodes, nil
 	}
 	if query := cq.withLocation; query != nil {
-		if err := cq.loadLocation(ctx, query, nodes,
-			func(n *Car) { n.Edges.Location = []*Location{} },
-			func(n *Car, e *Location) { n.Edges.Location = append(n.Edges.Location, e) }); err != nil {
+		if err := cq.loadLocation(ctx, query, nodes, nil,
+			func(n *Car, e *Location) { n.Edges.Location = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -439,33 +441,31 @@ func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, err
 }
 
 func (cq *CarQuery) loadLocation(ctx context.Context, query *LocationQuery, nodes []*Car, init func(*Car), assign func(*Car, *Location)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Car)
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*Car)
 	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
+		if nodes[i].car_location == nil {
+			continue
 		}
+		fk := *nodes[i].car_location
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	query.withFKs = true
-	query.Where(predicate.Location(func(s *sql.Selector) {
-		s.Where(sql.InValues(car.LocationColumn, fks...))
-	}))
+	query.Where(location.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.car_location
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "car_location" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "car_location" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "car_location" returned %v`, n.ID)
 		}
-		assign(node, n)
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
 	}
 	return nil
 }

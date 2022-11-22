@@ -98,6 +98,14 @@ func (bc *BillingCreate) SetBookingID(id int) *BillingCreate {
 	return bc
 }
 
+// SetNillableBookingID sets the "booking" edge to the Booking entity by ID if the given value is not nil.
+func (bc *BillingCreate) SetNillableBookingID(id *int) *BillingCreate {
+	if id != nil {
+		bc = bc.SetBookingID(*id)
+	}
+	return bc
+}
+
 // SetBooking sets the "booking" edge to the Booking entity.
 func (bc *BillingCreate) SetBooking(b *Booking) *BillingCreate {
 	return bc.SetBookingID(b.ID)
@@ -256,9 +264,6 @@ func (bc *BillingCreate) check() error {
 	}
 	if _, ok := bc.mutation.Deposit(); !ok {
 		return &ValidationError{Name: "deposit", err: errors.New(`ent: missing required field "Billing.deposit"`)}
-	}
-	if _, ok := bc.mutation.BookingID(); !ok {
-		return &ValidationError{Name: "booking", err: errors.New(`ent: missing required edge "Billing.booking"`)}
 	}
 	return nil
 }

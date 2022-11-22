@@ -16,15 +16,15 @@ func (Booking) Fields() []ent.Field {
 	return []ent.Field{
 		field.Time("start_at"),
 		field.Time("end_at"),
-		field.Time("return_car_at").Nillable(),
+		field.Time("return_car_at").Optional(),
 		field.Float32("rate").Default(5),
 		field.Float32("exceed_rate").Default(10),
 		field.Float32("deposit").Default(0),
-		field.Float32("fuel_level_at_begin").Nillable(),
-		field.Float32("fuel_level_at_end").Nillable(),
-		field.Int("mileage_begin").Nillable(),
-		field.Int("mileage_end").Nillable(),
-		field.String("booking_status"),
+		field.Float32("fuel_level_at_begin").Optional(),
+		field.Float32("fuel_level_at_end").Optional(),
+		field.Int("mileage_begin").Optional(),
+		field.Int("mileage_end").Optional(),
+		field.String("booking_status").Default("plan"),
 	}
 }
 

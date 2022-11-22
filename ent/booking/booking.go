@@ -106,4 +106,6 @@ var (
 	DefaultExceedRate float32
 	// DefaultDeposit holds the default value on creation for the "deposit" field.
 	DefaultDeposit float32
+	// DefaultBookingStatus holds the default value on creation for the "booking_status" field.
+	DefaultBookingStatus string
 )

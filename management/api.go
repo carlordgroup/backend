@@ -27,8 +27,8 @@ func (s *service) RegisterRouter(group gin.IRouter, auth Authenticate) {
 	g := group.Group("/location")
 	g.GET("/", web.W(s.listLocation))
 	g.Use(auth.MustLogin(), auth.GetAccount(), auth.MustAdmin())
-	g.POST("/", web.W(s.addLocation))
 	g.POST("/:id", web.ID(s.updateLocation))
+	g.POST("/", web.W(s.addLocation))
 	g.DELETE("/:id", web.ID(s.deleteLocation))
 
 	g = group.Group("/car")

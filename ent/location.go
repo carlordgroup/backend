@@ -23,8 +23,7 @@ type Location struct {
 	Longitude float32 `json:"longitude,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the LocationQuery when eager-loading is set.
-	Edges        LocationEdges `json:"edges"`
-	car_location *int
+	Edges LocationEdges `json:"edges"`
 }
 
 // LocationEdges holds the relations/edges for other nodes in the graph.
@@ -56,8 +55,6 @@ func (*Location) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case location.FieldName:
 			values[i] = new(sql.NullString)
-		case location.ForeignKeys[0]: // car_location
-			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Location", columns[i])
 		}
@@ -96,13 +93,6 @@ func (l *Location) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field longitude", values[i])
 			} else if value.Valid {
 				l.Longitude = float32(value.Float64)
-			}
-		case location.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field car_location", value)
-			} else if value.Valid {
-				l.car_location = new(int)
-				*l.car_location = int(value.Int64)
 			}
 		}
 	}
