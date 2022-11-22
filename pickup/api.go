@@ -12,6 +12,7 @@ type service struct {
 
 type Authenticate interface {
 	MustLogin() gin.HandlerFunc
+	GetAccount() gin.HandlerFunc
 	MustAdmin() gin.HandlerFunc
 }
 
@@ -22,7 +23,7 @@ func New(client *ent.Client) *service {
 	return &s
 }
 func (s *service) RegisterRouter(group gin.IRouter, auth Authenticate) {
-	group.Use(auth.MustLogin(), auth.MustAdmin())
+	group.Use(auth.MustLogin(), auth.GetAccount(), auth.MustAdmin())
 	group.POST("/start/:id", web.ID(s.realizeBooking))
 	group.POST("/finish/:id", web.ID(s.returnCar))
 }
