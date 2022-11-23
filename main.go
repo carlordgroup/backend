@@ -16,6 +16,7 @@ import (
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"log"
+	"net/http"
 	"os"
 )
 
@@ -31,9 +32,12 @@ func main() {
 	}
 
 	r := gin.Default()
-	// same as
 	r.Use(cors.Default())
 	api := r.Group("api/")
+	api.GET("", func(c *gin.Context) {
+		c.Redirect(http.StatusFound, "/api/swagger/index.html")
+	})
+
 	g := api.Group("account/")
 	authService := auth.New(client)
 	authService.RegisterRouter(g)

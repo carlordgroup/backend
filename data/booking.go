@@ -37,10 +37,6 @@ func (b *Booking) Bill() (*Bill, error) {
 	return NewBill(b.ctx, bill), err
 }
 
-func (b *Booking) End() {
-	//TODO
-}
-
 func (b *Booking) UpdateStatus(status string) (err error) {
 	_, err = b.Update().SetBookingStatus(status).Save(b.ctx)
 	return err
