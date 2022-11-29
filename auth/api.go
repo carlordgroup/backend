@@ -54,7 +54,7 @@ func login(auth *jwt.GinJWTMiddleware) gin.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Success 200 {object} ent.Account
-// @Router /account/ [get]
+// @Router /account/ [post]
 func (s *service) self(ctx *gin.Context) (int, any) {
 	return http.StatusOK, ctx.MustGet("account")
 }
@@ -87,6 +87,7 @@ func (s *service) register(ctx *gin.Context) (int, any) {
 		Save(ctx)
 	if err != nil {
 		tx.Rollback()
+
 		return http.StatusBadRequest, err
 	}
 	_, err = tx.User.Create().SetAccountID(a.ID).Save(ctx)

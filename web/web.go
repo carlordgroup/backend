@@ -12,7 +12,7 @@ func W(finer ResultFiner) gin.HandlerFunc {
 	return func(context *gin.Context) {
 		code, result := finer(context)
 		if code >= 400 {
-			context.JSON(code, gin.H{"error": result.(error).Error()})
+			context.JSON(code, gin.H{"error": result})
 		} else if result == nil {
 			context.Status(code)
 		} else {
