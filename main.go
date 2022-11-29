@@ -32,7 +32,13 @@ func main() {
 	}
 
 	r := gin.Default()
-	r.Use(cors.Default())
+	{
+		c := cors.DefaultConfig()
+		c.AllowHeaders = append(c.AllowHeaders, "Authorization")
+		c.AllowAllOrigins = true
+		r.Use(cors.New(c))
+	}
+
 	api := r.Group("api/")
 	api.GET("", func(c *gin.Context) {
 		c.Redirect(http.StatusFound, "/api/swagger/index.html")
