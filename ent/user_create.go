@@ -11,7 +11,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -123,15 +122,15 @@ func (uc *UserCreate) SetNillableDriverLicenseCountry(s *string) *UserCreate {
 }
 
 // SetBirthday sets the "birthday" field.
-func (uc *UserCreate) SetBirthday(t time.Time) *UserCreate {
-	uc.mutation.SetBirthday(t)
+func (uc *UserCreate) SetBirthday(i int64) *UserCreate {
+	uc.mutation.SetBirthday(i)
 	return uc
 }
 
 // SetNillableBirthday sets the "birthday" field if the given value is not nil.
-func (uc *UserCreate) SetNillableBirthday(t *time.Time) *UserCreate {
-	if t != nil {
-		uc.SetBirthday(*t)
+func (uc *UserCreate) SetNillableBirthday(i *int64) *UserCreate {
+	if i != nil {
+		uc.SetBirthday(*i)
 	}
 	return uc
 }
@@ -393,7 +392,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_node.DriverLicenseCountry = value
 	}
 	if value, ok := uc.mutation.Birthday(); ok {
-		_spec.SetField(user.FieldBirthday, field.TypeTime, value)
+		_spec.SetField(user.FieldBirthday, field.TypeInt64, value)
 		_node.Birthday = value
 	}
 	if nodes := uc.mutation.CardIDs(); len(nodes) > 0 {

@@ -9,7 +9,6 @@ import (
 	"carlord/ent/user"
 	"fmt"
 	"strings"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 )
@@ -20,11 +19,11 @@ type Booking struct {
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// StartAt holds the value of the "start_at" field.
-	StartAt time.Time `json:"start_at,omitempty"`
+	StartAt int64 `json:"start_at,omitempty"`
 	// EndAt holds the value of the "end_at" field.
-	EndAt time.Time `json:"end_at,omitempty"`
+	EndAt int64 `json:"end_at,omitempty"`
 	// ReturnCarAt holds the value of the "return_car_at" field.
-	ReturnCarAt time.Time `json:"return_car_at,omitempty"`
+	ReturnCarAt int64 `json:"return_car_at,omitempty"`
 	// Rate holds the value of the "rate" field.
 	Rate float32 `json:"rate,omitempty"`
 	// ExceedRate holds the value of the "exceed_rate" field.
@@ -108,12 +107,10 @@ func (*Booking) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case booking.FieldRate, booking.FieldExceedRate, booking.FieldDeposit, booking.FieldFuelLevelAtBegin, booking.FieldFuelLevelAtEnd:
 			values[i] = new(sql.NullFloat64)
-		case booking.FieldID, booking.FieldMileageBegin, booking.FieldMileageEnd:
+		case booking.FieldID, booking.FieldStartAt, booking.FieldEndAt, booking.FieldReturnCarAt, booking.FieldMileageBegin, booking.FieldMileageEnd:
 			values[i] = new(sql.NullInt64)
 		case booking.FieldBookingStatus:
 			values[i] = new(sql.NullString)
-		case booking.FieldStartAt, booking.FieldEndAt, booking.FieldReturnCarAt:
-			values[i] = new(sql.NullTime)
 		case booking.ForeignKeys[0]: // billing_booking
 			values[i] = new(sql.NullInt64)
 		case booking.ForeignKeys[1]: // booking_user
@@ -142,22 +139,22 @@ func (b *Booking) assignValues(columns []string, values []any) error {
 			}
 			b.ID = int(value.Int64)
 		case booking.FieldStartAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
+			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field start_at", values[i])
 			} else if value.Valid {
-				b.StartAt = value.Time
+				b.StartAt = value.Int64
 			}
 		case booking.FieldEndAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
+			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field end_at", values[i])
 			} else if value.Valid {
-				b.EndAt = value.Time
+				b.EndAt = value.Int64
 			}
 		case booking.FieldReturnCarAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
+			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field return_car_at", values[i])
 			} else if value.Valid {
-				b.ReturnCarAt = value.Time
+				b.ReturnCarAt = value.Int64
 			}
 		case booking.FieldRate:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
@@ -272,13 +269,13 @@ func (b *Booking) String() string {
 	builder.WriteString("Booking(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", b.ID))
 	builder.WriteString("start_at=")
-	builder.WriteString(b.StartAt.Format(time.ANSIC))
+	builder.WriteString(fmt.Sprintf("%v", b.StartAt))
 	builder.WriteString(", ")
 	builder.WriteString("end_at=")
-	builder.WriteString(b.EndAt.Format(time.ANSIC))
+	builder.WriteString(fmt.Sprintf("%v", b.EndAt))
 	builder.WriteString(", ")
 	builder.WriteString("return_car_at=")
-	builder.WriteString(b.ReturnCarAt.Format(time.ANSIC))
+	builder.WriteString(fmt.Sprintf("%v", b.ReturnCarAt))
 	builder.WriteString(", ")
 	builder.WriteString("rate=")
 	builder.WriteString(fmt.Sprintf("%v", b.Rate))

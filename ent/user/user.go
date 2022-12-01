@@ -2,10 +2,6 @@
 
 package user
 
-import (
-	"time"
-)
-
 const (
 	// Label holds the string label denoting the user type in the database.
 	Label = "user"
@@ -117,5 +113,5 @@ var (
 	// DefaultDriverLicenseCountry holds the default value on creation for the "driver_license_country" field.
 	DefaultDriverLicenseCountry string
 	// DefaultBirthday holds the default value on creation for the "birthday" field.
-	DefaultBirthday func() time.Time
+	DefaultBirthday func() int64
 )

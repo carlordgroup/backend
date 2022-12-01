@@ -15,7 +15,6 @@ import (
 	"errors"
 	"fmt"
 	"sync"
-	"time"
 
 	"entgo.io/ent"
 )
@@ -1377,9 +1376,12 @@ type BookingMutation struct {
 	op                     Op
 	typ                    string
 	id                     *int
-	start_at               *time.Time
-	end_at                 *time.Time
-	return_car_at          *time.Time
+	start_at               *int64
+	addstart_at            *int64
+	end_at                 *int64
+	addend_at              *int64
+	return_car_at          *int64
+	addreturn_car_at       *int64
 	rate                   *float32
 	addrate                *float32
 	exceed_rate            *float32
@@ -1506,12 +1508,13 @@ func (m *BookingMutation) IDs(ctx context.Context) ([]int, error) {
 }
 
 // SetStartAt sets the "start_at" field.
-func (m *BookingMutation) SetStartAt(t time.Time) {
-	m.start_at = &t
+func (m *BookingMutation) SetStartAt(i int64) {
+	m.start_at = &i
+	m.addstart_at = nil
 }
 
 // StartAt returns the value of the "start_at" field in the mutation.
-func (m *BookingMutation) StartAt() (r time.Time, exists bool) {
+func (m *BookingMutation) StartAt() (r int64, exists bool) {
 	v := m.start_at
 	if v == nil {
 		return
@@ -1522,7 +1525,7 @@ func (m *BookingMutation) StartAt() (r time.Time, exists bool) {
 // OldStartAt returns the old "start_at" field's value of the Booking entity.
 // If the Booking object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BookingMutation) OldStartAt(ctx context.Context) (v time.Time, err error) {
+func (m *BookingMutation) OldStartAt(ctx context.Context) (v int64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldStartAt is only allowed on UpdateOne operations")
 	}
@@ -1536,18 +1539,38 @@ func (m *BookingMutation) OldStartAt(ctx context.Context) (v time.Time, err erro
 	return oldValue.StartAt, nil
 }
 
+// AddStartAt adds i to the "start_at" field.
+func (m *BookingMutation) AddStartAt(i int64) {
+	if m.addstart_at != nil {
+		*m.addstart_at += i
+	} else {
+		m.addstart_at = &i
+	}
+}
+
+// AddedStartAt returns the value that was added to the "start_at" field in this mutation.
+func (m *BookingMutation) AddedStartAt() (r int64, exists bool) {
+	v := m.addstart_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
 // ResetStartAt resets all changes to the "start_at" field.
 func (m *BookingMutation) ResetStartAt() {
 	m.start_at = nil
+	m.addstart_at = nil
 }
 
 // SetEndAt sets the "end_at" field.
-func (m *BookingMutation) SetEndAt(t time.Time) {
-	m.end_at = &t
+func (m *BookingMutation) SetEndAt(i int64) {
+	m.end_at = &i
+	m.addend_at = nil
 }
 
 // EndAt returns the value of the "end_at" field in the mutation.
-func (m *BookingMutation) EndAt() (r time.Time, exists bool) {
+func (m *BookingMutation) EndAt() (r int64, exists bool) {
 	v := m.end_at
 	if v == nil {
 		return
@@ -1558,7 +1581,7 @@ func (m *BookingMutation) EndAt() (r time.Time, exists bool) {
 // OldEndAt returns the old "end_at" field's value of the Booking entity.
 // If the Booking object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BookingMutation) OldEndAt(ctx context.Context) (v time.Time, err error) {
+func (m *BookingMutation) OldEndAt(ctx context.Context) (v int64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldEndAt is only allowed on UpdateOne operations")
 	}
@@ -1572,18 +1595,38 @@ func (m *BookingMutation) OldEndAt(ctx context.Context) (v time.Time, err error)
 	return oldValue.EndAt, nil
 }
 
+// AddEndAt adds i to the "end_at" field.
+func (m *BookingMutation) AddEndAt(i int64) {
+	if m.addend_at != nil {
+		*m.addend_at += i
+	} else {
+		m.addend_at = &i
+	}
+}
+
+// AddedEndAt returns the value that was added to the "end_at" field in this mutation.
+func (m *BookingMutation) AddedEndAt() (r int64, exists bool) {
+	v := m.addend_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
 // ResetEndAt resets all changes to the "end_at" field.
 func (m *BookingMutation) ResetEndAt() {
 	m.end_at = nil
+	m.addend_at = nil
 }
 
 // SetReturnCarAt sets the "return_car_at" field.
-func (m *BookingMutation) SetReturnCarAt(t time.Time) {
-	m.return_car_at = &t
+func (m *BookingMutation) SetReturnCarAt(i int64) {
+	m.return_car_at = &i
+	m.addreturn_car_at = nil
 }
 
 // ReturnCarAt returns the value of the "return_car_at" field in the mutation.
-func (m *BookingMutation) ReturnCarAt() (r time.Time, exists bool) {
+func (m *BookingMutation) ReturnCarAt() (r int64, exists bool) {
 	v := m.return_car_at
 	if v == nil {
 		return
@@ -1594,7 +1637,7 @@ func (m *BookingMutation) ReturnCarAt() (r time.Time, exists bool) {
 // OldReturnCarAt returns the old "return_car_at" field's value of the Booking entity.
 // If the Booking object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BookingMutation) OldReturnCarAt(ctx context.Context) (v time.Time, err error) {
+func (m *BookingMutation) OldReturnCarAt(ctx context.Context) (v int64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldReturnCarAt is only allowed on UpdateOne operations")
 	}
@@ -1608,9 +1651,28 @@ func (m *BookingMutation) OldReturnCarAt(ctx context.Context) (v time.Time, err 
 	return oldValue.ReturnCarAt, nil
 }
 
+// AddReturnCarAt adds i to the "return_car_at" field.
+func (m *BookingMutation) AddReturnCarAt(i int64) {
+	if m.addreturn_car_at != nil {
+		*m.addreturn_car_at += i
+	} else {
+		m.addreturn_car_at = &i
+	}
+}
+
+// AddedReturnCarAt returns the value that was added to the "return_car_at" field in this mutation.
+func (m *BookingMutation) AddedReturnCarAt() (r int64, exists bool) {
+	v := m.addreturn_car_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
 // ClearReturnCarAt clears the value of the "return_car_at" field.
 func (m *BookingMutation) ClearReturnCarAt() {
 	m.return_car_at = nil
+	m.addreturn_car_at = nil
 	m.clearedFields[booking.FieldReturnCarAt] = struct{}{}
 }
 
@@ -1623,6 +1685,7 @@ func (m *BookingMutation) ReturnCarAtCleared() bool {
 // ResetReturnCarAt resets all changes to the "return_car_at" field.
 func (m *BookingMutation) ResetReturnCarAt() {
 	m.return_car_at = nil
+	m.addreturn_car_at = nil
 	delete(m.clearedFields, booking.FieldReturnCarAt)
 }
 
@@ -2351,21 +2414,21 @@ func (m *BookingMutation) OldField(ctx context.Context, name string) (ent.Value,
 func (m *BookingMutation) SetField(name string, value ent.Value) error {
 	switch name {
 	case booking.FieldStartAt:
-		v, ok := value.(time.Time)
+		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetStartAt(v)
 		return nil
 	case booking.FieldEndAt:
-		v, ok := value.(time.Time)
+		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetEndAt(v)
 		return nil
 	case booking.FieldReturnCarAt:
-		v, ok := value.(time.Time)
+		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -2435,6 +2498,15 @@ func (m *BookingMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *BookingMutation) AddedFields() []string {
 	var fields []string
+	if m.addstart_at != nil {
+		fields = append(fields, booking.FieldStartAt)
+	}
+	if m.addend_at != nil {
+		fields = append(fields, booking.FieldEndAt)
+	}
+	if m.addreturn_car_at != nil {
+		fields = append(fields, booking.FieldReturnCarAt)
+	}
 	if m.addrate != nil {
 		fields = append(fields, booking.FieldRate)
 	}
@@ -2464,6 +2536,12 @@ func (m *BookingMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *BookingMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
+	case booking.FieldStartAt:
+		return m.AddedStartAt()
+	case booking.FieldEndAt:
+		return m.AddedEndAt()
+	case booking.FieldReturnCarAt:
+		return m.AddedReturnCarAt()
 	case booking.FieldRate:
 		return m.AddedRate()
 	case booking.FieldExceedRate:
@@ -2487,6 +2565,27 @@ func (m *BookingMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *BookingMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case booking.FieldStartAt:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddStartAt(v)
+		return nil
+	case booking.FieldEndAt:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddEndAt(v)
+		return nil
+	case booking.FieldReturnCarAt:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddReturnCarAt(v)
+		return nil
 	case booking.FieldRate:
 		v, ok := value.(float32)
 		if !ok {
@@ -5048,7 +5147,8 @@ type UserMutation struct {
 	tel                    *string
 	driver_license_id      *string
 	driver_license_country *string
-	birthday               *time.Time
+	birthday               *int64
+	addbirthday            *int64
 	clearedFields          map[string]struct{}
 	card                   map[int]struct{}
 	removedcard            map[int]struct{}
@@ -5417,12 +5517,13 @@ func (m *UserMutation) ResetDriverLicenseCountry() {
 }
 
 // SetBirthday sets the "birthday" field.
-func (m *UserMutation) SetBirthday(t time.Time) {
-	m.birthday = &t
+func (m *UserMutation) SetBirthday(i int64) {
+	m.birthday = &i
+	m.addbirthday = nil
 }
 
 // Birthday returns the value of the "birthday" field in the mutation.
-func (m *UserMutation) Birthday() (r time.Time, exists bool) {
+func (m *UserMutation) Birthday() (r int64, exists bool) {
 	v := m.birthday
 	if v == nil {
 		return
@@ -5433,7 +5534,7 @@ func (m *UserMutation) Birthday() (r time.Time, exists bool) {
 // OldBirthday returns the old "birthday" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldBirthday(ctx context.Context) (v time.Time, err error) {
+func (m *UserMutation) OldBirthday(ctx context.Context) (v int64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldBirthday is only allowed on UpdateOne operations")
 	}
@@ -5447,9 +5548,28 @@ func (m *UserMutation) OldBirthday(ctx context.Context) (v time.Time, err error)
 	return oldValue.Birthday, nil
 }
 
+// AddBirthday adds i to the "birthday" field.
+func (m *UserMutation) AddBirthday(i int64) {
+	if m.addbirthday != nil {
+		*m.addbirthday += i
+	} else {
+		m.addbirthday = &i
+	}
+}
+
+// AddedBirthday returns the value that was added to the "birthday" field in this mutation.
+func (m *UserMutation) AddedBirthday() (r int64, exists bool) {
+	v := m.addbirthday
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
 // ResetBirthday resets all changes to the "birthday" field.
 func (m *UserMutation) ResetBirthday() {
 	m.birthday = nil
+	m.addbirthday = nil
 }
 
 // AddCardIDs adds the "card" edge to the Card entity by ids.
@@ -5805,7 +5925,7 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		m.SetDriverLicenseCountry(v)
 		return nil
 	case user.FieldBirthday:
-		v, ok := value.(time.Time)
+		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -5818,13 +5938,21 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *UserMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addbirthday != nil {
+		fields = append(fields, user.FieldBirthday)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *UserMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case user.FieldBirthday:
+		return m.AddedBirthday()
+	}
 	return nil, false
 }
 
@@ -5833,6 +5961,13 @@ func (m *UserMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *UserMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case user.FieldBirthday:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddBirthday(v)
+		return nil
 	}
 	return fmt.Errorf("unknown User numeric field %s", name)
 }

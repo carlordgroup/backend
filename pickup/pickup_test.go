@@ -37,7 +37,7 @@ func init() {
 	client.Card.Create().SetNumber("9").SetValidUntil("").SetCardholderName("").SetOwnerID(1).Save(context.Background())
 	client.Location.Create().SetName("1").SetLatitude(1).SetLongitude(2).Save(context.Background())
 	client.Car.Create().SetBrand("vw").SetCarType("suv").SetUnitPrice(2).SetDeposit(2).SetColor("1").SetYear(1).SetMileage(1).SetPrice(1).SetPlateNumber("").SetPlateCountry("").SetPlateNumber("").SetModel("").SetLocationID(1).Save(context.Background())
-	w = utils.Request(router, token.Token, http.MethodPost, "/booking/", map[string]any{"car_id": 1, "card_id": 1, "start_time": time.Now(), "end_time": time.Now().Add(time.Hour)})
+	w = utils.Request(router, token.Token, http.MethodPost, "/booking/", map[string]any{"car_id": 1, "card_id": 1, "start_time": time.Now().Unix(), "end_time": time.Now().Add(time.Hour).Unix()})
 	log.Println(w.Body)
 
 }

@@ -4,7 +4,6 @@ package user
 
 import (
 	"carlord/ent/predicate"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -131,7 +130,7 @@ func DriverLicenseCountry(v string) predicate.User {
 }
 
 // Birthday applies equality check predicate on the "birthday" field. It's identical to BirthdayEQ.
-func Birthday(v time.Time) predicate.User {
+func Birthday(v int64) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldBirthday), v))
 	})
@@ -831,21 +830,21 @@ func DriverLicenseCountryContainsFold(v string) predicate.User {
 }
 
 // BirthdayEQ applies the EQ predicate on the "birthday" field.
-func BirthdayEQ(v time.Time) predicate.User {
+func BirthdayEQ(v int64) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldBirthday), v))
 	})
 }
 
 // BirthdayNEQ applies the NEQ predicate on the "birthday" field.
-func BirthdayNEQ(v time.Time) predicate.User {
+func BirthdayNEQ(v int64) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldBirthday), v))
 	})
 }
 
 // BirthdayIn applies the In predicate on the "birthday" field.
-func BirthdayIn(vs ...time.Time) predicate.User {
+func BirthdayIn(vs ...int64) predicate.User {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -856,7 +855,7 @@ func BirthdayIn(vs ...time.Time) predicate.User {
 }
 
 // BirthdayNotIn applies the NotIn predicate on the "birthday" field.
-func BirthdayNotIn(vs ...time.Time) predicate.User {
+func BirthdayNotIn(vs ...int64) predicate.User {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -867,28 +866,28 @@ func BirthdayNotIn(vs ...time.Time) predicate.User {
 }
 
 // BirthdayGT applies the GT predicate on the "birthday" field.
-func BirthdayGT(v time.Time) predicate.User {
+func BirthdayGT(v int64) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldBirthday), v))
 	})
 }
 
 // BirthdayGTE applies the GTE predicate on the "birthday" field.
-func BirthdayGTE(v time.Time) predicate.User {
+func BirthdayGTE(v int64) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldBirthday), v))
 	})
 }
 
 // BirthdayLT applies the LT predicate on the "birthday" field.
-func BirthdayLT(v time.Time) predicate.User {
+func BirthdayLT(v int64) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldBirthday), v))
 	})
 }
 
 // BirthdayLTE applies the LTE predicate on the "birthday" field.
-func BirthdayLTE(v time.Time) predicate.User {
+func BirthdayLTE(v int64) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldBirthday), v))
 	})

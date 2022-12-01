@@ -9,14 +9,13 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"time"
 )
 
 type bookStruct struct {
-	CarID     int       `json:"car_id" binding:"required"`
-	CardID    int       `json:"card_id" binding:"required"`
-	StartTime time.Time `json:"start_time" binding:"required"`
-	EndTime   time.Time `json:"end_time" binding:"required"`
+	CarID     int   `json:"car_id" binding:"required"`
+	CardID    int   `json:"card_id" binding:"required"`
+	StartTime int64 `json:"start_time" binding:"required"`
+	EndTime   int64 `json:"end_time" binding:"required"`
 }
 
 // Add booking godoc
