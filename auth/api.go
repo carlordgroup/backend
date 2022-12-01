@@ -29,7 +29,7 @@ func (s *service) RegisterRouter(group gin.IRouter) {
 	group.POST("/login", login(s.auth))
 	group.POST("/refresh", s.auth.RefreshHandler)
 	group.POST("/register", web.W(s.register))
-	group.POST("/promote/:id", web.ID(s.promote))
+	group.GET("/promote/:id", web.ID(s.promote))
 	group.GET("/", s.MustLogin(), s.GetAccount(), web.W(s.self))
 }
 
@@ -111,7 +111,7 @@ func (s *service) register(ctx *gin.Context) (int, any) {
 // @Accept json
 // @Produce json
 // @Success 200 {object} ent.Account
-// @Router /account/promote/:id [post]
+// @Router /account/promote/:id [get]
 func (s *service) promote(ctx *gin.Context, id int) (int, any) {
 	data, err := s.client.Account.UpdateOneID(id).SetIsAdmin(true).Save(ctx)
 	if err != nil {
