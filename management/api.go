@@ -10,12 +10,6 @@ type service struct {
 	client *ent.Client
 }
 
-type Authenticate interface {
-	MustLogin() gin.HandlerFunc
-	GetAccount() gin.HandlerFunc
-	MustAdmin() gin.HandlerFunc
-}
-
 func New(client *ent.Client) *service {
 	s := service{
 		client: client,
@@ -23,7 +17,7 @@ func New(client *ent.Client) *service {
 	return &s
 }
 
-func (s *service) RegisterRouter(group gin.IRouter, auth Authenticate) {
+func (s *service) RegisterRouter(group gin.IRouter, auth web.Authenticate) {
 	g := group.Group("/location")
 	g.GET("/", web.W(s.listLocation))
 	g.Use(auth.MustLogin(), auth.GetAccount(), auth.MustAdmin())
