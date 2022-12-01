@@ -124,9 +124,8 @@ func (s *service) listBooking(ctx *gin.Context) (int, any) {
 
 // List booking godoc
 // @Tags booking
-// @Summary list booking
+// @Summary pay bill
 // @Produce json
-// @Success 200 {object} []ent.Billing
 // @Router /booking/pay/:id [post]
 func (s *service) paybill(ctx *gin.Context, id int) (int, any) {
 	_, err := data.NewBill(ctx, s.client.Billing.GetX(ctx, id)).Charge()
