@@ -22,5 +22,5 @@ to update swagger
     go mod download
     swag init
 
-visit :8686/api/index.html
+visit :8686/api/
 
