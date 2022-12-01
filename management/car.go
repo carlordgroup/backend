@@ -17,11 +17,11 @@ type carData struct {
 
 // Add Car godoc
 // @Tags car
-// @Param request body ent.Car true "car info"
+// @Param request body carData true "car info"
 // @Summary add a car
 // @Accept json
 // @Produce json
-// @Success 201 {object} carData
+// @Success 201 {object} ent.Car
 // @Router /management/car [post]
 func (s *service) addCar(ctx *gin.Context) (int, any) {
 	var data carData
@@ -53,11 +53,11 @@ func (s *service) addCar(ctx *gin.Context) (int, any) {
 
 // Update Car godoc
 // @Tags car
-// @Param request body ent.Car true "car info"
+// @Param request body carData true "car info"
 // @Summary update a car
 // @Accept json
 // @Produce json
-// @Success 200 {object} carData
+// @Success 200 {object} ent.Car
 // @Router /management/car/:id [post]
 func (s *service) updateCar(ctx *gin.Context, id int) (int, any) {
 	var data carData
@@ -144,7 +144,7 @@ func (s *service) filterCar(ctx *gin.Context) (int, any) {
 		q = q.Where(car.HasLocationWith(location.Name(*query.Location)))
 	}
 
-	cars, err := q.All(ctx)
+	cars, err := q.WithLocation().All(ctx)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
