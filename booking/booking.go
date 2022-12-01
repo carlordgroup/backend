@@ -121,3 +121,16 @@ func (s *service) listBooking(ctx *gin.Context) (int, any) {
 	b, err := u.Bookings()
 	return http.StatusOK, b
 }
+
+// List booking godoc
+// @Tags booking
+// @Summary pay bill
+// @Produce json
+// @Router /booking/pay/:id [post]
+func (s *service) paybill(ctx *gin.Context, id int) (int, any) {
+	_, err := data.NewBill(ctx, s.client.Billing.GetX(ctx, id)).Charge()
+	if err != nil {
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, gin.H{}
+}
