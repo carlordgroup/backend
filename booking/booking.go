@@ -29,16 +29,20 @@ type bookStruct struct {
 // @Router /booking/ [post]
 func (s *service) bookCar(ctx *gin.Context) (int, any) {
 	var book bookStruct
+	// data binding
 	err := ctx.ShouldBindJSON(&book)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
+
 	accountId := ctx.GetInt("id")
+
 	c, err := s.client.Car.Get(ctx, book.CarID)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
 	carObj := data.NewCar(ctx, c)
+	// see if car is available at that time
 	available, err := carObj.Available(book.StartTime, book.EndTime)
 	if err != nil {
 		return http.StatusBadRequest, err
@@ -51,6 +55,8 @@ func (s *service) bookCar(ctx *gin.Context) (int, any) {
 	if err != nil {
 		return http.StatusBadRequest, nil
 	}
+
+	// reject if user has any unpaid bill
 	unpaid, err := userObj.HasUnpaidBill()
 	if err != nil {
 		return http.StatusBadRequest, err
@@ -64,11 +70,14 @@ func (s *service) bookCar(ctx *gin.Context) (int, any) {
 		return http.StatusBadRequest, err
 	}
 
+	// check if the user do have that card
 	userCard, err := s.client.Card.Query().Where(card.ID(book.CardID), card.HasOwnerWith(user.HasAccountWith(account.ID(accountId)))).Only(ctx)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
 	cardObj := data.NewCard(ctx, userCard)
+
+	// try to pay
 	if !cardObj.Pay() {
 		err = b.UpdateStatus(data.BookingStatusCancel)
 		if err != nil {
@@ -88,6 +97,7 @@ func (s *service) bookCar(ctx *gin.Context) (int, any) {
 // @Router /booking/:id [delete]
 func (s *service) cancelBookingCar(ctx *gin.Context, id int) (int, any) {
 	accountID := ctx.GetInt("id")
+	// query the booking under the user and cancel it
 	_, err := s.client.Booking.Update().
 		Where(booking.And(booking.ID(id), booking.HasUserWith(user.HasAccountWith(account.ID(accountID))))).
 		SetBookingStatus(data.BookingStatusCancel).Save(ctx)

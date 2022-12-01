@@ -70,18 +70,22 @@ func (s *service) self(ctx *gin.Context) (int, any) {
 // @Router /account/register [post]
 func (s *service) register(ctx *gin.Context) (int, any) {
 	var login LoginCredential
+	// data binding
 	err := ctx.ShouldBindJSON(&login)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
+	// generate encrypted password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(login.RawPassword), bcrypt.DefaultCost)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
+	// start transaction so it can be rollback if accident happened
 	tx, err := s.client.Tx(ctx)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
+	// create account record
 	a, err := tx.Account.Create().
 		SetEmail(login.Email).
 		SetPassword(base64.StdEncoding.EncodeToString(hashedPassword)).
@@ -91,6 +95,7 @@ func (s *service) register(ctx *gin.Context) (int, any) {
 
 		return http.StatusBadRequest, err
 	}
+	// create user record
 	_, err = tx.User.Create().SetAccountID(a.ID).Save(ctx)
 	if err != nil {
 		tx.Rollback()
@@ -113,6 +118,7 @@ func (s *service) register(ctx *gin.Context) (int, any) {
 // @Success 200 {object} ent.Account
 // @Router /account/promote/:id [get]
 func (s *service) promote(ctx *gin.Context, id int) (int, any) {
+	// This is a test API, for the developers getting an admin account
 	data, err := s.client.Account.UpdateOneID(id).SetIsAdmin(true).Save(ctx)
 	if err != nil {
 		return http.StatusBadRequest, err

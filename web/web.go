@@ -35,3 +35,9 @@ func ID(finer IDResultFiner) gin.HandlerFunc {
 		return finer(ctx, i.ID)
 	})
 }
+
+type Authenticate interface {
+	MustLogin() gin.HandlerFunc
+	GetAccount() gin.HandlerFunc
+	MustAdmin() gin.HandlerFunc
+}
