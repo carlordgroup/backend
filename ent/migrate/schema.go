@@ -55,9 +55,9 @@ var (
 	// BookingsColumns holds the columns for the "bookings" table.
 	BookingsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "start_at", Type: field.TypeTime},
-		{Name: "end_at", Type: field.TypeTime},
-		{Name: "return_car_at", Type: field.TypeTime, Nullable: true},
+		{Name: "start_at", Type: field.TypeInt64},
+		{Name: "end_at", Type: field.TypeInt64},
+		{Name: "return_car_at", Type: field.TypeInt64, Nullable: true},
 		{Name: "rate", Type: field.TypeFloat32, Default: 5},
 		{Name: "exceed_rate", Type: field.TypeFloat32, Default: 10},
 		{Name: "deposit", Type: field.TypeFloat32, Default: 0},
@@ -179,7 +179,7 @@ var (
 		{Name: "tel", Type: field.TypeString, Default: ""},
 		{Name: "driver_license_id", Type: field.TypeString, Default: ""},
 		{Name: "driver_license_country", Type: field.TypeString, Default: ""},
-		{Name: "birthday", Type: field.TypeTime},
+		{Name: "birthday", Type: field.TypeInt64},
 		{Name: "account_user", Type: field.TypeInt, Unique: true, Nullable: true},
 	}
 	// UsersTable holds the schema information for the "users" table.

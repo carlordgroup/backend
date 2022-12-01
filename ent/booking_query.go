@@ -362,7 +362,7 @@ func (bq *BookingQuery) WithBilling(opts ...func(*BillingQuery)) *BookingQuery {
 // Example:
 //
 //	var v []struct {
-//		StartAt time.Time `json:"start_at,omitempty"`
+//		StartAt int64 `json:"start_at,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -390,7 +390,7 @@ func (bq *BookingQuery) GroupBy(field string, fields ...string) *BookingGroupBy 
 // Example:
 //
 //	var v []struct {
-//		StartAt time.Time `json:"start_at,omitempty"`
+//		StartAt int64 `json:"start_at,omitempty"`
 //	}
 //
 //	client.Booking.Query().

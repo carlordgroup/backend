@@ -4,7 +4,6 @@ package booking
 
 import (
 	"carlord/ent/predicate"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -82,21 +81,21 @@ func IDLTE(id int) predicate.Booking {
 }
 
 // StartAt applies equality check predicate on the "start_at" field. It's identical to StartAtEQ.
-func StartAt(v time.Time) predicate.Booking {
+func StartAt(v int64) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldStartAt), v))
 	})
 }
 
 // EndAt applies equality check predicate on the "end_at" field. It's identical to EndAtEQ.
-func EndAt(v time.Time) predicate.Booking {
+func EndAt(v int64) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldEndAt), v))
 	})
 }
 
 // ReturnCarAt applies equality check predicate on the "return_car_at" field. It's identical to ReturnCarAtEQ.
-func ReturnCarAt(v time.Time) predicate.Booking {
+func ReturnCarAt(v int64) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldReturnCarAt), v))
 	})
@@ -159,21 +158,21 @@ func BookingStatus(v string) predicate.Booking {
 }
 
 // StartAtEQ applies the EQ predicate on the "start_at" field.
-func StartAtEQ(v time.Time) predicate.Booking {
+func StartAtEQ(v int64) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldStartAt), v))
 	})
 }
 
 // StartAtNEQ applies the NEQ predicate on the "start_at" field.
-func StartAtNEQ(v time.Time) predicate.Booking {
+func StartAtNEQ(v int64) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldStartAt), v))
 	})
 }
 
 // StartAtIn applies the In predicate on the "start_at" field.
-func StartAtIn(vs ...time.Time) predicate.Booking {
+func StartAtIn(vs ...int64) predicate.Booking {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -184,7 +183,7 @@ func StartAtIn(vs ...time.Time) predicate.Booking {
 }
 
 // StartAtNotIn applies the NotIn predicate on the "start_at" field.
-func StartAtNotIn(vs ...time.Time) predicate.Booking {
+func StartAtNotIn(vs ...int64) predicate.Booking {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -195,49 +194,49 @@ func StartAtNotIn(vs ...time.Time) predicate.Booking {
 }
 
 // StartAtGT applies the GT predicate on the "start_at" field.
-func StartAtGT(v time.Time) predicate.Booking {
+func StartAtGT(v int64) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldStartAt), v))
 	})
 }
 
 // StartAtGTE applies the GTE predicate on the "start_at" field.
-func StartAtGTE(v time.Time) predicate.Booking {
+func StartAtGTE(v int64) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldStartAt), v))
 	})
 }
 
 // StartAtLT applies the LT predicate on the "start_at" field.
-func StartAtLT(v time.Time) predicate.Booking {
+func StartAtLT(v int64) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldStartAt), v))
 	})
 }
 
 // StartAtLTE applies the LTE predicate on the "start_at" field.
-func StartAtLTE(v time.Time) predicate.Booking {
+func StartAtLTE(v int64) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldStartAt), v))
 	})
 }
 
 // EndAtEQ applies the EQ predicate on the "end_at" field.
-func EndAtEQ(v time.Time) predicate.Booking {
+func EndAtEQ(v int64) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldEndAt), v))
 	})
 }
 
 // EndAtNEQ applies the NEQ predicate on the "end_at" field.
-func EndAtNEQ(v time.Time) predicate.Booking {
+func EndAtNEQ(v int64) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldEndAt), v))
 	})
 }
 
 // EndAtIn applies the In predicate on the "end_at" field.
-func EndAtIn(vs ...time.Time) predicate.Booking {
+func EndAtIn(vs ...int64) predicate.Booking {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -248,7 +247,7 @@ func EndAtIn(vs ...time.Time) predicate.Booking {
 }
 
 // EndAtNotIn applies the NotIn predicate on the "end_at" field.
-func EndAtNotIn(vs ...time.Time) predicate.Booking {
+func EndAtNotIn(vs ...int64) predicate.Booking {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -259,49 +258,49 @@ func EndAtNotIn(vs ...time.Time) predicate.Booking {
 }
 
 // EndAtGT applies the GT predicate on the "end_at" field.
-func EndAtGT(v time.Time) predicate.Booking {
+func EndAtGT(v int64) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldEndAt), v))
 	})
 }
 
 // EndAtGTE applies the GTE predicate on the "end_at" field.
-func EndAtGTE(v time.Time) predicate.Booking {
+func EndAtGTE(v int64) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldEndAt), v))
 	})
 }
 
 // EndAtLT applies the LT predicate on the "end_at" field.
-func EndAtLT(v time.Time) predicate.Booking {
+func EndAtLT(v int64) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldEndAt), v))
 	})
 }
 
 // EndAtLTE applies the LTE predicate on the "end_at" field.
-func EndAtLTE(v time.Time) predicate.Booking {
+func EndAtLTE(v int64) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldEndAt), v))
 	})
 }
 
 // ReturnCarAtEQ applies the EQ predicate on the "return_car_at" field.
-func ReturnCarAtEQ(v time.Time) predicate.Booking {
+func ReturnCarAtEQ(v int64) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldReturnCarAt), v))
 	})
 }
 
 // ReturnCarAtNEQ applies the NEQ predicate on the "return_car_at" field.
-func ReturnCarAtNEQ(v time.Time) predicate.Booking {
+func ReturnCarAtNEQ(v int64) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldReturnCarAt), v))
 	})
 }
 
 // ReturnCarAtIn applies the In predicate on the "return_car_at" field.
-func ReturnCarAtIn(vs ...time.Time) predicate.Booking {
+func ReturnCarAtIn(vs ...int64) predicate.Booking {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -312,7 +311,7 @@ func ReturnCarAtIn(vs ...time.Time) predicate.Booking {
 }
 
 // ReturnCarAtNotIn applies the NotIn predicate on the "return_car_at" field.
-func ReturnCarAtNotIn(vs ...time.Time) predicate.Booking {
+func ReturnCarAtNotIn(vs ...int64) predicate.Booking {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -323,28 +322,28 @@ func ReturnCarAtNotIn(vs ...time.Time) predicate.Booking {
 }
 
 // ReturnCarAtGT applies the GT predicate on the "return_car_at" field.
-func ReturnCarAtGT(v time.Time) predicate.Booking {
+func ReturnCarAtGT(v int64) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldReturnCarAt), v))
 	})
 }
 
 // ReturnCarAtGTE applies the GTE predicate on the "return_car_at" field.
-func ReturnCarAtGTE(v time.Time) predicate.Booking {
+func ReturnCarAtGTE(v int64) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldReturnCarAt), v))
 	})
 }
 
 // ReturnCarAtLT applies the LT predicate on the "return_car_at" field.
-func ReturnCarAtLT(v time.Time) predicate.Booking {
+func ReturnCarAtLT(v int64) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldReturnCarAt), v))
 	})
 }
 
 // ReturnCarAtLTE applies the LTE predicate on the "return_car_at" field.
-func ReturnCarAtLTE(v time.Time) predicate.Booking {
+func ReturnCarAtLTE(v int64) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldReturnCarAt), v))
 	})

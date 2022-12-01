@@ -22,7 +22,7 @@ func (User) Fields() []ent.Field {
 		field.String("tel").Default(""),
 		field.String("driver_license_id").Default(""),
 		field.String("driver_license_country").Default(""),
-		field.Time("birthday").Default(time.Now),
+		field.Int64("birthday").DefaultFunc(func() int64 { return time.Now().Unix() }),
 	}
 }
 

@@ -40,8 +40,8 @@ func TestBook(t *testing.T) {
 	w := utils.Request(router, token.Token, http.MethodPost, "/", bookStruct{
 		CarID:     1,
 		CardID:    1,
-		StartTime: time.Now(),
-		EndTime:   time.Now().Add(time.Hour),
+		StartTime: time.Now().Unix(),
+		EndTime:   time.Now().Add(time.Hour).Unix(),
 	})
 	assert.Equal(t, 201, w.Code)
 }

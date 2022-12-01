@@ -12,7 +12,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -131,16 +130,23 @@ func (uu *UserUpdate) SetNillableDriverLicenseCountry(s *string) *UserUpdate {
 }
 
 // SetBirthday sets the "birthday" field.
-func (uu *UserUpdate) SetBirthday(t time.Time) *UserUpdate {
-	uu.mutation.SetBirthday(t)
+func (uu *UserUpdate) SetBirthday(i int64) *UserUpdate {
+	uu.mutation.ResetBirthday()
+	uu.mutation.SetBirthday(i)
 	return uu
 }
 
 // SetNillableBirthday sets the "birthday" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableBirthday(t *time.Time) *UserUpdate {
-	if t != nil {
-		uu.SetBirthday(*t)
+func (uu *UserUpdate) SetNillableBirthday(i *int64) *UserUpdate {
+	if i != nil {
+		uu.SetBirthday(*i)
 	}
+	return uu
+}
+
+// AddBirthday adds i to the "birthday" field.
+func (uu *UserUpdate) AddBirthday(i int64) *UserUpdate {
+	uu.mutation.AddBirthday(i)
 	return uu
 }
 
@@ -376,7 +382,10 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.SetField(user.FieldDriverLicenseCountry, field.TypeString, value)
 	}
 	if value, ok := uu.mutation.Birthday(); ok {
-		_spec.SetField(user.FieldBirthday, field.TypeTime, value)
+		_spec.SetField(user.FieldBirthday, field.TypeInt64, value)
+	}
+	if value, ok := uu.mutation.AddedBirthday(); ok {
+		_spec.AddField(user.FieldBirthday, field.TypeInt64, value)
 	}
 	if uu.mutation.CardCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -693,16 +702,23 @@ func (uuo *UserUpdateOne) SetNillableDriverLicenseCountry(s *string) *UserUpdate
 }
 
 // SetBirthday sets the "birthday" field.
-func (uuo *UserUpdateOne) SetBirthday(t time.Time) *UserUpdateOne {
-	uuo.mutation.SetBirthday(t)
+func (uuo *UserUpdateOne) SetBirthday(i int64) *UserUpdateOne {
+	uuo.mutation.ResetBirthday()
+	uuo.mutation.SetBirthday(i)
 	return uuo
 }
 
 // SetNillableBirthday sets the "birthday" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableBirthday(t *time.Time) *UserUpdateOne {
-	if t != nil {
-		uuo.SetBirthday(*t)
+func (uuo *UserUpdateOne) SetNillableBirthday(i *int64) *UserUpdateOne {
+	if i != nil {
+		uuo.SetBirthday(*i)
 	}
+	return uuo
+}
+
+// AddBirthday adds i to the "birthday" field.
+func (uuo *UserUpdateOne) AddBirthday(i int64) *UserUpdateOne {
+	uuo.mutation.AddBirthday(i)
 	return uuo
 }
 
@@ -968,7 +984,10 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		_spec.SetField(user.FieldDriverLicenseCountry, field.TypeString, value)
 	}
 	if value, ok := uuo.mutation.Birthday(); ok {
-		_spec.SetField(user.FieldBirthday, field.TypeTime, value)
+		_spec.SetField(user.FieldBirthday, field.TypeInt64, value)
+	}
+	if value, ok := uuo.mutation.AddedBirthday(); ok {
+		_spec.AddField(user.FieldBirthday, field.TypeInt64, value)
 	}
 	if uuo.mutation.CardCleared() {
 		edge := &sqlgraph.EdgeSpec{

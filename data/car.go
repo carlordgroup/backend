@@ -4,7 +4,6 @@ import (
 	"carlord/ent"
 	"carlord/ent/booking"
 	"context"
-	"time"
 )
 
 type Car struct {
@@ -25,7 +24,7 @@ func NewCar(ctx context.Context, car *ent.Car) *Car {
 	}
 }
 
-func (c *Car) Available(startAt, endAt time.Time) (bool, error) {
+func (c *Car) Available(startAt, endAt int64) (bool, error) {
 	result, err := c.QueryBooking().Where(
 		booking.And(
 			booking.StartAtLTE(endAt),

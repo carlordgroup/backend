@@ -14,9 +14,9 @@ type Booking struct {
 // Fields of the Booking.
 func (Booking) Fields() []ent.Field {
 	return []ent.Field{
-		field.Time("start_at"),
-		field.Time("end_at"),
-		field.Time("return_car_at").Optional(),
+		field.Int64("start_at"),
+		field.Int64("end_at"),
+		field.Int64("return_car_at").Optional(),
 		field.Float32("rate").Default(5),
 		field.Float32("exceed_rate").Default(10),
 		field.Float32("deposit").Default(0),

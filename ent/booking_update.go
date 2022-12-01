@@ -11,7 +11,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -32,28 +31,49 @@ func (bu *BookingUpdate) Where(ps ...predicate.Booking) *BookingUpdate {
 }
 
 // SetStartAt sets the "start_at" field.
-func (bu *BookingUpdate) SetStartAt(t time.Time) *BookingUpdate {
-	bu.mutation.SetStartAt(t)
+func (bu *BookingUpdate) SetStartAt(i int64) *BookingUpdate {
+	bu.mutation.ResetStartAt()
+	bu.mutation.SetStartAt(i)
+	return bu
+}
+
+// AddStartAt adds i to the "start_at" field.
+func (bu *BookingUpdate) AddStartAt(i int64) *BookingUpdate {
+	bu.mutation.AddStartAt(i)
 	return bu
 }
 
 // SetEndAt sets the "end_at" field.
-func (bu *BookingUpdate) SetEndAt(t time.Time) *BookingUpdate {
-	bu.mutation.SetEndAt(t)
+func (bu *BookingUpdate) SetEndAt(i int64) *BookingUpdate {
+	bu.mutation.ResetEndAt()
+	bu.mutation.SetEndAt(i)
+	return bu
+}
+
+// AddEndAt adds i to the "end_at" field.
+func (bu *BookingUpdate) AddEndAt(i int64) *BookingUpdate {
+	bu.mutation.AddEndAt(i)
 	return bu
 }
 
 // SetReturnCarAt sets the "return_car_at" field.
-func (bu *BookingUpdate) SetReturnCarAt(t time.Time) *BookingUpdate {
-	bu.mutation.SetReturnCarAt(t)
+func (bu *BookingUpdate) SetReturnCarAt(i int64) *BookingUpdate {
+	bu.mutation.ResetReturnCarAt()
+	bu.mutation.SetReturnCarAt(i)
 	return bu
 }
 
 // SetNillableReturnCarAt sets the "return_car_at" field if the given value is not nil.
-func (bu *BookingUpdate) SetNillableReturnCarAt(t *time.Time) *BookingUpdate {
-	if t != nil {
-		bu.SetReturnCarAt(*t)
+func (bu *BookingUpdate) SetNillableReturnCarAt(i *int64) *BookingUpdate {
+	if i != nil {
+		bu.SetReturnCarAt(*i)
 	}
+	return bu
+}
+
+// AddReturnCarAt adds i to the "return_car_at" field.
+func (bu *BookingUpdate) AddReturnCarAt(i int64) *BookingUpdate {
+	bu.mutation.AddReturnCarAt(i)
 	return bu
 }
 
@@ -402,16 +422,25 @@ func (bu *BookingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := bu.mutation.StartAt(); ok {
-		_spec.SetField(booking.FieldStartAt, field.TypeTime, value)
+		_spec.SetField(booking.FieldStartAt, field.TypeInt64, value)
+	}
+	if value, ok := bu.mutation.AddedStartAt(); ok {
+		_spec.AddField(booking.FieldStartAt, field.TypeInt64, value)
 	}
 	if value, ok := bu.mutation.EndAt(); ok {
-		_spec.SetField(booking.FieldEndAt, field.TypeTime, value)
+		_spec.SetField(booking.FieldEndAt, field.TypeInt64, value)
+	}
+	if value, ok := bu.mutation.AddedEndAt(); ok {
+		_spec.AddField(booking.FieldEndAt, field.TypeInt64, value)
 	}
 	if value, ok := bu.mutation.ReturnCarAt(); ok {
-		_spec.SetField(booking.FieldReturnCarAt, field.TypeTime, value)
+		_spec.SetField(booking.FieldReturnCarAt, field.TypeInt64, value)
+	}
+	if value, ok := bu.mutation.AddedReturnCarAt(); ok {
+		_spec.AddField(booking.FieldReturnCarAt, field.TypeInt64, value)
 	}
 	if bu.mutation.ReturnCarAtCleared() {
-		_spec.ClearField(booking.FieldReturnCarAt, field.TypeTime)
+		_spec.ClearField(booking.FieldReturnCarAt, field.TypeInt64)
 	}
 	if value, ok := bu.mutation.Rate(); ok {
 		_spec.SetField(booking.FieldRate, field.TypeFloat32, value)
@@ -595,28 +624,49 @@ type BookingUpdateOne struct {
 }
 
 // SetStartAt sets the "start_at" field.
-func (buo *BookingUpdateOne) SetStartAt(t time.Time) *BookingUpdateOne {
-	buo.mutation.SetStartAt(t)
+func (buo *BookingUpdateOne) SetStartAt(i int64) *BookingUpdateOne {
+	buo.mutation.ResetStartAt()
+	buo.mutation.SetStartAt(i)
+	return buo
+}
+
+// AddStartAt adds i to the "start_at" field.
+func (buo *BookingUpdateOne) AddStartAt(i int64) *BookingUpdateOne {
+	buo.mutation.AddStartAt(i)
 	return buo
 }
 
 // SetEndAt sets the "end_at" field.
-func (buo *BookingUpdateOne) SetEndAt(t time.Time) *BookingUpdateOne {
-	buo.mutation.SetEndAt(t)
+func (buo *BookingUpdateOne) SetEndAt(i int64) *BookingUpdateOne {
+	buo.mutation.ResetEndAt()
+	buo.mutation.SetEndAt(i)
+	return buo
+}
+
+// AddEndAt adds i to the "end_at" field.
+func (buo *BookingUpdateOne) AddEndAt(i int64) *BookingUpdateOne {
+	buo.mutation.AddEndAt(i)
 	return buo
 }
 
 // SetReturnCarAt sets the "return_car_at" field.
-func (buo *BookingUpdateOne) SetReturnCarAt(t time.Time) *BookingUpdateOne {
-	buo.mutation.SetReturnCarAt(t)
+func (buo *BookingUpdateOne) SetReturnCarAt(i int64) *BookingUpdateOne {
+	buo.mutation.ResetReturnCarAt()
+	buo.mutation.SetReturnCarAt(i)
 	return buo
 }
 
 // SetNillableReturnCarAt sets the "return_car_at" field if the given value is not nil.
-func (buo *BookingUpdateOne) SetNillableReturnCarAt(t *time.Time) *BookingUpdateOne {
-	if t != nil {
-		buo.SetReturnCarAt(*t)
+func (buo *BookingUpdateOne) SetNillableReturnCarAt(i *int64) *BookingUpdateOne {
+	if i != nil {
+		buo.SetReturnCarAt(*i)
 	}
+	return buo
+}
+
+// AddReturnCarAt adds i to the "return_car_at" field.
+func (buo *BookingUpdateOne) AddReturnCarAt(i int64) *BookingUpdateOne {
+	buo.mutation.AddReturnCarAt(i)
 	return buo
 }
 
@@ -995,16 +1045,25 @@ func (buo *BookingUpdateOne) sqlSave(ctx context.Context) (_node *Booking, err e
 		}
 	}
 	if value, ok := buo.mutation.StartAt(); ok {
-		_spec.SetField(booking.FieldStartAt, field.TypeTime, value)
+		_spec.SetField(booking.FieldStartAt, field.TypeInt64, value)
+	}
+	if value, ok := buo.mutation.AddedStartAt(); ok {
+		_spec.AddField(booking.FieldStartAt, field.TypeInt64, value)
 	}
 	if value, ok := buo.mutation.EndAt(); ok {
-		_spec.SetField(booking.FieldEndAt, field.TypeTime, value)
+		_spec.SetField(booking.FieldEndAt, field.TypeInt64, value)
+	}
+	if value, ok := buo.mutation.AddedEndAt(); ok {
+		_spec.AddField(booking.FieldEndAt, field.TypeInt64, value)
 	}
 	if value, ok := buo.mutation.ReturnCarAt(); ok {
-		_spec.SetField(booking.FieldReturnCarAt, field.TypeTime, value)
+		_spec.SetField(booking.FieldReturnCarAt, field.TypeInt64, value)
+	}
+	if value, ok := buo.mutation.AddedReturnCarAt(); ok {
+		_spec.AddField(booking.FieldReturnCarAt, field.TypeInt64, value)
 	}
 	if buo.mutation.ReturnCarAtCleared() {
-		_spec.ClearField(booking.FieldReturnCarAt, field.TypeTime)
+		_spec.ClearField(booking.FieldReturnCarAt, field.TypeInt64)
 	}
 	if value, ok := buo.mutation.Rate(); ok {
 		_spec.SetField(booking.FieldRate, field.TypeFloat32, value)

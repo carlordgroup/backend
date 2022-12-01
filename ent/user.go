@@ -7,7 +7,6 @@ import (
 	"carlord/ent/user"
 	"fmt"
 	"strings"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 )
@@ -32,7 +31,7 @@ type User struct {
 	// DriverLicenseCountry holds the value of the "driver_license_country" field.
 	DriverLicenseCountry string `json:"driver_license_country,omitempty"`
 	// Birthday holds the value of the "birthday" field.
-	Birthday time.Time `json:"birthday,omitempty"`
+	Birthday int64 `json:"birthday,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges        UserEdges `json:"edges"`
@@ -99,12 +98,10 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldID:
+		case user.FieldID, user.FieldBirthday:
 			values[i] = new(sql.NullInt64)
 		case user.FieldFirstName, user.FieldLastName, user.FieldAddress, user.FieldPostalCode, user.FieldTel, user.FieldDriverLicenseID, user.FieldDriverLicenseCountry:
 			values[i] = new(sql.NullString)
-		case user.FieldBirthday:
-			values[i] = new(sql.NullTime)
 		case user.ForeignKeys[0]: // account_user
 			values[i] = new(sql.NullInt64)
 		default:
@@ -171,10 +168,10 @@ func (u *User) assignValues(columns []string, values []any) error {
 				u.DriverLicenseCountry = value.String
 			}
 		case user.FieldBirthday:
-			if value, ok := values[i].(*sql.NullTime); !ok {
+			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field birthday", values[i])
 			} else if value.Valid {
-				u.Birthday = value.Time
+				u.Birthday = value.Int64
 			}
 		case user.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -253,7 +250,7 @@ func (u *User) String() string {
 	builder.WriteString(u.DriverLicenseCountry)
 	builder.WriteString(", ")
 	builder.WriteString("birthday=")
-	builder.WriteString(u.Birthday.Format(time.ANSIC))
+	builder.WriteString(fmt.Sprintf("%v", u.Birthday))
 	builder.WriteByte(')')
 	return builder.String()
 }

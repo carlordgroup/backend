@@ -4,7 +4,6 @@ import (
 	"carlord/ent"
 	"carlord/ent/billing"
 	"context"
-	"time"
 )
 
 type User struct {
@@ -24,7 +23,7 @@ func (u *User) Cards() ([]*Card, error) {
 	return NewCards(u.ctx, cards), nil
 }
 
-func (u *User) Book(client *ent.Client, car *Car, startAt time.Time, endAt time.Time, cardID int) (*Booking, error) {
+func (u *User) Book(client *ent.Client, car *Car, startAt int64, endAt int64, cardID int) (*Booking, error) {
 	b, err := client.Booking.Create().
 		SetStartAt(startAt).
 		SetEndAt(endAt).

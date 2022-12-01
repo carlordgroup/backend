@@ -3,6 +3,7 @@ package data
 import (
 	"carlord/ent"
 	"context"
+	"time"
 )
 
 const (
@@ -53,10 +54,10 @@ func (b *Bill) Calculate() error {
 	if err != nil {
 		return err
 	}
-	basic := float32(book.EndAt.Sub(book.StartAt).Hours()) * book.Rate
+	basic := float32(time.Unix(book.EndAt-book.StartAt, 0).Hour()) * book.Rate
 	var compensation float32
-	if book.ReturnCarAt.Sub(book.EndAt).Hours() > 0 {
-		compensation = float32(book.ReturnCarAt.Sub(book.EndAt).Hours()) * book.ExceedRate
+	if time.Unix(book.ReturnCarAt-book.EndAt, 0).Hour() > 0 {
+		compensation = float32(time.Unix(book.ReturnCarAt-book.EndAt, 0).Hour()) * book.ExceedRate
 	}
 	_, err = b.Update().SetBasicCost(basic).SetCompensation(compensation).SetStatus(BillUnpaid).SetDeposit(book.Deposit).Save(b.ctx)
 	return err

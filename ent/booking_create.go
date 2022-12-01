@@ -10,7 +10,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -24,27 +23,27 @@ type BookingCreate struct {
 }
 
 // SetStartAt sets the "start_at" field.
-func (bc *BookingCreate) SetStartAt(t time.Time) *BookingCreate {
-	bc.mutation.SetStartAt(t)
+func (bc *BookingCreate) SetStartAt(i int64) *BookingCreate {
+	bc.mutation.SetStartAt(i)
 	return bc
 }
 
 // SetEndAt sets the "end_at" field.
-func (bc *BookingCreate) SetEndAt(t time.Time) *BookingCreate {
-	bc.mutation.SetEndAt(t)
+func (bc *BookingCreate) SetEndAt(i int64) *BookingCreate {
+	bc.mutation.SetEndAt(i)
 	return bc
 }
 
 // SetReturnCarAt sets the "return_car_at" field.
-func (bc *BookingCreate) SetReturnCarAt(t time.Time) *BookingCreate {
-	bc.mutation.SetReturnCarAt(t)
+func (bc *BookingCreate) SetReturnCarAt(i int64) *BookingCreate {
+	bc.mutation.SetReturnCarAt(i)
 	return bc
 }
 
 // SetNillableReturnCarAt sets the "return_car_at" field if the given value is not nil.
-func (bc *BookingCreate) SetNillableReturnCarAt(t *time.Time) *BookingCreate {
-	if t != nil {
-		bc.SetReturnCarAt(*t)
+func (bc *BookingCreate) SetNillableReturnCarAt(i *int64) *BookingCreate {
+	if i != nil {
+		bc.SetReturnCarAt(*i)
 	}
 	return bc
 }
@@ -351,15 +350,15 @@ func (bc *BookingCreate) createSpec() (*Booking, *sqlgraph.CreateSpec) {
 		}
 	)
 	if value, ok := bc.mutation.StartAt(); ok {
-		_spec.SetField(booking.FieldStartAt, field.TypeTime, value)
+		_spec.SetField(booking.FieldStartAt, field.TypeInt64, value)
 		_node.StartAt = value
 	}
 	if value, ok := bc.mutation.EndAt(); ok {
-		_spec.SetField(booking.FieldEndAt, field.TypeTime, value)
+		_spec.SetField(booking.FieldEndAt, field.TypeInt64, value)
 		_node.EndAt = value
 	}
 	if value, ok := bc.mutation.ReturnCarAt(); ok {
-		_spec.SetField(booking.FieldReturnCarAt, field.TypeTime, value)
+		_spec.SetField(booking.FieldReturnCarAt, field.TypeInt64, value)
 		_node.ReturnCarAt = value
 	}
 	if value, ok := bc.mutation.Rate(); ok {

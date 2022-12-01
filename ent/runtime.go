@@ -9,7 +9,6 @@ import (
 	"carlord/ent/car"
 	"carlord/ent/schema"
 	"carlord/ent/user"
-	"time"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -101,5 +100,5 @@ func init() {
 	// userDescBirthday is the schema descriptor for birthday field.
 	userDescBirthday := userFields[7].Descriptor()
 	// user.DefaultBirthday holds the default value on creation for the birthday field.
-	user.DefaultBirthday = userDescBirthday.Default.(func() time.Time)
+	user.DefaultBirthday = userDescBirthday.Default.(func() int64)
 }
