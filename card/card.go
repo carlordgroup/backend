@@ -1,7 +1,6 @@
 package card
 
 import (
-	"carlord/data"
 	"carlord/ent"
 	"carlord/ent/account"
 	"carlord/ent/card"
@@ -36,7 +35,7 @@ func (s *service) hasCard(ctx *gin.Context) (*ent.Card, error) {
 		return nil, err
 	}
 
-	editCard, err := s.client.Card.Query().Where(card.And(card.HasOwnerWith(user.ID(ctx.MustGet("account").(*data.Account).ID)), card.ID(c.ID))).Only(ctx)
+	editCard, err := s.client.Card.Query().Where(card.And(card.HasOwnerWith(user.HasAccountWith(account.ID(ctx.MustGet("id").(int)))), card.ID(c.ID))).Only(ctx)
 	return editCard, nil
 }
 

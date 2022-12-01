@@ -3,7 +3,6 @@ package management
 import (
 	"carlord/data"
 	"carlord/ent"
-	"carlord/ent/account"
 	"carlord/ent/booking"
 	"carlord/ent/card"
 	"carlord/ent/user"
@@ -96,7 +95,6 @@ func (s *service) bookCar(ctx *gin.Context) (int, any) {
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
-	accountID := ctx.GetInt("id")
 	c, err := s.client.Car.Get(ctx, book.CarID)
 	if err != nil {
 		return http.StatusBadRequest, err
@@ -127,7 +125,7 @@ func (s *service) bookCar(ctx *gin.Context) (int, any) {
 		return http.StatusBadRequest, err
 	}
 
-	userCard, err := s.client.Card.Query().Where(card.ID(book.CardID), card.HasOwnerWith(user.HasAccountWith(account.ID(accountID)))).Only(ctx)
+	userCard, err := s.client.Card.Query().Where(card.ID(book.CardID), card.HasOwnerWith(user.ID(book.UserID))).Only(ctx)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
