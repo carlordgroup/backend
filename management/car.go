@@ -11,6 +11,8 @@ import (
 type carData struct {
 	ent.Car
 	LocationID int `json:"location_id"`
+	Edges      any `json:"-"`
+	ID         any `json:"-"`
 }
 
 // Add Car godoc
@@ -19,7 +21,7 @@ type carData struct {
 // @Summary add a car
 // @Accept json
 // @Produce json
-// @Success 201 {object} ent.Car
+// @Success 201 {object} carData
 // @Router /management/car [post]
 func (s *service) addCar(ctx *gin.Context) (int, any) {
 	var data carData
@@ -41,7 +43,6 @@ func (s *service) addCar(ctx *gin.Context) (int, any) {
 		SetUnitPrice(data.UnitPrice).
 		SetPlateNumber(data.PlateNumber).
 		SetPlateCountry(data.PlateCountry).
-		SetLocationID(data.LocationID).
 		Save(ctx)
 	if err != nil {
 		return http.StatusBadRequest, err
@@ -56,7 +57,7 @@ func (s *service) addCar(ctx *gin.Context) (int, any) {
 // @Summary update a car
 // @Accept json
 // @Produce json
-// @Success 200 {object} ent.Car
+// @Success 200 {object} carData
 // @Router /management/car/:id [post]
 func (s *service) updateCar(ctx *gin.Context, id int) (int, any) {
 	var data carData
