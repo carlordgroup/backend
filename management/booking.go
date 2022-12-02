@@ -12,6 +12,6 @@ import (
 // @Success 200 {object} []ent.Booking
 // @Router /management/booking [get]
 func (s *service) listBooking(ctx *gin.Context) (int, any) {
-	data := s.client.Booking.Query().AllX(ctx)
+	data := s.client.Booking.Query().WithCar().WithBilling().AllX(ctx)
 	return 0, data
 }
