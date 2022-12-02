@@ -60,7 +60,7 @@ func (s *service) bookCar(ctx *gin.Context) (int, any) {
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
-	if unpaid {
+	if unpaid && !accountObj.IsAdmin {
 		return http.StatusForbidden, errors.New("cannot start new booking with unpaid bill")
 	}
 

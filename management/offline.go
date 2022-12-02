@@ -111,14 +111,6 @@ func (s *service) bookCar(ctx *gin.Context) (int, any) {
 		return http.StatusBadRequest, nil
 	}
 	userObj := data.NewUser(ctx, u)
-	unpaid, err := userObj.HasUnpaidBill()
-	if err != nil {
-		return http.StatusBadRequest, err
-	}
-	if unpaid {
-		return http.StatusForbidden, errors.New("cannot start new booking with unpaid bill")
-	}
-
 	b, err := userObj.Book(s.client, carObj, book.StartTime, book.EndTime, book.CardID)
 	if err != nil {
 		return http.StatusBadRequest, err
