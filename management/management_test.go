@@ -70,7 +70,7 @@ func TestDelete(t *testing.T) {
 	assert.Equal(t, http.StatusNoContent, w.Code)
 }
 
-var carObj = carData{ent.Car{
+var carObj = carData{Car: ent.Car{
 	Color:        "red",
 	Brand:        "vw",
 	Model:        "golf",
@@ -82,7 +82,7 @@ var carObj = carData{ent.Car{
 	Price:        20000,
 	Mileage:      55,
 	Deposit:      5000,
-}, 0}
+}, LocationID: 0, Edges: nil, ID: nil}
 
 func addALocation() {
 	w := utils.Request(router, token.Token, http.MethodPost, "/location/", map[string]any{"name": "1", "latitude": 1.1, "longitude": 2.2})
