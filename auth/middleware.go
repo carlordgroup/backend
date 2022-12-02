@@ -92,7 +92,7 @@ func (s *service) MustLogin() gin.HandlerFunc {
 func (s *service) MustAdmin() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		if !ctx.MustGet("account").(*data.Account).Admin() {
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "you are not an admin"})
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "you are not an admin"})
 			return
 		}
 		ctx.Next()
@@ -103,7 +103,7 @@ func (s *service) GetAccount() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		acc, err := s.client.Account.Query().WithUser().Where(account.ID(ctx.MustGet("id").(int))).Only(ctx)
 		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, err)
+			ctx.JSON(http.StatusInternalServerError, err)
 			return
 		}
 		ctx.Set("account", data.NewAccount(ctx, acc))
