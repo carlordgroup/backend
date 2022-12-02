@@ -3,6 +3,7 @@ package data
 import (
 	"carlord/ent"
 	"carlord/ent/billing"
+	"carlord/ent/booking"
 	"context"
 )
 
@@ -35,6 +36,11 @@ func (u *User) Book(client *ent.Client, car *Car, startAt int64, endAt int64, ca
 	if err != nil {
 		return nil, err
 	}
+	b, err = client.Booking.Query().Where(booking.ID(b.ID)).WithCar().WithBilling().Only(u.ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	return NewBooking(u.ctx, b), err
 }
 
@@ -43,7 +49,7 @@ func (u *User) HasUnpaidBill() (bool, error) {
 }
 
 func (u *User) Bookings() ([]*Booking, error) {
-	books, err := u.QueryBooking().WithBilling().All(u.ctx)
+	books, err := u.QueryBooking().WithBilling().WithCar().All(u.ctx)
 	if err != nil {
 		return nil, err
 	}
