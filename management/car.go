@@ -113,6 +113,18 @@ type queryCar struct {
 
 // Query Car godoc
 // @Tags car
+// @Param request query getCar true "one car info"
+// @Summary query cars
+// @Accept json
+// @Produce json
+// @Success 204
+// @Router /management/car/:id [get]
+func (s *service) getCar(ctx *gin.Context, id int) (int, any) {
+	return http.StatusOK, s.client.Car.GetX(ctx, id)
+}
+
+// Query Car godoc
+// @Tags car
 // @Param request query queryCar true "car info"
 // @Summary query cars
 // @Accept json

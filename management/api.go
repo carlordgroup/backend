@@ -27,6 +27,7 @@ func (s *service) RegisterRouter(group gin.IRouter, auth web.Authenticate) {
 
 	g = group.Group("/car")
 	g.GET("/", web.W(s.filterCar))
+	g.GET("/:id", web.ID(s.getCar))
 	g.Use(auth.MustLogin(), auth.GetAccount(), auth.MustAdmin())
 	g.POST("/", web.W(s.addCar))
 	g.POST("/:id", web.ID(s.updateCar))
