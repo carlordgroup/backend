@@ -113,7 +113,6 @@ type queryCar struct {
 
 // Query Car godoc
 // @Tags car
-// @Param request query getCar true "one car info"
 // @Summary query cars
 // @Accept json
 // @Produce json
