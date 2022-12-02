@@ -74,7 +74,7 @@ func (s *service) deleteLocation(ctx *gin.Context, id int) (int, any) {
 // @Router /management/location [get]
 func (s *service) listLocation(ctx *gin.Context) (int, any) {
 
-	locations, err := s.client.Location.Query().All(ctx)
+	locations, err := s.client.Location.Query().WithCars().All(ctx)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
