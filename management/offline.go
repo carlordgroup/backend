@@ -90,15 +90,18 @@ type bookStruct struct {
 // @Router /management/offline/book/ [post]
 func (s *service) bookCar(ctx *gin.Context) (int, any) {
 	var book bookStruct
+	// binding data
 	err := ctx.ShouldBindJSON(&book)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
+	// get the car they want to book
 	c, err := s.client.Car.Get(ctx, book.CarID)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
 	carObj := data.NewCar(ctx, c)
+	// see if it is available
 	available, err := carObj.Available(book.StartTime, book.EndTime)
 	if err != nil {
 		return http.StatusBadRequest, err
@@ -110,17 +113,19 @@ func (s *service) bookCar(ctx *gin.Context) (int, any) {
 	if err != nil {
 		return http.StatusBadRequest, nil
 	}
+
 	userObj := data.NewUser(ctx, u)
 	b, err := userObj.Book(s.client, carObj, book.StartTime, book.EndTime, book.CardID)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
-
+	// check card owner
 	userCard, err := s.client.Card.Query().Where(card.ID(book.CardID), card.HasOwnerWith(user.ID(book.UserID))).Only(ctx)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
 	cardObj := data.NewCard(ctx, userCard)
+	// if the card cannot pay
 	if !cardObj.Pay() {
 		err = b.UpdateStatus(data.BookingStatusCancel)
 		if err != nil {
