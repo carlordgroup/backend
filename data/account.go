@@ -16,6 +16,7 @@ func NewAccount(ctx context.Context, e *ent.Account) *Account {
 	return &Account{Account: e, ctx: ctx}
 }
 
+// Verify the user information with raw password and bcrypt
 func (a *Account) Verify(rawPassword string) bool {
 	bcryptPass, err := base64.StdEncoding.DecodeString(a.Password)
 	if err != nil {

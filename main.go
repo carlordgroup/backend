@@ -7,7 +7,6 @@ import (
 	"carlord/docs"
 	"carlord/ent"
 	"carlord/management"
-	"carlord/pickup"
 	"carlord/user"
 	"context"
 	"github.com/gin-contrib/cors"
@@ -59,9 +58,6 @@ func main() {
 
 	g = api.Group("booking/")
 	booking.New(client).RegisterRouter(g, authService)
-
-	g = api.Group("pickup/")
-	pickup.New(client).RegisterRouter(g, authService)
 
 	docs.SwaggerInfo.BasePath = "/api"
 	api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))

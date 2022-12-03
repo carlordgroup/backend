@@ -18,6 +18,7 @@ type LoginCredential struct {
 
 var identityKey = "id"
 
+// for login extract user info
 func (s *service) payload(data interface{}) jwt.MapClaims {
 	if v, ok := data.(int); ok {
 		return jwt.MapClaims{
@@ -27,11 +28,13 @@ func (s *service) payload(data interface{}) jwt.MapClaims {
 	return jwt.MapClaims{}
 }
 
+// convert user ID
 func (s *service) identity(c *gin.Context) interface{} {
 	claims := jwt.ExtractClaims(c)
 	return int(claims[identityKey].(float64))
 }
 
+// Auth the user with database
 func (s *service) authentication(c *gin.Context) (interface{}, error) {
 	var login LoginCredential
 	if err := c.ShouldBindJSON(&login); err != nil {
@@ -52,6 +55,7 @@ func (s *service) authentication(c *gin.Context) (interface{}, error) {
 
 }
 
+// Auth middleware initialization
 func (s *service) initMiddleware() *jwt.GinJWTMiddleware {
 	// the jwt middleware
 	authMiddleware, err := jwt.New(&jwt.GinJWTMiddleware{
@@ -86,6 +90,7 @@ func (s *service) initMiddleware() *jwt.GinJWTMiddleware {
 
 }
 
+// MustLogin middleware that force the user to login
 func (s *service) MustLogin() gin.HandlerFunc {
 	return s.auth.MiddlewareFunc()
 }
@@ -99,6 +104,7 @@ func (s *service) MustAdmin() gin.HandlerFunc {
 	}
 }
 
+// GetAccount get user information
 func (s *service) GetAccount() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		acc, err := s.client.Account.Query().WithUser().Where(account.ID(ctx.MustGet("id").(int))).Only(ctx)

@@ -35,6 +35,7 @@ func NewBills(ctx context.Context, data []*ent.Billing) []*Bill {
 	return result
 }
 
+// Charge from user card
 func (b *Bill) Charge() (bool, error) {
 	c, err := b.QueryCard().Only(b.ctx)
 	if err != nil {
